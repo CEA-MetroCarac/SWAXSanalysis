@@ -609,7 +609,7 @@
                                         "element type": "attribute",
                                         "value": [
                                             "m",
-                                            "arbitrary"
+                                            "m"
                                         ],
                                         "possible value": [
                                             [
@@ -728,7 +728,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "arbitrary",
+                                            "deg",
                                             "rad"
                                         ],
                                         "possible value": [
@@ -757,7 +757,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "rad",
+                                            "deg",
                                             "rad"
                                         ],
                                         "possible value": [
@@ -786,7 +786,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "rad",
+                                            "deg",
                                             "rad"
                                         ],
                                         "possible value": [
@@ -1325,7 +1325,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "arbitrary",
+                                    "deg",
                                     "rad"
                                 ],
                                 "possible value": [
@@ -1354,7 +1354,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "rad",
+                                    "deg",
                                     "rad"
                                 ],
                                 "possible value": [
@@ -1383,7 +1383,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "rad",
+                                    "deg",
                                     "rad"
                                 ],
                                 "possible value": [

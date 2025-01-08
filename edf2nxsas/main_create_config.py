@@ -181,14 +181,19 @@ class Setting(tk.Tk):
     ----------
     dict_config : dict
         A dictionary containing the NeXus structure loaded from a JSON file.
+
     stringvar_datapath : tk.StringVar
         Holds the path to the reference file.
+
     stringvar_file_name : tk.StringVar
         Holds the name of the settings file to be saved.
+
     frame1 : tk.Frame
         The frame containing the data input widgets.
+
     frame2 : VerticalScrolledFrame
         A scrollable frame displaying the parameters and configurations.
+
     frame3 : tk.Frame
         The frame containing action buttons for navigation and saving.
     """

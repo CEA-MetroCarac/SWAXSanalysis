@@ -1,5 +1,7 @@
 """
-module description
+This module is meant to be executed by the user and automatically
+treats any .edf file found in the parameters according to the
+settings file also present in that parent folder
 """
 import json
 import tkinter as tk
@@ -17,6 +19,7 @@ import numpy as np
 import h5py
 
 from nexus_format_generator import dictUnit
+from data_treatment import NexusFile
 
 
 def convert(number, unit_start, unit_end, testing=False):
@@ -189,7 +192,10 @@ def replace_h5_dataset(file, dataset_path, new_data):
 
     del file[dataset_path]
 
-    new_dataset = file.create_dataset(dataset_path, data=new_data)
+    new_dataset = file.create_dataset(dataset_path,
+                                      data=new_data,
+                                      compression="gzip",
+                                      compression_opts=9)
 
     for key, value in attributes.items():
         new_dataset.attrs[key] = value
@@ -240,12 +246,13 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
                         dataset_value = convert(dataset_value,
                                                 unit_attribute["value"][0],
                                                 unit_attribute["value"][1])
-                current_element = parent_element.create_dataset(clean_key, data=dataset_value)
+                current_element = parent_element.create_dataset(clean_key,
+                                                                data=dataset_value)
                 if content:
                     fill_hdf5(file, content, current_element)
 
             elif element_type == "attribute":
-                if isinstance(value["value"], list):
+                if not(isinstance(value["value"], list)):
                     attribute_value = edf_header.get(value["value"], value["value"])
                 else:
                     attribute_value = value["value"][1]
@@ -261,7 +268,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
         config_dict = json.load(config_file)
 
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
-    sample_name = edf_header[sample_name_key]
+    sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M-%S"))
     exp_type = "SAXS"
@@ -272,6 +279,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
         treated_data = data_treatment(edf_data, save_file)
         replace_h5_dataset(save_file, "ENTRY/DATA/R", treated_data["R_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
+    return hdf5_path
 
 
 def search_setting_edf():
@@ -319,14 +327,14 @@ def tree_structure_manager(file, settings):
     split_string = file.split("_")
     sample_name = split_string[0]
     experiment_type = split_string[1]
-    if ".json" in experiment_type:
-        experiment_type = experiment_type.strip(".json")
+    if ".edf" in experiment_type:
+        experiment_type = experiment_type.strip(".edf")
 
     # Settings splitting
     settings.strip("settings_")
     _, origin2ending, instrument, date_txt = settings.split("_")
     origin_format, ending_format = origin2ending.split("2")
-    date = date_txt.strip(".txt")
+    date = date_txt.strip(".json")
 
     target_dir = "./../treated data" + \
                  f"/instrument - {instrument}" + \
@@ -361,23 +369,37 @@ def auto_generate():
     """
     global STOP_THREAD
     tracemalloc.start()
+    sleep_time = 10
     while not STOP_THREAD:
         current, peak = tracemalloc.get_traced_memory()
-        if peak / (1024 ** 2) > 50 or current / (1024 ** 2) > 50:
+        print(f"memory used : \n"
+              f"    - current : {current / (1024 ** 2)}\n"
+              f"    - peak : {peak / (1024 ** 2)}\n")
+        if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
+            print("Too much memory used :"
+                  f"{current}, {peak}")
             break
 
         file, settings = search_setting_edf()
         if file is None or settings is None:
-            time.sleep(300)
+            time.sleep(sleep_time)
             continue
 
         result = tree_structure_manager(file, settings)
         if result[0] == "perm error":
+            print("The program could not create the file due to a permission error")
             sys.exit()
-        generate_nexus("./../" + file, result[0], "./../" + settings)
-
+        file_path = generate_nexus("./../" + file, result[0], "./../" + settings)
         shutil.move("./../" + file, result[1] + file)
-        time.sleep(300)
+
+        print(file_path)
+        nx_file = NexusFile(file_path)
+        nx_file.q_space(save=True)
+        nx_file.radial_average(save=True)
+        nx_file.close()
+
+        print(f"{file} has been converted successfully, sleeping for {sleep_time} seconds...")
+        time.sleep(sleep_time)
     tracemalloc.stop()
     print("The program is done sleeping! you can start it again.")
 
