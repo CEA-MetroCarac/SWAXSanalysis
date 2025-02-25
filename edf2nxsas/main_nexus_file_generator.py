@@ -18,8 +18,8 @@ import fabio
 import numpy as np
 import h5py
 
-from nexus_format_generator import dictUnit
-from data_treatment import NexusFile
+from edf2nxsas.nexus_format.nexus_format_generator import dictUnit
+from edf2nxsas.data_treatment import NexusFile
 
 
 def convert(number, unit_start, unit_end, testing=False):
