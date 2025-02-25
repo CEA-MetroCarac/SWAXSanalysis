@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "saxs_nxformat"
-version = 2025.1
+version = "2025.1"
 # dynamic = ["version"]
 authors = [
     { name = "Adrien Toulouse", email = "adrien.toulouse@cea.fr" }
