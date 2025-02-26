@@ -37,7 +37,7 @@ dependencies = [
 # "fitspy" = ["resources/iconpack/*.png", "resources/iconpack/*.svg"]
 
 [project.scripts]
-nxformat = "saxs_nxformat.launcher"
+nxformat = "saxs_nxformat.launcher:launcher_gui()"
 
 [tool.setuptools]
 include-package-data = false
