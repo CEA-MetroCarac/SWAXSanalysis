@@ -4,16 +4,15 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "saxs_nxformat"
-version = "2025.1"
+version = "2025.2"
 # dynamic = ["version"]
 authors = [
     { name = "Adrien Toulouse", email = "adrien.toulouse@cea.fr" }
 ]
-description = "BLABLA: a generic tool to fit spectra in python"
+description = "BLABLA"
 readme = "README.md"
 requires-python = ">=3.9"
-keywords = ["Fitspy", "fit", "spectra", "spectrum", "map", "1D", "2D",
-    "decomposition", "Gaussian", "Lorentzian", "Pseudovoigt", "GUI"]
+keywords = []
 license = { text = "GPL v3" }
 classifiers = [
     'Programming Language :: Python :: 3',
@@ -38,7 +37,7 @@ dependencies = [
 # "fitspy" = ["resources/iconpack/*.png", "resources/iconpack/*.svg"]
 
 [project.scripts]
-nxformat = "edf2nxsas.main_nexus_file_generator:create_gui"
+nxformat = "saxs_nxformat.launcher"
 
 [tool.setuptools]
 include-package-data = false
@@ -48,7 +47,7 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["edf2nxsas*"]
+include = ["saxs_nxformat*"]
 namespaces = false
 
 # [tool.pytest.ini_options]
