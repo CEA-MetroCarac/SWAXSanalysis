@@ -7,12 +7,12 @@ Ouvre une interface graphique qui permet à l'user de choisir si il veut:
 """
 
 import tkinter as tk
-from saxs_nxformat.create_config import Setting
-from saxs_nxformat.nxfile_generator import create_gui
-from saxs_nxformat.data_processing import GUI_process
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH
+from saxs_nxformat.create_config import Setting
+from saxs_nxformat.data_processing import GUI_process
+from saxs_nxformat.nxfile_generator import create_gui
 
 
 # Launch commands

@@ -3,13 +3,12 @@ The main feature of this module is the NexusFile class which is used
 to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
 """
-import shutil
 import os
-import numpy as np
+import shutil
+
 import h5py
-
 import matplotlib.pyplot as plt
-
+import numpy as np
 from smi_analysis import SMI_beamline
 
 

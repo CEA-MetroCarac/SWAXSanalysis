@@ -2,18 +2,17 @@
 module description
 """
 
-import os
-import sys
 import json
-import tkinter as tk
+import os
 import re
-
+import sys
+import tkinter as tk
+from datetime import datetime
 from pathlib import Path
 from tkinter import ttk, filedialog
-from datetime import datetime
-from saxs_nxformat import CONF_PATH
 
 import fabio
+from saxs_nxformat import CONF_PATH
 
 
 #############################

@@ -5,6 +5,7 @@ a .h5 file following the homebrewed NXsas format to an NXcanSAS
 import os
 import tkinter as tk
 from tkinter import filedialog
+
 from saxs_nxformat.class_nexus_file import NexusFile
 
 

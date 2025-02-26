@@ -2,10 +2,10 @@
 This module is meant to help the user process their data
 """
 import inspect
-import os
 import re
 import tkinter as tk
 from tkinter import ttk, filedialog
+
 from saxs_nxformat.class_nexus_file import NexusFile
 
 
