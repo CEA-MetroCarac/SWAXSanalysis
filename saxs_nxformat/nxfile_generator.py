@@ -24,8 +24,11 @@ from saxs_nxformat.class_nexus_file import NexusFile
 from memory_profiler import profile
 from saxs_nxformat import DTC_PATH, TREATED_PATH
 
-with open("nexus_standards/structure_NXunits.json", "r", encoding="utf-8") as file_dict:
+BASE_DIR = Path(__file__).parent
+json_path = BASE_DIR / "nexus_standards" / "structure_NXunits.json"
+with open(json_path, "r", encoding="utf-8") as file_dict:
     DICT_UNIT = json.load(file_dict)
+
 
 
 def get_desktop_path():

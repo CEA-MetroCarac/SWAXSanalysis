@@ -222,11 +222,9 @@ class Setting(tk.Tk):
         super().__init__()
 
         self.focus_force()
-
-        with open(
-                "nexus_standards/structure_NXsas.json",
-                "r",
-                encoding="utf-8") as file:
+        BASE_DIR = Path(__file__).parent
+        json_path = BASE_DIR / "nexus_standards" / "structure_NXsas.json"
+        with open(json_path, "r", encoding="utf-8") as file:
             self.dict_config = json.load(file)
 
         self.title("Config creator")
