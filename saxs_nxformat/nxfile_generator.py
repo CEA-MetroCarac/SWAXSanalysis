@@ -409,7 +409,6 @@ def auto_generate():
         new_file_path = generate_nexus(file_path, result[0], settings_path)
         shutil.move(file_path, result[1] / file_path.name)
 
-        print(new_file_path)
         nx_file = NexusFile(new_file_path)
         nx_file.process_q_space(save=True)
         nx_file.process_radial_average(save=True)
