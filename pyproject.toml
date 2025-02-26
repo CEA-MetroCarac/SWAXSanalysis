@@ -34,14 +34,9 @@ dependencies = [
     # "smi-analysis" = { git = "https://github.com/NSLS-II-SMI/smi-analysis.git", branch = "main" }
 ]
 
-# [tool.setuptools.package-data]
-# "fitspy" = ["resources/iconpack/*.png", "resources/iconpack/*.svg"]
 
 [project.scripts]
 nxformat = "saxs_nxformat.launcher:launcher_gui"
-
-[tool.setuptools]
-include-package-data = false
 
 # [tool.setuptools.dynamic]
 # version = { attr = "fitspy.VERSION" }
@@ -53,6 +48,9 @@ namespaces = false
 
 [tool.setuptools.package-data]
 "*" = ["saxs_nxformat/**/*"]
+
+[tool.setuptools]
+include-package-data = true
 
 # [tool.pytest.ini_options]
 # minversion = "6.0"
