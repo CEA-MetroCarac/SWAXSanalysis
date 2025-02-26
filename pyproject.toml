@@ -51,6 +51,9 @@ where = ["."]
 include = ["saxs_nxformat*"]
 namespaces = false
 
+[tool.setuptools.package-data]
+"*" = ["saxs_nxformat/**/*"]
+
 # [tool.pytest.ini_options]
 # minversion = "6.0"
 # testpaths = ["tests"]
