@@ -29,7 +29,8 @@ dependencies = [
     "numpy",
     "matplotlib",
     "h5py",
-    "fabio"
+    "fabio",
+    "memory_profiler"
     # "smi-analysis" = { git = "https://github.com/NSLS-II-SMI/smi-analysis.git", branch = "main" }
 ]
 
