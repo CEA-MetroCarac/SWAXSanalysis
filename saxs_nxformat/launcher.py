@@ -16,7 +16,6 @@ from saxs_nxformat.nxfile_generator import create_gui
 
 
 # Launch commands
-
 def launch_config(old_root):
     old_root.destroy()
     app = Setting()

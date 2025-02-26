@@ -377,6 +377,12 @@ def tree_structure_manager(file: str, settings: str):
 STOP_THREAD = False
 
 
+def print_to_gui(message):
+    """Function to print logs in the Tkinter Text widget."""
+    log_text.insert(tk.END, message + "\n")
+    log_text.see(tk.END)
+
+
 def auto_generate():
     """
     This is a thread that runs continuously and tries to export edf files found in the parent folder
@@ -387,12 +393,12 @@ def auto_generate():
     sleep_time = 10
     while not STOP_THREAD:
         current, peak = tracemalloc.get_traced_memory()
-        print(f"memory used : \n"
-              f"    - current : {current / (1024 ** 2)}\n"
-              f"    - peak : {peak / (1024 ** 2)}\n")
+        root.after(0, print_to_gui, f"Memory used:\n"
+                                    f"  - Current: {current / (1024 ** 2):.2f} MB\n"
+                                    f"  - Peak: {peak / (1024 ** 2):.2f} MB")
+
         if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
-            print("Too much memory used :"
-                  f"{current}, {peak}")
+            root.after(0, print_to_gui, f"Too much memory used: {current}, {peak}")
             break
 
         file_path, settings_path = search_setting_edf()
@@ -402,7 +408,7 @@ def auto_generate():
 
         result = tree_structure_manager(file_path.name, settings_path.name)
         if result[0] == "perm error":
-            print("The program could not create the file due to a permission error")
+            root.after(0, print_to_gui, "The program could not create the file due to a permission error")
             sys.exit()
         new_file_path = generate_nexus(file_path, result[0], settings_path)
         shutil.move(file_path, result[1] / file_path.name)
@@ -415,10 +421,10 @@ def auto_generate():
         del nx_file
         gc.collect()
 
-        print(f"{file_path.name} has been converted successfully, sleeping for {sleep_time} seconds...")
+        root.after(0, print_to_gui, f"{file_path.name} has been converted successfully, sleeping for {sleep_time} seconds...")
         time.sleep(sleep_time)
     tracemalloc.stop()
-    print("The program is done sleeping! you can start it again.")
+    root.after(0, print_to_gui, "The program is done sleeping! you can start it again.")
 
 
 def start_thread():
@@ -439,6 +445,7 @@ def stop_thread_func():
 
 def create_gui():
     """Create the GUI with a Start and Stop button."""
+    global root, log_text
     root = tk.Tk()
     root.title("Auto Generate Controller")
 
@@ -478,6 +485,11 @@ def create_gui():
                              font=("Arial", 16, "bold")
                              )
     close_button.grid(pady=10, padx=10, row=2, column=0, columnspan=2)
+
+    # Log output area
+    log_text = tk.Text(root, height=10, width=50, font=("Arial", 12))
+    log_text.grid(pady=10, padx=10, row=3, column=0, columnspan=2)
+    log_text.config(state=tk.NORMAL)
 
     # Run the GUI loop
     root.mainloop()
