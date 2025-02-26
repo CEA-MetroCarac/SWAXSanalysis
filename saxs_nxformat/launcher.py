@@ -39,60 +39,63 @@ def launch_process(old_root):
 
 
 # GUI
+def launcher_gui():
+    root = tk.Tk()
+    root.title("Launcher")
+    
+    normal_font = ("Arial", 12)
+    
+    prompt = tk.Label(
+        root,
+        font=("Arial", 14, "bold"),
+        text="What would you like to do ?"
+    )
+    prompt.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="we")
+    
+    button_config = tk.Button(
+        root,
+        font=normal_font,
+        text="Create config",
+        width=20,
+        padx=5,
+        pady=5,
+        command=lambda: launch_config(root)
+    )
+    button_config.grid(row=1, column=0, sticky="news", pady=5, padx=5)
+    
+    button_convert = tk.Button(
+        root,
+        font=normal_font,
+        text="Convert to NeXus",
+        width=20,
+        padx=5,
+        pady=5,
+        command=lambda: launch_converter(root)
+    )
+    button_convert.grid(row=1, column=1, sticky="news", pady=5, padx=5)
+    
+    button_treat = tk.Button(
+        root,
+        font=normal_font,
+        text="Treat data",
+        width=20,
+        padx=5,
+        pady=5,
+        command=lambda: launch_process(root)
+    )
+    button_treat.grid(row=1, column=2, sticky="news", pady=5, padx=5)
+    
+    button_close = tk.Button(
+        root,
+        font=normal_font,
+        text="Close",
+        padx=5,
+        pady=5,
+        command=lambda: root.destroy()
+    )
+    button_close.grid(row=2, column=0, columnspan=3, pady=5, padx=5)
+    
+    root.mainloop()
 
-root = tk.Tk()
-root.title("Launcher")
-
-normal_font = ("Arial", 12)
-
-prompt = tk.Label(
-    root,
-    font=("Arial", 14, "bold"),
-    text="What would you like to do ?"
-)
-prompt.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="we")
-
-button_config = tk.Button(
-    root,
-    font=normal_font,
-    text="Create config",
-    width=20,
-    padx=5,
-    pady=5,
-    command=lambda: launch_config(root)
-)
-button_config.grid(row=1, column=0, sticky="news", pady=5, padx=5)
-
-button_convert = tk.Button(
-    root,
-    font=normal_font,
-    text="Convert to NeXus",
-    width=20,
-    padx=5,
-    pady=5,
-    command=lambda: launch_converter(root)
-)
-button_convert.grid(row=1, column=1, sticky="news", pady=5, padx=5)
-
-button_treat = tk.Button(
-    root,
-    font=normal_font,
-    text="Treat data",
-    width=20,
-    padx=5,
-    pady=5,
-    command=lambda: launch_process(root)
-)
-button_treat.grid(row=1, column=2, sticky="news", pady=5, padx=5)
-
-button_close = tk.Button(
-    root,
-    font=normal_font,
-    text="Close",
-    padx=5,
-    pady=5,
-    command=lambda: root.destroy()
-)
-button_close.grid(row=2, column=0, columnspan=3, pady=5, padx=5)
-
-root.mainloop()
+if __name__ == "__main__":
+    launcher_gui()
