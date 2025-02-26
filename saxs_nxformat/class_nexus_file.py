@@ -119,10 +119,10 @@ class NexusFile:
         self.dict_parameters["incident angle"] = incident_angle
 
         # Concerning the detector
-        detector_name = str(self.extract_from_h5("/ENTRY/INSTRUMENT/DETECTOR/name"))
-        if "dectris eiger2 si 1m, s/n e-02-0299" == detector_name.lower():
+        detector_name = self.extract_from_h5("/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
+        if "dectris eiger2 si 1m, s/n e-02-0299" in detector_name.lower():
             self.dict_parameters["detector name"] = "Eiger1M_xeuss"
-        elif "dectris eiger2 r 500k, s/n e-01-0326" == detector_name.lower():
+        elif "dectris eiger2 r 500k, s/n e-01-0326" in detector_name.lower():
             self.dict_parameters["detector name"] = "Eiger500k_xeuss"
 
         beam_center_x = self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
