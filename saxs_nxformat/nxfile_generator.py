@@ -379,7 +379,7 @@ STOP_THREAD = False
 
 def print_to_gui(message):
     """Function to print logs in the Tkinter Text widget."""
-    log_text.insert(tk.END, message + "\n")
+    log_text.insert(tk.END, message + "\n\n")
     log_text.see(tk.END)
 
 
@@ -410,6 +410,10 @@ def auto_generate():
         if result[0] == "perm error":
             root.after(0, print_to_gui, "The program could not create the file due to a permission error")
             sys.exit()
+
+        root.after(0, print_to_gui,
+                   f"Converting : {file_path.name}, please wait")
+
         new_file_path = generate_nexus(file_path, result[0], settings_path)
         shutil.move(file_path, result[1] / file_path.name)
 
@@ -421,7 +425,8 @@ def auto_generate():
         del nx_file
         gc.collect()
 
-        root.after(0, print_to_gui, f"{file_path.name} has been converted successfully, sleeping for {sleep_time} seconds...")
+        root.after(0, print_to_gui, f"{file_path.name} has been converted successfully\n"
+                                    f"sleeping for {sleep_time} seconds...")
         time.sleep(sleep_time)
     tracemalloc.stop()
     root.after(0, print_to_gui, "The program is done sleeping! you can start it again.")
@@ -433,14 +438,14 @@ def start_thread():
     STOP_THREAD = False
     thread = threading.Thread(target=auto_generate, daemon=True)
     thread.start()
-    print("Auto-generation started!")
+    root.after(0, print_to_gui, "Auto-generation started!")
 
 
 def stop_thread_func():
     """Stop the auto_generate function."""
     global STOP_THREAD
     STOP_THREAD = True
-    print("Auto-generation stopped. The program is still sleeping!")
+    root.after(0, print_to_gui, "Auto-generation stopped. The program is still sleeping!")
 
 
 def create_gui():
@@ -487,7 +492,7 @@ def create_gui():
     close_button.grid(pady=10, padx=10, row=2, column=0, columnspan=2)
 
     # Log output area
-    log_text = tk.Text(root, height=10, width=50, font=("Arial", 12))
+    log_text = tk.Text(root, height=10, width=75, font=("Arial", 12))
     log_text.grid(pady=10, padx=10, row=3, column=0, columnspan=2)
     log_text.config(state=tk.NORMAL)
 

@@ -7,6 +7,11 @@ Ouvre une interface graphique qui permet à l'user de choisir si il veut:
 """
 
 import tkinter as tk
+import sys
+import os
+
+# Ajoute le répertoire parent au chemin Python
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH
