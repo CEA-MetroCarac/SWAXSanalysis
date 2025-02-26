@@ -5,7 +5,6 @@ build-backend = 'setuptools.build_meta'
 [project]
 name = "saxs_nxformat"
 version = "2025.2"
-# dynamic = ["version"]
 authors = [
     { name = "Adrien Toulouse", email = "adrien.toulouse@cea.fr" }
 ]
@@ -34,28 +33,19 @@ dependencies = [
     # "smi-analysis" = { git = "https://github.com/NSLS-II-SMI/smi-analysis.git", branch = "main" }
 ]
 
-
 [project.scripts]
 nxformat = "saxs_nxformat.launcher:launcher_gui"
 
-# [tool.setuptools.dynamic]
-# version = { attr = "fitspy.VERSION" }
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"saxs_nxformat" = ["**/*"]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["saxs_nxformat*"]
 namespaces = false
 
-[tool.setuptools.package-data]
-"*" = ["saxs_nxformat/**/*"]
-
-# [tool.pytest.ini_options]
-# minversion = "6.0"
-# testpaths = ["tests"]
-
 [project.urls]
 Homepage = "https://github.com/CEA-MetroCarac/saxs_nxformat"
-# Documentation = "https://cea-metrocarac.github.io/fitspy/doc/index.html"
-
-# [project.optional-dependencies]
-# dev = ["pytest", "watchdog", "esbonio", "sphinx", "doc8", "rstcheck", "sphinx-rtd-theme", "sphinx-copybutton"]
