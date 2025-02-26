@@ -1,0 +1,1408 @@
+{
+    "/ENTRY": {
+        "element type": "group",
+        "value": null,
+        "possible value": null,
+        "EX_required": true,
+        "type": "NXentry",
+        "docstring": "Entry point of the NeXus format",
+        "content": {
+            "@default": {
+                "element type": "attribute",
+                "value": "DATA",
+                "possible value": [
+                    "DATA"
+                ],
+                "EX_required": true,
+                "type": "NX_CHAR",
+                "docstring": "Name of the default dataset",
+                "content": null
+            },
+            "/definition": {
+                "element type": "dataset",
+                "value": "NXsas",
+                "possible value": [
+                    "NXsas"
+                ],
+                "EX_required": true,
+                "type": "NX_CHAR",
+                "docstring": "NeXus schema used for this file",
+                "content": null
+            },
+            "/title": {
+                "element type": "dataset",
+                "value": "Test_config_xeuss",
+                "possible value": [],
+                "type": "NX_CHAR",
+                "EX_required": true,
+                "docstring": "Title of this file, should be something meaningfull",
+                "content": null
+            },
+            "/run": {
+                "element type": "dataset",
+                "value": "",
+                "possible value": [],
+                "type": "NX_CHAR",
+                "EX_required": true,
+                "docstring": "Identification of this experiment",
+                "content": {
+                    "@name": {
+                        "element type": "attribute",
+                        "value": "",
+                        "possible value": [],
+                        "type": "NX_CHAR",
+                        "EX_required": false,
+                        "docstring": "Name of this particular run",
+                        "content": null
+                    }
+                }
+            },
+            "/DATA": {
+                "element type": "group",
+                "value": null,
+                "possible value": [],
+                "type": "NXdata",
+                "EX_required": true,
+                "docstring": "Group containing the data for I and R",
+                "content": {
+                    "@signal": {
+                        "element type": "attribute",
+                        "value": "I",
+                        "possible value": [
+                            "I"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "name of the default data field (in this case, always I)",
+                        "content": null
+                    },
+                    "@I_axes": {
+                        "element type": "attribute",
+                        "value": "Q, Q",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Will specify which dimension corresponds to each parameters\nString with this format : \"parameter1, parameter2, ..., parameterN\"",
+                        "content": null
+                    },
+                    "@Q_indices": {
+                        "element type": "attribute",
+                        "value": "0, 1",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_INT",
+                        "docstring": "Will specify the index (0_based) of the parameter in @I_axesused to plot the I data.\nString with this format : \"index1, index2\"",
+                        "content": null
+                    },
+                    "@mask": {
+                        "element type": "attribute",
+                        "value": "mask",
+                        "possible value": [
+                            "mask"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Name of the masking dataset",
+                        "content": null
+                    },
+                    "@mask_indices": {
+                        "element type": "attribute",
+                        "value": "0, 1",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_INT",
+                        "docstring": "Will specify the index (0_based) of the parameter in @I_axes used to apply the mask.\nString with this format : \"index1, index2\"",
+                        "content": null
+                    },
+                    "@timestamp": {
+                        "element type": "attribute",
+                        "value": "Date",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_DATE_TIME",
+                        "docstring": "Timestamp of the data (ISO-8601 format)",
+                        "content": null
+                    },
+                    "/R": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of R (positions), can be an array of 3D vector or an array of scalar representing |R|",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "nm"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "nm"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of R (will be converted to nm).",
+                                "content": null
+                            },
+                            "@uncertainties": {
+                                "element type": "attribute",
+                                "value": "Rdev",
+                                "possible value": [
+                                    "Rdev"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Name of the R uncertainties dataset",
+                                "content": null
+                            },
+                            "@resolutions": {
+                                "element type": "attribute",
+                                "value": "dRl, dRw",
+                                "possible value": [
+                                    "dRl, dRw"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Names(s) of the resolutions dataset.\nString with this format : \"name1, name2\"",
+                                "content": null
+                            },
+                            "@resolutions_description": {
+                                "element type": "attribute",
+                                "value": "Gaussian",
+                                "possible value": [
+                                    "Gaussian",
+                                    "Lorentzian",
+                                    "Square",
+                                    "Triangular",
+                                    "Sawtooth-outward",
+                                    "Sawtooth-inward"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Form of the resolution",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/Rdev": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of R's uncertainties'",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "nm"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "nm"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of Rdev (will be converted to nm)",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/dRl": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of R's horizontal resolution'",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "nm"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "nm"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of dRl (will be converted to nm)",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/dRw": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of R's vertical resolution'",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "nm"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "nm"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of dRw (will be converted to nm)",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/Rmean": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Mean value of R at that point, usefull when binning",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "nm"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "nm"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of Rmean (will be converted to nm)",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/I": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of I measured.",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of I.",
+                                "content": null
+                            },
+                            "@uncertainties": {
+                                "element type": "attribute",
+                                "value": "Idev",
+                                "possible value": [
+                                    "Idev"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Name of the I uncertainties dataset",
+                                "content": null
+                            },
+                            "@scaling_factor": {
+                                "element type": "attribute",
+                                "value": "I_scaling",
+                                "possible value": [
+                                    "I_scaling"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Name of the scaling factor dataset",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/Idev": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array of I's uncertainties.",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of Idev.",
+                                "content": null
+                            }
+                        }
+                    },
+                    "/mask": {
+                        "element type": "dataset",
+                        "value": "Autofilled",
+                        "possible value": [
+                            "Autofilled"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Array describing the mask used",
+                        "content": null
+                    }
+                }
+            },
+            "/INSTRUMENT": {
+                "element type": "group",
+                "value": null,
+                "possible value": [],
+                "type": "NXinstrument",
+                "EX_required": true,
+                "docstring": "Group containing relevant information concerning the instrument",
+                "content": {
+                    "/APERTURE": {
+                        "element type": "group",
+                        "value": null,
+                        "possible value": [],
+                        "type": "NXaperture",
+                        "EX_required": false,
+                        "docstring": "Group containing relevant information concerning the aperture of instrument",
+                        "content": {
+                            "/shape": {
+                                "element type": "dataset",
+                                "value": "4-blade slit",
+                                "possible value": [
+                                    "4-blade slit",
+                                    "pinhole",
+                                    "Soller slit"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Shape of the instrument's aperture",
+                                "content": null
+                            },
+                            "/x_gap": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal width of the slit",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the x_gap"
+                                    }
+                                }
+                            },
+                            "/y_gap": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Vertical width of the slit",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the y_gap"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/COLLIMATOR": {
+                        "element type": "group",
+                        "value": null,
+                        "possible value": [],
+                        "type": "NXcollimator",
+                        "EX_required": false,
+                        "docstring": "Group containing relevant information concerning the collimator of instrument",
+                        "content": {
+                            "/length": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Length of collimation",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the collimation length"
+                                    }
+                                }
+                            },
+                            "/distance": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "collimator-sample distance",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the collimator-sample distance"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/DETECTOR": {
+                        "element type": "group",
+                        "value": null,
+                        "possible value": [],
+                        "type": "NXdetector",
+                        "EX_required": false,
+                        "docstring": "Group containing relevant information concerning the detector of the instrument",
+                        "content": {
+                            "/name": {
+                                "element type": "dataset",
+                                "value": "DetectorModel",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "name of the detector",
+                                "content": null
+                            },
+                            "/SDD": {
+                                "element type": "dataset",
+                                "value": "SampleDistance",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "sample-detector distance",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "m",
+                                            "m"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the sample-detector distance"
+                                    }
+                                }
+                            },
+                            "/slit_length": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "length of the detector's slit",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "nm"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the detector's slit (will be converted to nm)"
+                                    }
+                                }
+                            },
+                            "/x_position": {
+                                "element type": "dataset",
+                                "value": "det0y",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal position of the detector",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "mm",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the detector's x position"
+                                    }
+                                }
+                            },
+                            "/y_position": {
+                                "element type": "dataset",
+                                "value": "det0z",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Vertical position of the detector",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "mm",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the detector's y position"
+                                    }
+                                }
+                            },
+                            "/roll": {
+                                "element type": "dataset",
+                                "value": 0,
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Rotation of the detector on the axis of the source",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "deg",
+                                            "rad"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "deg",
+                                                "turn",
+                                                "rad"
+                                            ],
+                                            "rad"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                    }
+                                }
+                            },
+                            "/pitch": {
+                                "element type": "dataset",
+                                "value": "Delta",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Rotation of the detector on the horizontal axis",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "deg",
+                                            "rad"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "deg",
+                                                "turn",
+                                                "rad"
+                                            ],
+                                            "rad"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                    }
+                                }
+                            },
+                            "/yaw": {
+                                "element type": "dataset",
+                                "value": "Gamma",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Rotation of the detector on the vertical axis",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "deg",
+                                            "rad"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "deg",
+                                                "turn",
+                                                "rad"
+                                            ],
+                                            "rad"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                    }
+                                }
+                            },
+                            "/beam_center_x": {
+                                "element type": "dataset",
+                                "value": "Center_1",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal position of the beam center (where it would hit without the sample)",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the detector's y position"
+                                    }
+                                }
+                            },
+                            "/beam_center_y": {
+                                "element type": "dataset",
+                                "value": "Center_2",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Vertical position of the beam center (where it would hit without the sample)",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the detector's y position"
+                                    }
+                                }
+                            },
+                            "/x_pixel_size": {
+                                "element type": "dataset",
+                                "value": "PSize_1",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal size of the detector's pixel",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "m",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the pixel's horizontal size"
+                                    }
+                                }
+                            },
+                            "/y_pixel_size": {
+                                "element type": "dataset",
+                                "value": "PSize_2",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Vertical size of the detector's pixel",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "m",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the pixel's vertical size"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "/SOURCE": {
+                        "element type": "group",
+                        "value": null,
+                        "possible value": [],
+                        "type": "NXsource",
+                        "EX_required": false,
+                        "docstring": "Group containing relevant information concerning the source used.",
+                        "content": {
+                            "/type": {
+                                "element type": "dataset",
+                                "value": "Fixed Tube X-ray",
+                                "possible value": [
+                                    "Spallation Neutron Source",
+                                    "Pulsed Reactor Neutron Source",
+                                    "Reactor Neutron Source",
+                                    "Synchrotron X-ray Source",
+                                    "Pulsed Muon Source",
+                                    "Rotating Anode X-ray",
+                                    "Fixed Tube X-ray",
+                                    "UV Laser",
+                                    "Free-Electron Laser",
+                                    "Optical Laser",
+                                    "Ion Source",
+                                    "UV Plasma Source",
+                                    "Metal Jet X-ray"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "type of source used",
+                                "content": null
+                            },
+                            "/probe": {
+                                "element type": "dataset",
+                                "value": "x-ray",
+                                "possible value": [
+                                    "neutron",
+                                    "x-ray",
+                                    "muon",
+                                    "electron",
+                                    "ultraviolet",
+                                    "visible light",
+                                    "positron",
+                                    "proton"
+                                ],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "type of radiation used",
+                                "content": null
+                            },
+                            "/beam_shape": {
+                                "element type": "attribute",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_CHAR",
+                                "docstring": "Shape of the source beam",
+                                "content": null
+                            },
+                            "/incident_wavelength": {
+                                "element type": "dataset",
+                                "value": "WaveLength",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_NUMBER",
+                                "docstring": "Wavelength of the incident radiation",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "m",
+                                            "nm"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                    }
+                                }
+                            },
+                            "/wavelength_min": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Minimum wavelength if a range is specified",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "nm"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                    }
+                                }
+                            },
+                            "/wavelength_max": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Maximum wavelength if a range is specified",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "nm"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                    }
+                                }
+                            },
+                            "/wavelength_spread": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "The FWHM of the wavelength range",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "nm"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                    }
+                                }
+                            },
+                            "/beam_size_x": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal size of the beam",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the horizontal beam size"
+                                    }
+                                }
+                            },
+                            "/beam_size_y": {
+                                "element type": "dataset",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": false,
+                                "type": "NX_NUMBER",
+                                "docstring": "Horizontal size of the beam",
+                                "content": {
+                                    "@units": {
+                                        "element type": "attribute",
+                                        "value": [
+                                            "arbitrary",
+                                            "arbitrary"
+                                        ],
+                                        "possible value": [
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
+                                        ],
+                                        "EX_required": true,
+                                        "type": "NX_CHAR",
+                                        "docstring": "Unit of the vertical beam size"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/SAMPLE": {
+                "element type": "group",
+                "value": null,
+                "possible value": [],
+                "type": "NXsample",
+                "EX_required": true,
+                "docstring": "Group containing information concerning the Sample used",
+                "content": {
+                    "name": {
+                        "element type": "attribute",
+                        "value": "Sample",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Identifying name of the sample",
+                        "content": null
+                    },
+                    "/thickness": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Thickness of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the thickness"
+                            }
+                        }
+                    },
+                    "/transmission": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Transmission of the sample (no Unit)",
+                        "content": null
+                    },
+                    "/temperature": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Temperature of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "arbitrary",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the temperature"
+                            }
+                        }
+                    },
+                    "/x_position": {
+                        "element type": "dataset",
+                        "value": "x",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Horizontal position of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "m",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the detector's x position"
+                            }
+                        }
+                    },
+                    "/y_position": {
+                        "element type": "dataset",
+                        "value": "z",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Vertical position of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "m",
+                                    "arbitrary"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "arbitrary"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the detector's y position"
+                            }
+                        }
+                    },
+                    "/roll": {
+                        "element type": "dataset",
+                        "value": 0,
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Rotation of the sample on the axis of the source",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "deg",
+                                    "rad"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "deg",
+                                        "turn",
+                                        "rad"
+                                    ],
+                                    "rad"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the rotation (will be converted to rad)"
+                            }
+                        }
+                    },
+                    "/pitch": {
+                        "element type": "dataset",
+                        "value": "om",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Rotation of the sample on the horizontal axis",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "deg",
+                                    "rad"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "deg",
+                                        "turn",
+                                        "rad"
+                                    ],
+                                    "rad"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the rotation (will be converted to rad)"
+                            }
+                        }
+                    },
+                    "/yaw": {
+                        "element type": "dataset",
+                        "value": "phi",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Rotation of the sample on the vertical axis",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "deg",
+                                    "rad"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "deg",
+                                        "turn",
+                                        "rad"
+                                    ],
+                                    "rad"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the rotation (will be converted to rad)"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

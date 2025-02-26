@@ -88,7 +88,3 @@ You can press start to start the automatic process of converting edf files to hd
 which are supposed to be in the main directory.\
 Once the start button is pressed, the program will try to convert a file every 5 minutes. You can also stop the 
 program or simply close it.
-___
-# Accessing and treating data
-To access and treat all the data I recommend giving a look at the demo_notebooks. everything regarding the NexusFile 
-class will be detailed there
