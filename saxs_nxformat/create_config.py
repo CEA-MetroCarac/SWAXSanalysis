@@ -553,11 +553,6 @@ class Setting(tk.Tk):
                                     f"{str(error)}")
 
 
-#####################
-### App execution ###
-#####################
-
-
 if __name__ == "__main__":
     app = Setting()
     app.mainloop()
