@@ -140,28 +140,31 @@ def string_2_value(string: str) -> str | int | float | None:
 
 class GUI_process(tk.Tk):
     """
-    A GUI to manually process SAXS or WAXS data in the form of a
-    .h5 file following the NXcanSAS standard
+    A gui allowing the user to process his data automatically
 
     Attributes
     ----------
     selected_files :
-        Tuple or List of all the selected files
+        Files selected by the user via file explorer
 
-    selected_folder :
-        Path of the selected folder
+    process :
+        key : process name
+        value : method object
 
-    stringvar_file_name :
-        Holds the name of the settings file to be saved.
+    frame_inputs :
+        frame containing the selected files
 
-    frame1 :
-        Frame containing all the buttons and texts
+    process_frame :
+        frame containing all the available processes in NexusFile
 
-    label_selection :
-        Label to inform the user on what they selected
+    param_frame :
+        frame containing all the parameters associated to the selected process
 
-    Label_status :
-        Label to inform the user of the conversion status
+    progress_label :
+        Label displaying the status of the application
+
+    to_process:
+        files that are to be processed
     """
 
     def __init__(self):
@@ -206,6 +209,9 @@ class GUI_process(tk.Tk):
         self.progress_label.grid(column=2, row=3, sticky="w", padx=5, pady=5)
 
     def _inputs_building(self):
+        """
+        Build the input frame
+        """
         frame_title = tk.Label(self.frame_inputs,
                                text="Inputs",
                                font=("Arial", 14, "bold"),
@@ -224,6 +230,9 @@ class GUI_process(tk.Tk):
         self.file_list.grid(column=0, row=2, sticky="news")
 
     def _process_building(self):
+        """
+        Builds the frame containing all available processes
+        """
         self.frame_processes.columnconfigure(0, weight=1)
         self.frame_processes.columnconfigure(1, weight=1)
         self.frame_processes.columnconfigure(2, weight=1)
@@ -256,6 +265,15 @@ class GUI_process(tk.Tk):
                 current_column += 1
 
     def _create_params(self, process_name):
+        """
+        Builds the param frame according to the selected process
+
+        Parameters
+        ----------
+        process_name :
+            Name of the process that will have his parameters
+            displayed in the frame
+        """
         print(process_name)
         for widget in self.param_frame.winfo_children():
             widget.destroy()
@@ -321,6 +339,14 @@ class GUI_process(tk.Tk):
             self.file_list.insert(tk.END, name)
 
     def _start_processing(self, process):
+        """
+        Starting the selected process with the parameters filled out
+
+        Parameters
+        ----------
+        process :
+            name of the selected process
+        """
         self.progress_label.configure(text="Processing in progress, please wait...",
                                       fg="#C16200")
         self.progress_label.update_idletasks()

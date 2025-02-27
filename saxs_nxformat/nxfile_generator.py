@@ -317,18 +317,15 @@ def search_setting_edf():
     """
     edf_name, settings_name = None, None
 
-    # Parcours des fichiers dans le répertoire DTC_PATH
     for file in os.listdir(DTC_PATH):
         if ".edf" in file.lower():
             edf_name = file
         elif "settings_edf2nx" in file.lower():
             settings_name = file
 
-    # Vérifie si les fichiers ont été trouvés
     if edf_name is None or settings_name is None:
         return None, None
 
-    # Crée les chemins complets des fichiers
     edf_path = DTC_PATH / edf_name
     settings_path = DTC_PATH / settings_name
 
@@ -393,12 +390,20 @@ def auto_generate():
     sleep_time = 10
     while not STOP_THREAD:
         current, peak = tracemalloc.get_traced_memory()
-        root.after(0, print_to_gui, f"Memory used:\n"
-                                    f"  - Current: {current / (1024 ** 2):.2f} MB\n"
-                                    f"  - Peak: {peak / (1024 ** 2):.2f} MB")
+        root.after(
+            0,
+            print_to_gui,
+            f"Memory used:\n"
+            f"  - Current: {current / (1024 ** 2):.2f} MB\n"
+            f"  - Peak: {peak / (1024 ** 2):.2f} MB"
+        )
 
         if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
-            root.after(0, print_to_gui, f"Too much memory used: {current}, {peak}")
+            root.after(
+                0,
+                print_to_gui,
+                f"Too much memory used: {current}, {peak}"
+            )
             break
 
         file_path, settings_path = search_setting_edf()
@@ -408,11 +413,18 @@ def auto_generate():
 
         result = tree_structure_manager(file_path.name, settings_path.name)
         if result[0] == "perm error":
-            root.after(0, print_to_gui, "The program could not create the file due to a permission error")
+            root.after(
+                0,
+                print_to_gui,
+                "The program could not create the file due to a permission error"
+            )
             sys.exit()
 
-        root.after(0, print_to_gui,
-                   f"Converting : {file_path.name}, please wait")
+        root.after(
+            0,
+            print_to_gui,
+            f"Converting : {file_path.name}, please wait"
+        )
 
         new_file_path = generate_nexus(file_path, result[0], settings_path)
         shutil.move(file_path, result[1] / file_path.name)
@@ -425,11 +437,18 @@ def auto_generate():
         del nx_file
         gc.collect()
 
-        root.after(0, print_to_gui, f"{file_path.name} has been converted successfully\n"
-                                    f"sleeping for {sleep_time} seconds...")
+        root.after(
+            0,
+            print_to_gui,
+            f"{file_path.name} has been converted successfully\n" +
+            f"sleeping for {sleep_time} seconds...")
         time.sleep(sleep_time)
     tracemalloc.stop()
-    root.after(0, print_to_gui, "The program is done sleeping! you can start it again.")
+    root.after(
+        0,
+        print_to_gui,
+        "The program is done sleeping! you can start it again."
+    )
 
 
 def start_thread():
@@ -438,14 +457,22 @@ def start_thread():
     STOP_THREAD = False
     thread = threading.Thread(target=auto_generate, daemon=True)
     thread.start()
-    root.after(0, print_to_gui, "Auto-generation started!")
+    root.after(
+        0,
+        print_to_gui,
+        "Auto-generation started!"
+    )
 
 
 def stop_thread_func():
     """Stop the auto_generate function."""
     global STOP_THREAD
     STOP_THREAD = True
-    root.after(0, print_to_gui, "Auto-generation stopped. The program is still sleeping!")
+    root.after(
+        0,
+        print_to_gui,
+        "Auto-generation stopped. The program is still sleeping!"
+    )
 
 
 def create_gui():

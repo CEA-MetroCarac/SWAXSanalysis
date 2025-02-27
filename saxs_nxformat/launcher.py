@@ -1,16 +1,16 @@
 """
-teste l'existence des dossier requis sur le bureau puis
-Ouvre une interface graphique qui permet à l'user de choisir si il veut:
-- faire une config
-- convertir de edf à hdf5
-- traiter des données
+Tests the presence of some required files o nthe desktop then
+opens a GUI allowing the user to:
+- Build a config
+- Convert to the NeXus format
+- Process data
 """
 
-import tkinter as tk
-import sys
 import os
+import sys
+import tkinter as tk
 
-# Ajoute le répertoire parent au chemin Python
+# Adds the package to the python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We build the environment
@@ -21,25 +21,38 @@ from saxs_nxformat.nxfile_generator import create_gui
 
 
 # Launch commands
-def launch_config(old_root):
+def launch_app(old_root, selection):
+    """
+    Launches the selected application and then closes the old one
+
+    Parameters
+    ----------
+    selection :
+        selected application
+
+    old_root :
+        old window that will be destroyed
+    -------
+
+    """
     old_root.destroy()
-    app = Setting()
-    app.mainloop()
 
-
-def launch_converter(old_root):
-    old_root.destroy()
-    create_gui()
-
-
-def launch_process(old_root):
-    old_root.destroy()
-    app = GUI_process()
-    app.mainloop()
+    if selection == "settings":
+        app = Setting()
+        app.mainloop()
+    elif selection == "convert":
+        create_gui()
+    elif selection == "process":
+        app = GUI_process()
+        app.mainloop()
 
 
 # GUI
 def launcher_gui():
+    """
+    Function allowing the nxformat.exe to launch this GUI
+    """
+    # We create the file if they do not exist
     DTC_PATH.mkdir(parents=True, exist_ok=True)
     CONF_PATH.mkdir(parents=True, exist_ok=True)
     TREATED_PATH.mkdir(parents=True, exist_ok=True)
@@ -63,7 +76,7 @@ def launcher_gui():
         width=20,
         padx=5,
         pady=5,
-        command=lambda: launch_config(root)
+        command=lambda: launch_app(root, "settings")
     )
     button_config.grid(row=1, column=0, sticky="news", pady=5, padx=5)
 
@@ -74,20 +87,20 @@ def launcher_gui():
         width=20,
         padx=5,
         pady=5,
-        command=lambda: launch_converter(root)
+        command=lambda: launch_app(root, "convert")
     )
     button_convert.grid(row=1, column=1, sticky="news", pady=5, padx=5)
 
-    button_treat = tk.Button(
+    button_process = tk.Button(
         root,
         font=normal_font,
-        text="Treat data",
+        text="Process data",
         width=20,
         padx=5,
         pady=5,
-        command=lambda: launch_process(root)
+        command=lambda: launch_app(root, "process")
     )
-    button_treat.grid(row=1, column=2, sticky="news", pady=5, padx=5)
+    button_process.grid(row=1, column=2, sticky="news", pady=5, padx=5)
 
     button_close = tk.Button(
         root,

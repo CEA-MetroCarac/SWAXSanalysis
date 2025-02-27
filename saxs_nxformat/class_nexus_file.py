@@ -5,6 +5,7 @@ to the NXcanSAS standard
 """
 import os
 import shutil
+import re
 
 import h5py
 import matplotlib.pyplot as plt
@@ -27,50 +28,74 @@ def repack_hdf5(input_file, output_file):
         src.copy("/ENTRY", dest)
 
 
-def replace_h5_dataset(data_file, dataset_path, new_data, new_dataset_path=None):
+def replace_h5_dataset(hdf5_file, dataset_h5path, new_dataset, new_dataset_h5path=None):
     """
     Function used to replace a dataset that's already been created
     in a hdf5 file
 
     Parameters
     ----------
-    data_file :
+    hdf5_file :
         File containing the dataset
 
-    dataset_path :
+    dataset_h5path :
         Path of the dataset in the hdf5 file
 
-    new_data :
+    new_dataset :
         new value for the dataset
 
-    new_dataset_path :
-        default is None, used if you want to change the name of the data set
-        as you replace it
+    new_dataset_h5path :
+        default is None. Change to change the name of the dataset as ou replace it
     """
-    old_dataset = data_file[dataset_path]
+    # We get the old dataset and it's attributes and then delete it
+    old_dataset = hdf5_file[dataset_h5path]
     attributes = dict(old_dataset.attrs)
+    del hdf5_file[dataset_h5path]
 
-    del data_file[dataset_path]
-
-    if new_dataset_path:
-        new_dataset = data_file.create_dataset(new_dataset_path,
-                                               data=new_data,
+    # We create the new dataset with the new data provided
+    if new_dataset_h5path:
+        new_dataset = hdf5_file.create_dataset(new_dataset_h5path,
+                                               data=new_dataset,
                                                compression="gzip",
                                                compression_opts=9)
     else:
-        new_dataset = data_file.create_dataset(dataset_path,
-                                               data=new_data,
+        new_dataset = hdf5_file.create_dataset(dataset_h5path,
+                                               data=new_dataset,
                                                compression="gzip",
                                                compression_opts=9)
 
-    for key, value in attributes.items():
-        new_dataset.attrs[key] = value
+    # We add the attributes to the new dataset so that we do not lose them
+    for attr_name, attr_value in attributes.items():
+        new_dataset.attrs[attr_name] = attr_value
 
 
-def create_process(data_file, group_path, process_name, process_desc):
-    if data_file.get(group_path):
-        del data_file[group_path]
-    group = data_file.create_group(group_path)
+def create_process(hdf5_file, group_h5path, process_name, process_desc):
+    """
+    Function used to create a new group in the hdf5 file that will contain pertinent information
+    concerning the process that was applied.
+
+    Parameters
+    ----------
+    hdf5_file :
+        File where the process is to be saved
+
+    group_h5path :
+        Path of the process group, this will define the group's name.
+        For clarity this should be PROCESS_... the ellipsis corresponding
+        to the name of the associated DATA_... group
+
+    process_name :
+        Name of the process
+
+    process_desc :
+        Description of the process
+    """
+    # We first delete the old process if it exists
+    if hdf5_file.get(group_h5path):
+        del hdf5_file[group_h5path]
+
+    # We then create the group and set its attributes and datasets
+    group = hdf5_file.create_group(group_h5path)
     group.attrs["canSAS_class"] = "SASprocess"
 
     group.create_dataset("name", data=process_name)
@@ -97,6 +122,15 @@ class NexusFile:
     """
 
     def __init__(self, h5_path):
+        """
+        The init of this class consists of extracting every releavant parameters
+        from the h5 file and using it to open the data and stitch it using the SMI_package
+
+        Parameters
+        ----------
+        h5_path
+            The path of the h5 file we want to open
+        """
         self.file_path = h5_path
         self.file = h5py.File(h5_path, "r+")
 
@@ -119,28 +153,44 @@ class NexusFile:
         self.dict_parameters["incident angle"] = incident_angle
 
         # Concerning the detector
+        # We use a regex that detects the keyword required in the detector's name
         detector_name = self.extract_from_h5("/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
-        if "dectris eiger2 si 1m, s/n e-02-0299" in detector_name.lower():
+        if re.search(
+                "(?i)(?=.*dectris)" +
+                "(?i)(?=.*eiger2)" +
+                "(?i)(?=.*1m)",
+                detector_name.lower()
+        ):
             self.dict_parameters["detector name"] = "Eiger1M_xeuss"
-        elif "dectris eiger2 r 500k, s/n e-01-0326" in detector_name.lower():
+        if re.search(
+                "(?i)(?=.*" + "dectris" + ")" +
+                "(?i)(?=.*" + "eiger2" + ")" +
+                "(?i)(?=.*" + "500k" + ")",
+                detector_name.lower()
+        ):
             self.dict_parameters["detector name"] = "Eiger500k_xeuss"
 
+        # Concerning the beamcenter
         beam_center_x = self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
         beam_center_y = self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/beam_center_y")
         self.dict_parameters["beam center"] = [beam_center_x, beam_center_y]
 
+        # Concerning the rotations of the detector
         rotation_1 = -self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/yaw")
         rotation_2 = self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/pitch")
         rotation_3 = -self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/roll")
         self.dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
 
+        # Concerning the sample-detector distance
         sample_detector_distance = self.extract_from_h5("ENTRY/INSTRUMENT/DETECTOR/SDD")
-        self.dict_parameters["distance"] = sample_detector_distance
+        self.dict_parameters["distance"] = sample_detector_distance * 1e3
 
         # We input the info in the SMI package
+        # TODO : change the dict keys to the param names and uses dict** to pass the parameters
+        # TODO : See example in data_processing func _start_processing()
         self.smi_data = SMI_beamline.SMI_geometry(
             geometry="Transmission",
-            sdd=self.dict_parameters["distance"] * 1e3,
+            sdd=self.dict_parameters["distance"],
             wav=self.dict_parameters["wavelength"],
             alphai=self.dict_parameters["incident angle"],
             center=self.dict_parameters["beam center"],
@@ -152,15 +202,18 @@ class NexusFile:
         self.smi_data.stitching_data()
 
     def get_file(self):
+        """
+        Getter of the actual h5 file
+        """
         return self.file
 
-    def extract_from_h5(self, path, data_type="dataset", attribute_name=None):
+    def extract_from_h5(self, h5path, data_type="dataset", attribute_name=None):
         """
         Method used to extract a dataset or attribute from the .h5 file
 
         Parameters
         ----------
-        path :
+        h5path :
             path of the dataset
 
         data_type :
@@ -174,8 +227,11 @@ class NexusFile:
         Either the attribute or dataset selected
 
         """
-        dataset = self.file[path]
+        # We get the dataset and its attributes
+        dataset = self.file[h5path]
         attributes = dataset.attrs
+
+        # We detect if the dataset is a scalar, an array or an attribute
         if data_type == "dataset" and np.shape(dataset) == ():
             return dataset[()]
         elif data_type == "dataset" and np.shape(dataset) != ():
@@ -183,14 +239,16 @@ class NexusFile:
         elif data_type == "attribute" and attribute_name in attributes.keys():
             return attributes[attribute_name]
         else:
-            print(f"error while extracting from {path}")
+            print(f"error while extracting from {h5path}")
             return None
 
     def process_q_space(
             self, display=False, save=False, group_name="DATA_Q_SPACE"
     ):
         """
-        Method used to put the data in Q space (Fourier space)
+        Method used to put the data in Q space (Fourier space). This will save an array
+        containing the intensity values and another array containing the vector Q associated
+        to each intensities
 
         Parameters
         ----------
@@ -207,6 +265,7 @@ class NexusFile:
         self.smi_data.calculate_integrator_trans(self.dict_parameters["detector rotation"])
 
         if display:
+            # Displaying the data after it's been processed
             _, ax = plt.subplots(layout="constrained")
             ax.set_title('2D Data in q-space')
             cplot = ax.imshow(self.smi_data.img_st,
@@ -223,6 +282,7 @@ class NexusFile:
             cbar.set_label("Intensity")
             plt.show()
 
+        # Saving the data and the process it just went trough
         if save:
             dim = np.shape(self.dict_parameters["R raw data"][0])
             qx_list = np.linspace(self.smi_data.qp[0], self.smi_data.qp[-1], dim[1])
@@ -232,7 +292,9 @@ class NexusFile:
 
             self.save_data("Q", mesh_q, group_name, self.smi_data.img_st)
 
-            create_process(self.file, "/ENTRY/PROCESS_Q_SPACE", "Conversion to q-space",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Conversion to q-space",
                            "This process converts the 2D array Q containing the position in A into a 2D "
                            "array containing the positions in q-space, A^-1. "
                            "Each element of the array Q is a vector containing qx and qy"
@@ -244,7 +306,7 @@ class NexusFile:
             radial_min=None, radial_max=None, pts_rad=None
     ):
         """
-        Method used to cake the data
+        Method used to cake the data. This will display the data in the (q_r, chi) coordinate system.
 
         Parameters
         ----------
@@ -324,7 +386,9 @@ class NexusFile:
 
             self.save_data("Q", mesh_cake, group_name, self.smi_data.cake)
 
-            create_process(self.file, "/ENTRY/PROCESS_CAKED", "Data caking",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Data caking",
                            "This process plots the intensity with respect to the azimuthal angle and the distance from"
                            "the center of the q-space. That way the rings are flattened."
                            )
@@ -336,24 +400,32 @@ class NexusFile:
             pts=None
     ):
         """
-        Method used to perform radial averaging of data in Fourier space.
+        Method used to perform radial averaging of data in Fourier space. This will reduce the signal to
+        one dimension : intensity versus distance from the center
 
         Parameters
         ----------
         display : bool, optional
             Choose if you want the result displayed or not.
+
         save : bool, optional
             Choose if you want the result saved in the .h5 or not.
+
         group_name : str, optional
             Name of the group that will contain the data.
+
         r_min : float, optional
             Minimum radial value for averaging.
+
         r_max : float, optional
             Maximum radial value for averaging.
+
         angle_min : float, optional
             Minimum angle for averaging.
+
         angle_max : float, optional
             Maximum angle for averaging.
+
         pts : int, optional
             Number of points for the averaging process.
         """
@@ -394,7 +466,9 @@ class NexusFile:
             i_list = self.smi_data.I_rad
             self.save_data("Q", q_list, group_name, i_list)
 
-            create_process(self.file, "/ENTRY/PROCESS_RAD_AVG", "Radial averaging",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Radial averaging",
                            "This process integrates the intensity signal over a specified radial angle range"
                            " and q range, effectively rendering the signal 1D instead of 2D"
                            )
@@ -409,11 +483,17 @@ class NexusFile:
 
         Parameters
         ----------
-        r_range :
-            Radial range of the radial averaging
+        angle_max :
+            Maximum azimuthal angle
 
-        angle_range :
-            Angle range of the radial averaging
+        angle_min :
+            Minimum azimuthal angle
+
+        r_max :
+            Maximum distance from the center
+
+        r_min :
+            Minimum distance from the center
 
         display :
             Choose if you want the result displayed or not
@@ -456,7 +536,9 @@ class NexusFile:
             chi_list = self.smi_data.chi_azi
             i_list = self.smi_data.I_azi
             self.save_data("Chi", chi_list, group_name, i_list)
-            create_process(self.file, "/ENTRY/PROCESS_AZI_AVG", "Azimuthal averaging",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Azimuthal averaging",
                            "This process integrates the intensity signal over a specified azimuthal angle range"
                            " and q range, effectively rendering the signal 1D instead of 2D"
                            )
@@ -471,12 +553,27 @@ class NexusFile:
 
         Parameters
         ----------
+        qy_max :
+            Maximum of the q_y range
+
+        qy_min :
+            Minimum onf the q_y range
+
+        qx_max :
+            Maximum of the q_x range
+
+        qx_min :
+            Minimum of the q_x range
+
         display : bool, optional
             Choose if you want the result displayed or not.
+
         save : bool, optional
             Choose if you want the result saved in the .h5 or not.
+
         group_name : str, optional
             Name of the group that will contain the data.
+
         """
 
         self.smi_data.masks = np.logical_not(np.ones(np.shape(self.smi_data.imgs)))
@@ -512,7 +609,9 @@ class NexusFile:
             i_list = self.smi_data.I_hor
             self.save_data("Q", q_list, group_name, i_list)
 
-            create_process(self.file, "/ENTRY/PROCESS_HOR_INT", "Horizontal integration",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Horizontal integration",
                            "This process integrates the intensity signal over a specified horizontal strip in q-space"
                            "effectively rendering the signal 1D instead of 2D"
                            )
@@ -527,6 +626,17 @@ class NexusFile:
 
         Parameters
         ----------
+        qy_max :
+            Maximum of the q_y range
+
+        qy_min :
+            Minimum onf the q_y range
+
+        qx_max :
+            Maximum of the q_x range
+
+        qx_min :
+            Minimum of the q_x range
 
         display :
             Choose if you want the result displayed or not
@@ -572,31 +682,23 @@ class NexusFile:
             i_list = self.smi_data.I_ver
             self.save_data("Q", q_list, group_name, i_list)
 
-            create_process(self.file, "/ENTRY/PROCESS_VER_INT", "Vertical integration",
+            create_process(self.file,
+                           f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                           "Vertical integration",
                            "This process integrates the intensity signal over a specified vertical strip in q-space"
                            "effectively rendering the signal 1D instead of 2D"
                            )
 
     def process_display(self, group_name="DATA_Q_SPACE"):
-        data = self.extract_from_h5(f"/ENTRY/{group_name}/I", "dataset")
-        if data.shape() == 1:
-            plt.figure()
-            plt.plot(data)
-            plt.show()
-        elif data.shape() == 2:
-            plt.figure()
-            plt.imshow(data,
-                       cmap="magma",
-                       shading='auto',
-                       vmin=0,
-                       vmax=np.percentile(
-                           data[~np.isnan(data)],
-                           99.8),
-                       )
+        """
+        TODO : Will display the selected data_group
+        """
 
     def save_data(self, parameter_symbol, parameter, dataset_name, dataset):
         """
-        Method used to save data in the h5 file
+        TODO : replace the fact we do both positions and intensity at the same time
+        TODo : instead do one at a time this will allow uncertainties and such
+        Method used to save a dataset in the h5 file
 
         Parameters
         ----------
@@ -612,12 +714,17 @@ class NexusFile:
         dataset :
             Contains the data
         """
+        # We create the dataset h5path and if it exists we delete what was previously there
         dataset_name = dataset_name.upper()
         dataset_path = f"/ENTRY/{dataset_name}"
         if dataset_path in self.file:
             del self.file[dataset_path]
+
+        # we copy the raw data and set the copied data to the name selected
+        # That way we also copy the attributes
         self.file.copy("ENTRY/DATA", self.file["/ENTRY"], dataset_name)
 
+        # we replace the raw data with the new data
         replace_h5_dataset(self.file, f"{dataset_path}/R",
                            parameter, f"{dataset_path}/{parameter_symbol}")
         replace_h5_dataset(self.file, f"{dataset_path}/I",
@@ -625,7 +732,7 @@ class NexusFile:
 
     def delete_data(self, group_name):
         """
-        Method used to properly delete data from the h.5 file
+        Method used to properly delete data from the h5 file
 
         Parameters
         ----------
@@ -640,7 +747,7 @@ class NexusFile:
 
     def close(self):
         """
-        Method used to close the loaded file correctly
+        Method used to close the loaded file correctly by repacking it and then closing it
         """
         self.file.close()
         repack_hdf5(self.file_path, self.file_path + ".tmp")
@@ -649,7 +756,8 @@ class NexusFile:
 
 
 if __name__ == "__main__":
-    FILE_NAME = "/edf2NxSAS/treated data/instrument - Xeuss/config - 2024-12-19T15-00/sample - SafeLiMove/experiment - WAXS1/format - NXsas/defaultSampleName_SAXS_2025-02-19T10-36-52.h5"
+    FILE_NAME = "/edf2NxSAS/treated data/instrument - Xeuss/config - 2024-12-19T15-00/sample - SafeLiMove/experiment " \
+                "- WAXS1/format - NXsas/defaultSampleName_SAXS_2025-02-19T10-36-52.h5"
 
     nx_file = NexusFile(FILE_NAME)
     nx_file.process_q_space(display=True, save=True)

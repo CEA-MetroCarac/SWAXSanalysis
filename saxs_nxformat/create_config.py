@@ -19,19 +19,6 @@ from saxs_nxformat import CONF_PATH
 ### Some utility function ###
 #############################
 
-def get_desktop_path():
-    """Return the path to the user's desktop"""
-    if sys.platform == "win32":
-        return Path(os.path.join(os.environ["USERPROFILE"], "Desktop"))
-
-    desktop = Path.home() / "Desktop"
-    xdg_path = os.popen('xdg-user-dir DESKTOP').read().strip()
-
-    if xdg_path:
-        desktop = Path(xdg_path)
-
-    return desktop
-
 
 def string_2_value(string: str) -> str | int | float | None:
     """
@@ -69,29 +56,6 @@ def string_2_value(string: str) -> str | int | float | None:
         value = str(string).lower()
 
     return value
-
-
-def remove_widgets(frame: tk.Frame) -> None:
-    """
-    Remove all widgets from a specified frame.
-
-    This function iterates through all child widgets of the
-    given frame and destroys them, effectively clearing the
-    frame.
-
-    Parameters
-    ----------
-    frame : tk.Frame
-        The frame from which all child widgets will be removed.
-
-    Returns
-    -------
-    None
-        This function does not return any value.
-    """
-
-    for widget in frame.winfo_children():
-        widget.destroy()
 
 
 ##############################
@@ -219,8 +183,9 @@ class Setting(tk.Tk):
 
     def __init__(self):
         super().__init__()
-
         self.focus_force()
+
+        # We get the path of this script to load the necessary dict
         BASE_DIR = Path(__file__).parent
         json_path = BASE_DIR / "nexus_standards" / "structure_NXsas.json"
         with open(json_path, "r", encoding="utf-8") as file:
