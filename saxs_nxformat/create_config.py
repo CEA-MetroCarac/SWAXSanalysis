@@ -187,7 +187,7 @@ class Setting(tk.Tk):
 
         # We get the path of this script to load the necessary dict
         BASE_DIR = Path(__file__).parent
-        json_path = BASE_DIR / "nexus_standards" / "structure_NXsas.json"
+        json_path = BASE_DIR / "nexus_standards" / "structure_NXcanSAS.json"
         with open(json_path, "r", encoding="utf-8") as file:
             self.dict_config = json.load(file)
 

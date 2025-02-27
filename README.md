@@ -8,13 +8,12 @@ Table of contents :
 ___
 # General Info
 ## Context
-This package, and all it's content, has been created by Adrien Toulouse. It was created as part of a work-study 
-program that was organized during the second year of a Master's degree.
+This package, and all it's content, has been created by Adrien Toulouse (adrien.toulouse@cea.fr). It was created as a
+part of a work-study program that was organized during the second year of my Master's degree in computational physics.
 ## Goals of the package
 This package aims to convert any data stored in **European Data Format** file (called EDF or .edf file from now on) 
-into data stored as a
-**Hierarchical Data Format version 5** (called HDF5 or .h5 file from now on).\
-This new HDF5 file is structured according to a modified version of the NXsas format from the NeXus scientific 
+into data stored as a **Hierarchical Data Format version 5** (called HDF5 or .h5 file from now on).\
+This new HDF5 file is structured according to a modified version of the NXcanSAS format from the NeXus scientific 
 community standard. We use a modified version because we would like to convert this same file to an NXcanSAS file 
 containing the reduced data in the reciprocal space.
 ## Installation

@@ -11,7 +11,7 @@
                 "element type": "attribute",
                 "value": null,
                 "possible value": [
-                    "data"
+                    "DATA"
                 ],
                 "EX_required": true,
                 "type": "NX_CHAR",
@@ -170,10 +170,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "1/m",
-                                    "1/nm",
-                                    "1/angstrom"
+                                    [
+                                        "arbitrary",
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
+                                    ],
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -234,10 +237,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "1/m",
-                                    "1/nm",
-                                    "1/angstrom"
+                                    [
+                                        "arbitrary",
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
+                                    ],
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -260,10 +266,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "1/m",
-                                    "1/nm",
-                                    "1/angstrom"
+                                    [
+                                        "arbitrary",
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
+                                    ],
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -286,10 +295,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "1/m",
-                                    "1/nm",
-                                    "1/angstrom"
+                                    [
+                                        "arbitrary",
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
+                                    ],
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -312,10 +324,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "1/m",
-                                    "1/nm",
-                                    "1/angstrom"
+                                    [
+                                        "arbitrary",
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
+                                    ],
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -338,6 +353,9 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
+                                    [
+                                        "arbitrary"
+                                    ],
                                     "arbitrary"
                                 ],
                                 "EX_required": true,
@@ -383,6 +401,9 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
+                                    [
+                                        "arbitrary"
+                                    ],
                                     "arbitrary"
                                 ],
                                 "EX_required": true,
@@ -468,11 +489,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -492,11 +516,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -537,11 +564,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -561,11 +591,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -615,11 +648,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -639,11 +675,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -663,11 +702,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -687,11 +729,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -789,11 +834,13 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom",
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
                                             "arbitrary"
                                         ],
                                         "EX_required": true,
@@ -814,11 +861,13 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom",
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
                                             "arbitrary"
                                         ],
                                         "EX_required": true,
@@ -839,11 +888,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -863,11 +915,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -958,15 +1013,18 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength"
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
                                     }
                                 }
                             },
@@ -982,11 +1040,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -1006,11 +1067,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -1030,11 +1094,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "nm"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -1054,11 +1121,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -1078,11 +1148,14 @@
                                         "element type": "attribute",
                                         "value": null,
                                         "possible value": [
-                                            "arbitrary",
-                                            "m",
-                                            "mm",
-                                            "nm",
-                                            "angstrom"
+                                            [
+                                                "arbitrary",
+                                                "m",
+                                                "mm",
+                                                "nm",
+                                                "angstrom"
+                                            ],
+                                            "arbitrary"
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
@@ -1134,11 +1207,14 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "m",
-                                    "mm",
-                                    "nm",
-                                    "angstrom"
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
+                                    "arbitrary"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -1167,9 +1243,12 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "C",
-                                    "K"
+                                    [
+                                        "arbitrary",
+                                        "C",
+                                        "K"
+                                    ],
+                                    "arbitrary"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
@@ -1189,11 +1268,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "m",
-                                    "mm",
-                                    "nm",
-                                    "angstrom",
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
                                     "arbitrary"
                                 ],
                                 "EX_required": true,
@@ -1214,11 +1295,13 @@
                                 "element type": "attribute",
                                 "value": null,
                                 "possible value": [
-                                    "arbitrary",
-                                    "m",
-                                    "mm",
-                                    "nm",
-                                    "angstrom",
+                                    [
+                                        "arbitrary",
+                                        "m",
+                                        "mm",
+                                        "nm",
+                                        "angstrom"
+                                    ],
                                     "arbitrary"
                                 ],
                                 "EX_required": true,

@@ -4,14 +4,15 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "saxs_nxformat"
-version = "2025.2"
+version = "2025.3"
 authors = [
     { name = "Adrien Toulouse", email = "adrien.toulouse@cea.fr" }
 ]
-description = "BLABLA"
+description = "Package allowing the analysis of data that's fresh out of the machine. This package uses the NeXus
+standard for the x-ray community."
 readme = "README.md"
 requires-python = ">=3.9"
-keywords = []
+keywords = ["EDF", "HDF5", "NeXus", "Data analysis", "X-ray", "Xeuss"]
 license = { text = "GPL v3" }
 classifiers = [
     'Programming Language :: Python :: 3',
@@ -30,7 +31,7 @@ dependencies = [
     "h5py",
     "fabio",
     "memory_profiler"
-    # "smi-analysis" = { git = "https://github.com/NSLS-II-SMI/smi-analysis.git", branch = "main" }
+    "smi-analysis" = { git = "https://github.com/gfreychet/smi-analysis.git", branch = "master" }
 ]
 
 [project.scripts]

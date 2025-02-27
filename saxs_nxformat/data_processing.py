@@ -274,7 +274,6 @@ class GUI_process(tk.Tk):
             Name of the process that will have his parameters
             displayed in the frame
         """
-        print(process_name)
         for widget in self.param_frame.winfo_children():
             widget.destroy()
 
@@ -354,12 +353,9 @@ class GUI_process(tk.Tk):
         # We get the selected file
         self.to_process = []
         selected_index = self.file_list.curselection()
-        print(selected_index)
 
         for index in selected_index:
             self.to_process += [self.selected_files[index]]
-
-        print(self.to_process)
 
         # We get the parameters and convert them
         param_dict = {}
@@ -369,10 +365,8 @@ class GUI_process(tk.Tk):
                 entry_value = str(widget.get())
                 value = string_2_value(entry_value)
                 param_dict[tag] = value
-        print(param_dict)
 
         # We fill out the parameters for every file
-        print(process)
         for file_path in self.to_process:
             file = NexusFile(file_path)
             process(file, **param_dict)
