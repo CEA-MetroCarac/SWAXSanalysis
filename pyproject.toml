@@ -30,7 +30,7 @@ dependencies = [
     "matplotlib",
     "h5py",
     "fabio",
-    "memory_profiler",
+    "memory_profiler"
     # "smi-analysis" = { git = "https://github.com/gfreychet/smi-analysis.git", branch = "master" }
 ]
 
