@@ -8,8 +8,7 @@ version = "2025.3"
 authors = [
     { name = "Adrien Toulouse", email = "adrien.toulouse@cea.fr" }
 ]
-description = "Package allowing the analysis of data that's fresh out of the machine. This package uses the NeXus
-standard for the x-ray community."
+description = "Package allowing the analysis of data that's fresh out of the machine. This package uses the NeXus standard for the x-ray community."
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["EDF", "HDF5", "NeXus", "Data analysis", "X-ray", "Xeuss"]
