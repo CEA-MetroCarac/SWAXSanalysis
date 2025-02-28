@@ -503,6 +503,7 @@ class NexusFile:
         pts : int, optional
             Number of points for the averaging process.
         """
+        count_plot = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -528,12 +529,16 @@ class NexusFile:
             )
 
             if display:
-                _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Radial average of data in q-space')
+                if count_plot == 0:
+                    _, ax = plt.subplots(figsize=(10, 6))
+                    ax.set_title('Radial average of data in q-space')
+                    ax.set_xlabel('$q_r (A^{-1}$)')
+                    ax.set_ylabel('I (A.u.)')
                 ax.plot(smi_data.q_rad, smi_data.I_rad)
-                ax.set_xlabel('$q_r (A^{-1}$)')
-                ax.set_ylabel('I (A.u.)')
-                plt.show()
+                count_plot += 1
+
+                if count_plot == len(self.nx_files):
+                    plt.show()
 
             if save:
                 q_list = smi_data.q_rad
@@ -578,6 +583,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
+        count_plot = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -600,12 +606,16 @@ class NexusFile:
             )
 
             if display:
-                _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Azimuthal average of data in q-space')
+                if count_plot == 0:
+                    _, ax = plt.subplots(figsize=(10, 6))
+                    ax.set_title('Azimuthal average of data in q-space')
+                    ax.set_xlabel('$\\chi$')
+                    ax.set_ylabel('I (A.u.)')
                 ax.plot(smi_data.chi_azi, smi_data.I_azi)
-                ax.set_xlabel('$\\chi$')
-                ax.set_ylabel('I (A.u.)')
-                plt.show()
+                count_plot += 1
+
+                if count_plot == len(self.nx_files):
+                    plt.show()
 
             if save:
                 chi_list = smi_data.chi_azi
@@ -650,6 +660,8 @@ class NexusFile:
             Name of the group that will contain the data.
 
         """
+        count_plot = 0
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -672,12 +684,16 @@ class NexusFile:
             )
 
             if display:
-                _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Horizontal integration of data in q-space')
+                if count_plot == 0:
+                    _, ax = plt.subplots(figsize=(10, 6))
+                    ax.set_title('Horizontal integration of data in q-space')
+                    ax.set_xlabel('$q_{x} (A^{-1}$)')
+                    ax.set_ylabel('I (A.u.)')
                 ax.plot(smi_data.q_hor, smi_data.I_hor)
-                ax.set_xlabel('$q_{x} (A^{-1}$)')
-                ax.set_ylabel('I (A.u.)')
-                plt.show()
+                count_plot += 1
+
+                if count_plot == len(self.nx_files):
+                    plt.show()
 
             if save:
                 q_list = smi_data.q_hor
@@ -722,6 +738,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
+        count_plot = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -746,12 +763,16 @@ class NexusFile:
             smi_data.vertical_integration(q_per_range=qy_range, q_par_range=qx_range)
 
             if display:
-                _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Horizontal integration of data in q-space')
+                if count_plot == 0:
+                    _, ax = plt.subplots(figsize=(10, 6))
+                    ax.set_title('Horizontal integration of data in q-space')
+                    ax.set_xlabel('$q_{y} (A^{-1}$)')
+                    ax.set_ylabel('I (A.u.)')
                 ax.plot(smi_data.q_ver, smi_data.I_ver)
-                ax.set_xlabel('$q_{y} (A^{-1}$)')
-                ax.set_ylabel('I (A.u.)')
-                plt.show()
+                count_plot += 1
+
+                if count_plot == len(self.nx_files):
+                    plt.show()
 
             if save:
                 q_list = smi_data.q_ver
