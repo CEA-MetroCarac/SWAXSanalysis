@@ -10,6 +10,9 @@ import re
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
+
+from saxs_nxformat import PLT_CMAP
 from smi_analysis import SMI_beamline
 
 
@@ -348,7 +351,7 @@ class NexusFile:
                                   vmax=np.percentile(
                                       smi_data.img_st[~np.isnan(smi_data.img_st)],
                                       99),
-                                  cmap="magma")
+                                  cmap=PLT_CMAP)
                 ax.set_xlabel('$q_{x} (A^{-1}$)')
                 ax.set_ylabel('$q_{y} (A^{-1}$)')
                 cbar = plt.colorbar(cplot, ax=ax)
@@ -441,7 +444,7 @@ class NexusFile:
                 cplot = ax.pcolormesh(smi_data.q_cake,
                                       smi_data.chi_cake,
                                       smi_data.cake,
-                                      cmap="magma", shading='auto',
+                                      cmap=PLT_CMAP, shading='auto',
                                       vmin=0,
                                       vmax=np.percentile(
                                           smi_data.cake[~np.isnan(smi_data.cake)],
@@ -534,10 +537,13 @@ class NexusFile:
                     ax.set_title('Radial average of data in q-space')
                     ax.set_xlabel('$q_r (A^{-1}$)')
                     ax.set_ylabel('I (A.u.)')
-                ax.plot(smi_data.q_rad, smi_data.I_rad)
+                file_path = Path(self.file_paths[index])
+                file_name = file_path.name
+                ax.loglog(smi_data.q_rad, smi_data.I_rad, label=f"{file_name}")
                 count_plot += 1
 
                 if count_plot == len(self.nx_files):
+                    ax.legend()
                     plt.show()
 
             if save:
@@ -611,10 +617,11 @@ class NexusFile:
                     ax.set_title('Azimuthal average of data in q-space')
                     ax.set_xlabel('$\\chi$')
                     ax.set_ylabel('I (A.u.)')
-                ax.plot(smi_data.chi_azi, smi_data.I_azi)
+                ax.loglog(smi_data.chi_azi, smi_data.I_azi, label=f"{file_name}")
                 count_plot += 1
 
                 if count_plot == len(self.nx_files):
+                    ax.legend()
                     plt.show()
 
             if save:
@@ -689,10 +696,11 @@ class NexusFile:
                     ax.set_title('Horizontal integration of data in q-space')
                     ax.set_xlabel('$q_{x} (A^{-1}$)')
                     ax.set_ylabel('I (A.u.)')
-                ax.plot(smi_data.q_hor, smi_data.I_hor)
+                ax.plot(smi_data.q_hor, smi_data.I_hor, label=f"{file_name}")
                 count_plot += 1
 
                 if count_plot == len(self.nx_files):
+                    ax.legend()
                     plt.show()
 
             if save:
@@ -768,10 +776,11 @@ class NexusFile:
                     ax.set_title('Horizontal integration of data in q-space')
                     ax.set_xlabel('$q_{y} (A^{-1}$)')
                     ax.set_ylabel('I (A.u.)')
-                ax.plot(smi_data.q_ver, smi_data.I_ver)
+                ax.plot(smi_data.q_ver, smi_data.I_ver, label=f"{file_name}")
                 count_plot += 1
 
                 if count_plot == len(self.nx_files):
+                    ax.legend()
                     plt.show()
 
             if save:

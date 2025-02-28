@@ -20,10 +20,9 @@ from pathlib import Path
 import fabio
 import h5py
 import numpy as np
-from saxs_nxformat import DTC_PATH, TREATED_PATH
+from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH
 from saxs_nxformat.class_nexus_file import NexusFile
 
-BASE_DIR = Path(__file__).parent
 json_path = BASE_DIR / "nexus_standards" / "structure_NXunits.json"
 with open(json_path, "r", encoding="utf-8") as file_dict:
     DICT_UNIT = json.load(file_dict)
@@ -292,6 +291,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M-%S"))
+    # TODO : Think of a better file name template
     hdf5_path = os.path.join(hdf5_path, f"{sample_name}_{time_stamp}.h5")
     with h5py.File(hdf5_path, "w") as save_file:
         fill_hdf5(save_file, config_dict)
@@ -497,6 +497,7 @@ def create_gui():
     global root, log_text
     root = tk.Tk()
     root.title("Auto Generate Controller")
+    root.iconbitmap(ICON_PATH)
 
     # Label
     label = tk.Label(root, text="Auto conversion control panel", font=("Arial", 18, "bold"))

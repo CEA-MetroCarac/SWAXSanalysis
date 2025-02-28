@@ -14,7 +14,7 @@ import tkinter as tk
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We build the environment
-from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH
+from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH
 from saxs_nxformat.create_config import Setting
 from saxs_nxformat.data_processing import GUI_process
 from saxs_nxformat.nxfile_generator import create_gui
@@ -59,6 +59,7 @@ def launcher_gui():
 
     root = tk.Tk()
     root.title("Launcher")
+    root.iconbitmap(ICON_PATH)
 
     normal_font = ("Arial", 12)
 

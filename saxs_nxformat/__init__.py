@@ -1,5 +1,5 @@
 """
-module description
+# TODO : Add global variable for colormap, .ico path and other parameters
 """
 import os
 import sys
@@ -20,9 +20,13 @@ def get_desktop_path():
     return desktop
 
 
+# Path to the different folders
+BASE_DIR = Path(__file__).parent
 DESKTOP_PATH = get_desktop_path()
 DTC_PATH = DESKTOP_PATH / "Data Treatment Center"
 CONF_PATH = DTC_PATH / "Configs"
 TREATED_PATH = DTC_PATH / "Treated Data"
+ICON_PATH = BASE_DIR / "Images" / "nxformat_icon.ico"
 
-
+# Global variables to the file
+PLT_CMAP = "magma"

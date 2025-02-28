@@ -12,7 +12,7 @@ from pathlib import Path
 from tkinter import ttk, filedialog
 
 import fabio
-from saxs_nxformat import CONF_PATH
+from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH
 
 
 #############################
@@ -183,6 +183,7 @@ class Setting(tk.Tk):
 
     def __init__(self):
         super().__init__()
+        self.iconbitmap(ICON_PATH)
         self.focus_force()
 
         # We get the path of this script to load the necessary dict
@@ -452,7 +453,7 @@ class Setting(tk.Tk):
         file_edf :
             The loaded edf file, None if there is an error
         """
-        filename = filedialog.askopenfilename(initialdir="./",
+        filename = filedialog.askopenfilename(initialdir=DTC_PATH,
                                               title="Select a File",
                                               filetypes=(
                                                   ("EDF Files", "*.edf*"),

@@ -6,6 +6,7 @@ import re
 import tkinter as tk
 from tkinter import ttk, filedialog
 
+from saxs_nxformat import TREATED_PATH, ICON_PATH
 from saxs_nxformat.class_nexus_file import NexusFile
 
 
@@ -175,6 +176,7 @@ class GUI_process(tk.Tk):
                 self.process[name.removeprefix("process_")] = method
 
         super().__init__()
+        self.iconbitmap(ICON_PATH)
         self.focus_force()
         self.geometry("1200x900")
         self.columnconfigure(0, weight=2)
@@ -210,7 +212,8 @@ class GUI_process(tk.Tk):
 
     def _inputs_building(self):
         """
-        Build the input frame
+        Builds the input frame
+        TODO : Add an option to batch process or individually process
         """
         frame_title = tk.Label(self.frame_inputs,
                                text="Inputs",
@@ -322,7 +325,7 @@ class GUI_process(tk.Tk):
         Method used to browse and select files
         """
         filenames = filedialog.askopenfilenames(
-            initialdir="./",
+            initialdir=TREATED_PATH,
             title="Select Files",
             filetypes=(
                 ("HDF5 Files", "*.h5*"),
