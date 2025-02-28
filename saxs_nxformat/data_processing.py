@@ -367,9 +367,10 @@ class GUI_process(tk.Tk):
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
-        for file_path in self.to_process:
-            file = NexusFile(file_path)
-            process(file, **param_dict)
+
+        file = NexusFile(self.to_process)
+        process(file, **param_dict)
+        for file in file.get_file():
             file.close()
         self.progress_label.configure(text="No processing in progress",
                                       fg="#6DB06E")
