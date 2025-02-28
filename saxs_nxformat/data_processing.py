@@ -213,7 +213,6 @@ class GUI_process(tk.Tk):
     def _inputs_building(self):
         """
         Builds the input frame
-        TODO : Add an option to batch process or individually process
         """
         frame_title = tk.Label(self.frame_inputs,
                                text="Inputs",
@@ -231,6 +230,9 @@ class GUI_process(tk.Tk):
 
         self.file_list = tk.Listbox(self.frame_inputs, selectmode=tk.MULTIPLE)
         self.file_list.grid(column=0, row=2, sticky="news")
+
+        self.do_batch = ttk.Checkbutton(self.frame_inputs, text="Join files and graphs")
+        self.do_batch.grid(column=0, row=3, sticky="news")
 
     def _process_building(self):
         """
@@ -371,7 +373,7 @@ class GUI_process(tk.Tk):
 
         # We fill out the parameters for every file
 
-        file = NexusFile(self.to_process)
+        file = NexusFile(self.to_process, self.do_batch.state())
         process(file, **param_dict)
         for file in file.get_file():
             file.close()

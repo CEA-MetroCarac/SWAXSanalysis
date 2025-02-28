@@ -217,7 +217,7 @@ class NexusFile:
         list of array of intensities
     """
 
-    def __init__(self, h5_paths):
+    def __init__(self, h5_paths, do_batch):
         """
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
@@ -226,9 +226,17 @@ class NexusFile:
         ----------
         h5_paths
             The path of the h5 files we want to open passed as a list of strings
+
+        do_batch :
+            Determines wether the data is assembled in a new file or not and whether it is
+            displayed a single figure or not
         """
-        print(h5_paths)
         self.file_paths = h5_paths
+        if "selected" in do_batch:
+            self.do_batch = True
+        else:
+            self.do_batch = False
+
         self.nx_files = []
         self.dicts_parameters = []
         self.list_smi_data = []
@@ -289,8 +297,6 @@ class NexusFile:
             dict_parameters["distance"] = sample_detector_distance * 1e3
 
             # We input the info in the SMI package
-            # TODO : change the dict keys to the param names and uses dict** to pass the parameters
-            # TODO : See example in data_processing func _start_processing()
             smi_data = SMI_beamline.SMI_geometry(
                 geometry="Transmission",
                 sdd=dict_parameters["distance"],
@@ -334,27 +340,36 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
+        plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if display:
-                # Displaying the data after it's been processed
-                _, ax = plt.subplots(layout="constrained")
-                ax.set_title('2D Data in q-space')
-                cplot = ax.imshow(smi_data.img_st,
-                                  extent=[smi_data.qp[0], smi_data.qp[-1],
-                                          smi_data.qz[0], smi_data.qz[-1]],
-                                  vmin=0,
-                                  vmax=np.percentile(
-                                      smi_data.img_st[~np.isnan(smi_data.img_st)],
-                                      99),
-                                  cmap=PLT_CMAP)
-                ax.set_xlabel('$q_{x} (A^{-1}$)')
-                ax.set_ylabel('$q_{y} (A^{-1}$)')
-                cbar = plt.colorbar(cplot, ax=ax)
+                if plot_count == 0:
+                    file_number = len(self.nx_files)
+                    dims = int(np.ceil(np.sqrt(file_number)))
+                    fig, ax = plt.subplots(dims, dims, layout="constrained")
+                current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                current_ax.set_title('2D Data in q-space')
+                current_ax.set_xlabel('$q_{x} (A^{-1}$)')
+                current_ax.set_ylabel('$q_{y} (A^{-1}$)')
+                cplot = current_ax.imshow(
+                    smi_data.img_st,
+                    extent=[smi_data.qp[0], smi_data.qp[-1],
+                            smi_data.qz[0], smi_data.qz[-1]],
+                    vmin=0,
+                    vmax=np.percentile(
+                        smi_data.img_st[~np.isnan(smi_data.img_st)],
+                        99),
+                    cmap=PLT_CMAP
+                )
+                cbar = plt.colorbar(cplot, ax=current_ax)
                 cbar.set_label("Intensity")
-                plt.show()
+                plot_count += 1
+
+                if plot_count == len(self.nx_files):
+                    plt.show()
 
             # Saving the data and the process it just went trough
             if save:
@@ -411,6 +426,7 @@ class NexusFile:
         azi_min:
             Minimum of the azimuthal angle range
         """
+        plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
             defaults = {
                 "azi_min": -180,
@@ -437,21 +453,29 @@ class NexusFile:
             )
 
             if display:
-                _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Caked q-space data')
-                cplot = ax.pcolormesh(smi_data.q_cake,
-                                      smi_data.chi_cake,
-                                      smi_data.cake,
-                                      cmap=PLT_CMAP, shading='auto',
-                                      vmin=0,
-                                      vmax=np.percentile(
-                                          smi_data.cake[~np.isnan(smi_data.cake)],
-                                          99.8), )
-                ax.set_xlabel('$q (A^{-1}$)')
-                ax.set_ylabel('$\\chi (A^{-1}$)')
-                cbar = plt.colorbar(cplot, ax=ax)
+                if plot_count == 0:
+                    file_number = len(self.nx_files)
+                    dims = int(np.ceil(np.sqrt(file_number)))
+                    fig, ax = plt.subplots(dims, dims, layout="constrained")
+                current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                current_ax.set_title('Caked q-space data')
+                current_ax.set_xlabel('$q (A^{-1}$)')
+                current_ax.set_ylabel('$\\chi$')
+                cplot = current_ax.pcolormesh(
+                    smi_data.q_cake,
+                    smi_data.chi_cake,
+                    smi_data.cake,
+                    cmap=PLT_CMAP, shading='auto',
+                    vmin=0,
+                    vmax=np.percentile(
+                        smi_data.cake[~np.isnan(smi_data.cake)],
+                        99.8),
+                )
+                cbar = plt.colorbar(cplot, ax=current_ax)
                 cbar.set_label("Intensity")
-                plt.show()
+                plot_count += 1
+                if plot_count == len(self.nx_files):
+                    plt.show()
 
             if save:
                 q_list = smi_data.q_cake
@@ -464,7 +488,8 @@ class NexusFile:
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Data caking",
-                               "This process plots the intensity with respect to the azimuthal angle and the distance from"
+                               "This process plots the intensity with respect to the azimuthal angle and the distance "
+                               "from"
                                "the center of the q-space. That way the rings are flattened."
                                )
 
@@ -615,6 +640,8 @@ class NexusFile:
                     ax.set_title('Azimuthal average of data in q-space')
                     ax.set_xlabel('$\\chi$')
                     ax.set_ylabel('I (A.u.)')
+                file_path = Path(self.file_paths[index])
+                file_name = file_path.name
                 ax.loglog(smi_data.chi_azi, smi_data.I_azi, label=f"{file_name}")
                 count_plot += 1
 
@@ -694,6 +721,8 @@ class NexusFile:
                     ax.set_title('Horizontal integration of data in q-space')
                     ax.set_xlabel('$q_{x} (A^{-1}$)')
                     ax.set_ylabel('I (A.u.)')
+                file_path = Path(self.file_paths[index])
+                file_name = file_path.name
                 ax.plot(smi_data.q_hor, smi_data.I_hor, label=f"{file_name}")
                 count_plot += 1
 
@@ -709,7 +738,8 @@ class NexusFile:
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Horizontal integration",
-                               "This process integrates the intensity signal over a specified horizontal strip in q-space"
+                               "This process integrates the intensity signal over a specified horizontal strip in "
+                               "q-space"
                                "effectively rendering the signal 1D instead of 2D"
                                )
 
@@ -774,6 +804,8 @@ class NexusFile:
                     ax.set_title('Horizontal integration of data in q-space')
                     ax.set_xlabel('$q_{y} (A^{-1}$)')
                     ax.set_ylabel('I (A.u.)')
+                file_path = Path(self.file_paths[index])
+                file_name = file_path.name
                 ax.plot(smi_data.q_ver, smi_data.I_ver, label=f"{file_name}")
                 count_plot += 1
 
