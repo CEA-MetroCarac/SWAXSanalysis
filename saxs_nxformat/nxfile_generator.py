@@ -349,7 +349,7 @@ def tree_structure_manager(file: str, settings: str):
         - The paths where FDH5 and EDF5 files should be saved.
         - An error message in case of a permission issue.
     """
-    sample_name = file.split("_")[0].removesuffix(".edf")
+    exp_name = file.split("_")[0].removesuffix(".edf")
 
     settings = settings.removeprefix("settings_")
     try:
@@ -359,7 +359,7 @@ def tree_structure_manager(file: str, settings: str):
 
     origin_format, ending_format = origin2ending.split("2")
     date = date_txt.removesuffix(".json")
-    common_path = TREATED_PATH / f"instrument - {instrument}" / f"config - {date}" / f"sample - {sample_name}"
+    common_path = TREATED_PATH / f"instrument - {instrument}" / f"config - {date}" / f"experiment - {exp_name}"
     target_dir = common_path / f"format - {ending_format}"
     other_dir = common_path / f"format - {origin_format}"
 
