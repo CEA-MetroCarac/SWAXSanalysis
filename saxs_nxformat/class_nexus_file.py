@@ -146,8 +146,6 @@ def extract_from_h5(nx_file, h5path, data_type="dataset", attribute_name=None):
 
 def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset):
     """
-    TODO : replace the fact we do both positions and intensity at the same time
-    TODo : instead do one at a time this will allow uncertainties and such
     Method used to save a dataset in the h5 file
 
     Parameters

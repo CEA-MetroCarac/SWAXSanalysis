@@ -1,5 +1,5 @@
 """
-# TODO : Add global variable for colormap, .ico path and other parameters
+TODO : Add global variable for colormap, .ico path and other parameters
 """
 import os
 import sys
