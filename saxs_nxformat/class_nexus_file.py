@@ -869,6 +869,11 @@ class NexusFile:
     def process_display(self, group_name="DATA_Q_SPACE"):
         """
         Displays the data contained in the DATA_... group
+        TODO : Add parameters controlling the display like :
+        - log scale
+        - axes and title
+        - colormap ?
+        TODO : find a way to dynamically get the other axes
 
         Parameters
         ----------

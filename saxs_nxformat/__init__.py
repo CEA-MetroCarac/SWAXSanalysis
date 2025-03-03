@@ -1,5 +1,6 @@
 """
 TODO : Add global variable for colormap, .ico path and other parameters
+TODO : Add a utils file containing all repeating functions
 """
 import os
 import sys

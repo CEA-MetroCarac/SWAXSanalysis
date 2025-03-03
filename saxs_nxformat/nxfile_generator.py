@@ -237,6 +237,8 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     settings_path :
         Path of the settings file
     """
+    edf_path = Path(edf_path)
+    edf_name = edf_path.name
     edf_file = fabio.open(edf_path)
     edf_header = edf_file.header
     edf_data = edf_file.data
@@ -291,8 +293,9 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M-%S"))
+    split_edf_name = edf_name.removesuffix(".edf").split("_")
     # TODO : Think of a better file name template
-    hdf5_path = os.path.join(hdf5_path, f"{sample_name}_{time_stamp}.h5")
+    hdf5_path = os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5")
     with h5py.File(hdf5_path, "w") as save_file:
         fill_hdf5(save_file, config_dict)
 
