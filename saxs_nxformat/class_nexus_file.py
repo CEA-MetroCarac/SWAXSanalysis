@@ -368,8 +368,12 @@ class NexusFile:
                 cbar.set_label("Intensity")
                 plot_count += 1
 
-                if plot_count == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        plt.show()
+                else:
                     plt.show()
+
 
             # Saving the data and the process it just went trough
             if save:
@@ -474,7 +478,10 @@ class NexusFile:
                 cbar = plt.colorbar(cplot, ax=current_ax)
                 cbar.set_label("Intensity")
                 plot_count += 1
-                if plot_count == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        plt.show()
+                else:
                     plt.show()
 
             if save:
@@ -565,7 +572,11 @@ class NexusFile:
                 ax.loglog(smi_data.q_rad, smi_data.I_rad, label=f"{file_name}")
                 count_plot += 1
 
-                if count_plot == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        ax.legend()
+                        plt.show()
+                else:
                     ax.legend()
                     plt.show()
 
@@ -645,7 +656,11 @@ class NexusFile:
                 ax.loglog(smi_data.chi_azi, smi_data.I_azi, label=f"{file_name}")
                 count_plot += 1
 
-                if count_plot == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        ax.legend()
+                        plt.show()
+                else:
                     ax.legend()
                     plt.show()
 
@@ -726,7 +741,11 @@ class NexusFile:
                 ax.plot(smi_data.q_hor, smi_data.I_hor, label=f"{file_name}")
                 count_plot += 1
 
-                if count_plot == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        ax.legend()
+                        plt.show()
+                else:
                     ax.legend()
                     plt.show()
 
@@ -809,7 +828,11 @@ class NexusFile:
                 ax.plot(smi_data.q_ver, smi_data.I_ver, label=f"{file_name}")
                 count_plot += 1
 
-                if count_plot == len(self.nx_files):
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        ax.legend()
+                        plt.show()
+                else:
                     ax.legend()
                     plt.show()
 
