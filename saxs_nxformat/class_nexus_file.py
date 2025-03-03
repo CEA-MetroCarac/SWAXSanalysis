@@ -198,6 +198,7 @@ def delete_data(nx_file, group_name):
 class NexusFile:
     """
     A class that can load and treat data formated in the NXcanSAS standard
+    TODO : manage data stitching, ask for example files
 
     Attributes
     ----------
@@ -346,11 +347,15 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if display:
-                if plot_count == 0:
-                    file_number = len(self.nx_files)
-                    dims = int(np.ceil(np.sqrt(file_number)))
-                    fig, ax = plt.subplots(dims, dims, layout="constrained")
-                current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                if self.do_batch:
+                    if plot_count == 0:
+                        file_number = len(self.nx_files)
+                        dims = int(np.ceil(np.sqrt(file_number)))
+                        fig, ax = plt.subplots(dims, dims, layout="constrained")
+                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                else:
+                    fig, ax = plt.subplots(layout="constrained")
+                    current_ax = ax
                 current_ax.set_title('2D Data in q-space')
                 current_ax.set_xlabel('$q_{x} (A^{-1}$)')
                 current_ax.set_ylabel('$q_{y} (A^{-1}$)')
@@ -373,7 +378,6 @@ class NexusFile:
                         plt.show()
                 else:
                     plt.show()
-
 
             # Saving the data and the process it just went trough
             if save:
@@ -457,11 +461,15 @@ class NexusFile:
             )
 
             if display:
-                if plot_count == 0:
-                    file_number = len(self.nx_files)
-                    dims = int(np.ceil(np.sqrt(file_number)))
-                    fig, ax = plt.subplots(dims, dims, layout="constrained")
-                current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                if self.do_batch:
+                    if plot_count == 0:
+                        file_number = len(self.nx_files)
+                        dims = int(np.ceil(np.sqrt(file_number)))
+                        fig, ax = plt.subplots(dims, dims, layout="constrained")
+                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                else:
+                    fig, ax = plt.subplots(layout="constrained")
+                    current_ax = ax
                 current_ax.set_title('Caked q-space data')
                 current_ax.set_xlabel('$q (A^{-1}$)')
                 current_ax.set_ylabel('$\\chi$')
@@ -536,7 +544,7 @@ class NexusFile:
         pts : int, optional
             Number of points for the averaging process.
         """
-        count_plot = 0
+        plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -562,15 +570,18 @@ class NexusFile:
             )
 
             if display:
-                if count_plot == 0:
+                if self.do_batch:
+                    if plot_count == 0:
+                        _, ax = plt.subplots(figsize=(10, 6))
+                else:
                     _, ax = plt.subplots(figsize=(10, 6))
-                    ax.set_title('Radial average of data in q-space')
-                    ax.set_xlabel('$q_r (A^{-1}$)')
-                    ax.set_ylabel('I (A.u.)')
+                ax.set_title('Radial average of data in q-space')
+                ax.set_xlabel('$q_r (A^{-1}$)')
+                ax.set_ylabel('I (A.u.)')
                 file_path = Path(self.file_paths[index])
                 file_name = file_path.name
                 ax.loglog(smi_data.q_rad, smi_data.I_rad, label=f"{file_name}")
-                count_plot += 1
+                plot_count += 1
 
                 if self.do_batch:
                     if plot_count == len(self.nx_files):
@@ -623,7 +634,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
-        count_plot = 0
+        plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -646,15 +657,18 @@ class NexusFile:
             )
 
             if display:
-                if count_plot == 0:
+                if self.do_batch:
+                    if plot_count == 0:
+                        _, ax = plt.subplots(figsize=(10, 6))
+                else:
                     _, ax = plt.subplots(figsize=(10, 6))
-                    ax.set_title('Azimuthal average of data in q-space')
-                    ax.set_xlabel('$\\chi$')
-                    ax.set_ylabel('I (A.u.)')
+                ax.set_title('Azimuthal average of data in q-space')
+                ax.set_xlabel('$\\chi$')
+                ax.set_ylabel('I (A.u.)')
                 file_path = Path(self.file_paths[index])
                 file_name = file_path.name
                 ax.loglog(smi_data.chi_azi, smi_data.I_azi, label=f"{file_name}")
-                count_plot += 1
+                plot_count += 1
 
                 if self.do_batch:
                     if plot_count == len(self.nx_files):
@@ -707,7 +721,7 @@ class NexusFile:
             Name of the group that will contain the data.
 
         """
-        count_plot = 0
+        plot_count = 0
 
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
@@ -731,15 +745,18 @@ class NexusFile:
             )
 
             if display:
-                if count_plot == 0:
+                if self.do_batch:
+                    if plot_count == 0:
+                        _, ax = plt.subplots(figsize=(10, 6))
+                else:
                     _, ax = plt.subplots(figsize=(10, 6))
-                    ax.set_title('Horizontal integration of data in q-space')
-                    ax.set_xlabel('$q_{x} (A^{-1}$)')
-                    ax.set_ylabel('I (A.u.)')
+                ax.set_title('Horizontal integration of data in q-space')
+                ax.set_xlabel('$q_{x} (A^{-1}$)')
+                ax.set_ylabel('I (A.u.)')
                 file_path = Path(self.file_paths[index])
                 file_name = file_path.name
                 ax.plot(smi_data.q_hor, smi_data.I_hor, label=f"{file_name}")
-                count_plot += 1
+                plot_count += 1
 
                 if self.do_batch:
                     if plot_count == len(self.nx_files):
@@ -793,7 +810,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
-        count_plot = 0
+        plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -810,15 +827,16 @@ class NexusFile:
             qy_min = qy_min if qy_min is not None else defaults["qy_min"]
             qy_max = qy_max if qy_max is not None else defaults["qy_max"]
 
-            smi_data.horizontal_integration(
+            smi_data.vertical_integration(
                 q_per_range=[qy_min, qy_max],
                 q_par_range=[qx_min, qx_max]
             )
 
-            smi_data.vertical_integration(q_per_range=qy_range, q_par_range=qx_range)
-
             if display:
-                if count_plot == 0:
+                if self.do_batch:
+                    if plot_count == 0:
+                        _, ax = plt.subplots(figsize=(10, 6))
+                else:
                     _, ax = plt.subplots(figsize=(10, 6))
                     ax.set_title('Horizontal integration of data in q-space')
                     ax.set_xlabel('$q_{y} (A^{-1}$)')
@@ -826,7 +844,7 @@ class NexusFile:
                 file_path = Path(self.file_paths[index])
                 file_name = file_path.name
                 ax.plot(smi_data.q_ver, smi_data.I_ver, label=f"{file_name}")
-                count_plot += 1
+                plot_count += 1
 
                 if self.do_batch:
                     if plot_count == len(self.nx_files):
