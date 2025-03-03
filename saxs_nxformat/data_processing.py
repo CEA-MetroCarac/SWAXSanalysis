@@ -373,10 +373,10 @@ class GUI_process(tk.Tk):
 
         # We fill out the parameters for every file
 
-        file = NexusFile(self.to_process, self.do_batch.state())
-        process(file, **param_dict)
-        for file in file.get_file():
-            file.close()
+        nxfiles = NexusFile(self.to_process, self.do_batch.state())
+        print("type file", nxfiles)
+        process(nxfiles, **param_dict)
+        nxfiles.nexus_close()
         self.progress_label.configure(text="No processing in progress",
                                       fg="#6DB06E")
 

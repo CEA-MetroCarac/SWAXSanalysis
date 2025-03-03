@@ -448,7 +448,7 @@ def auto_generate():
 
         nx_file = NexusFile([new_file_path])
         nx_file.process_q_space(save=True)
-        nx_file.close()
+        nx_file.nexus_close()
 
         del nx_file
         gc.collect()

@@ -218,7 +218,7 @@ class NexusFile:
         list of array of intensities
     """
 
-    def __init__(self, h5_paths, do_batch):
+    def __init__(self, h5_paths, do_batch=()):
         """
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
@@ -868,18 +868,76 @@ class NexusFile:
 
     def process_display(self, group_name="DATA_Q_SPACE"):
         """
-        TODO : Will display the selected data_group
-        """
+        Displays the data contained in the DATA_... group
 
-    def close(self):
+        Parameters
+        ----------
+        group_name:
+            Name of the data group to be displayed
+        """
+        plot_count = 0
+        for index, nxfile in enumerate(self.nx_files):
+            extracted_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+            print(np.shape(extracted_data))
+            if np.isscalar(extracted_data):
+                print(extracted_data)
+            elif len(np.shape(extracted_data)) == 1:
+                if self.do_batch:
+                    if plot_count == 0:
+                        _, ax = plt.subplots(figsize=(10, 6))
+                else:
+                    _, ax = plt.subplots(figsize=(10, 6))
+                file_path = Path(self.file_paths[index])
+                file_name = file_path.name
+                ax.plot(extracted_data)
+                plot_count += 1
+
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        ax.legend()
+                        plt.show()
+                else:
+                    plt.show()
+
+            elif len(np.shape(extracted_data)) == 2:
+                if self.do_batch:
+                    if plot_count == 0:
+                        file_number = len(self.nx_files)
+                        dims = int(np.ceil(np.sqrt(file_number)))
+                        fig, ax = plt.subplots(dims, dims, layout="constrained")
+                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                else:
+                    fig, ax = plt.subplots(layout="constrained")
+                    current_ax = ax
+                cplot = current_ax.imshow(
+                    extracted_data,
+                    vmin=0,
+                    vmax=np.percentile(
+                        extracted_data[~np.isnan(extracted_data)],
+                        99),
+                    cmap=PLT_CMAP
+                )
+                cbar = plt.colorbar(cplot, ax=current_ax)
+                cbar.set_label("Intensity")
+                plot_count += 1
+
+                if self.do_batch:
+                    if plot_count == len(self.nx_files):
+                        plt.show()
+                else:
+                    plt.show()
+
+    def nexus_close(self):
         """
         Method used to close the loaded file correctly by repacking it and then closing it
         """
         for index, file in enumerate(self.nx_files):
             file.close()
+            print("starting repacking")
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
             os.remove(self.file_paths[index])
             shutil.move(self.file_paths[index] + ".tmp", self.file_paths[index])
+            print("Repacking done")
 
 
 if __name__ == "__main__":
