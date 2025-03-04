@@ -3,12 +3,26 @@ This module is meant to help the user process their data
 """
 import inspect
 import re
+import h5py
 import tkinter as tk
 from tkinter import ttk, filedialog
 
 from saxs_nxformat import TREATED_PATH, ICON_PATH
 from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value
+
+
+def get_group_names(file_list):
+    groups = []
+    for file_path in file_list:
+        with h5py.File(file_path, "r") as file_object:
+            parent_group = file_object["/ENTRY"]
+
+            for name in parent_group.keys():
+                if isinstance(parent_group[name], h5py.Group) and "DATA" in name and name not in groups:
+                    groups.append(name)
+
+    return groups
 
 
 class GUI_process(tk.Tk):
@@ -183,7 +197,7 @@ class GUI_process(tk.Tk):
                 if param_name == "group_name":
                     entry_param = ttk.Combobox(self.param_frame,
                                                font=("Arial", 12))
-                    entry_param["values"] =
+                    entry_param["values"] = get_group_names(self.selected_files)
                 else:
                     entry_param = tk.Entry(self.param_frame,
                                            font=("Arial", 12))
@@ -251,8 +265,10 @@ class GUI_process(tk.Tk):
         # We fill out the parameters for every file
 
         nxfiles = NexusFile(self.to_process, self.do_batch.state())
-        print("type file", nxfiles)
-        process(nxfiles, **param_dict)
+        try:
+            process(nxfiles, **param_dict)
+        except Exception as exception:
+            print(exception)
         nxfiles.nexus_close()
         self.progress_label.configure(text="No processing in progress",
                                       fg="#6DB06E")

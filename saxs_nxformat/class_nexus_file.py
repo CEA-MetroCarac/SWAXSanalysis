@@ -155,8 +155,8 @@ def delete_data(nx_file, group_name):
         Name of the data group to delete
     """
     group_name = group_name.upper()
-    if group_name in nx_file:
-        del file[f"/ENTRY/{group_name}"]
+    if group_name in nx_file["/ENTRY"]:
+        del nx_file[f"/ENTRY/{group_name}"]
     else:
         print("This group does not exists")
 
@@ -897,6 +897,10 @@ class NexusFile:
                         plt.show()
                 else:
                     plt.show()
+
+    def process_delete_data(self, group_name="DATA_Q_SPACE"):
+        for index, nxfile in enumerate(self.nx_files):
+            delete_data(nxfile, group_name)
 
     def nexus_close(self):
         """
