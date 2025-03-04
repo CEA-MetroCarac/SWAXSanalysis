@@ -104,12 +104,15 @@ def extract_from_h5(nx_file, h5path, data_type="dataset", attribute_name=None):
         return None
 
 
-def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset):
+def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset, mask):
     """
     Method used to save a dataset in the h5 file
 
     Parameters
     ----------
+    mask :
+        mask used for data treatment
+
     nx_file :
         file object
 
@@ -140,6 +143,9 @@ def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset):
                        parameter, f"{dataset_path}/{parameter_symbol}")
     replace_h5_dataset(nx_file, f"{dataset_path}/I",
                        dataset)
+
+    replace_h5_dataset(nx_file, f"{dataset_path}/mask",
+                       mask)
 
 
 def delete_data(nx_file, group_name):
@@ -294,6 +300,7 @@ class NexusFile:
             self, display=False, save=False, group_name="DATA_Q_SPACE"
     ):
         """
+        TODO : add param to control the percentile
         Method used to put the data in Q space (Fourier space). This will save an array
         containing the intensity values and another array containing the vector Q associated
         to each intensities
@@ -311,7 +318,8 @@ class NexusFile:
         """
         plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
+            # smi_data.masks = self.nx_files[index]["/ENTRY/DATA/mask"]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if display:
@@ -354,8 +362,9 @@ class NexusFile:
                 qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
                 qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
                 mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
+                mask = smi_data.masks
 
-                save_data(self.nx_files[index], "Q", mesh_q, group_name, smi_data.img_st)
+                save_data(self.nx_files[index], "Q", mesh_q, group_name, smi_data.img_st, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -465,8 +474,9 @@ class NexusFile:
                 chi_list = smi_data.chi_cake
                 q_grid, chi_grid = np.meshgrid(q_list, chi_list)
                 mesh_cake = np.stack((q_grid, chi_grid), axis=-1)
+                mask = smi_data.masks
 
-                save_data(self.nx_files[index], "Q", mesh_cake, group_name, smi_data.cake)
+                save_data(self.nx_files[index], "Q", mesh_cake, group_name, smi_data.cake, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -514,7 +524,8 @@ class NexusFile:
         """
         plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
+            # TODO : cette ligne pose problème
+            smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -562,7 +573,8 @@ class NexusFile:
             if save:
                 q_list = smi_data.q_rad
                 i_list = smi_data.I_rad
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list)
+                mask = smi_data.masks
+                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -604,7 +616,7 @@ class NexusFile:
         """
         plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
+            smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -649,7 +661,8 @@ class NexusFile:
             if save:
                 chi_list = smi_data.chi_azi
                 i_list = smi_data.I_azi
-                save_data(self.nx_files[index], "Chi", chi_list, group_name, i_list)
+                mask = smi_data.masks
+                save_data(self.nx_files[index], "Chi", chi_list, group_name, i_list, mask)
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Azimuthal averaging",
@@ -692,7 +705,7 @@ class NexusFile:
         plot_count = 0
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
+            smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -737,7 +750,8 @@ class NexusFile:
             if save:
                 q_list = smi_data.q_hor
                 i_list = smi_data.I_hor
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list)
+                mask = smi_data.masks
+                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -780,7 +794,7 @@ class NexusFile:
         """
         plot_count = 0
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = np.logical_not(np.ones(np.shape(smi_data.imgs)))
+            smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -825,7 +839,8 @@ class NexusFile:
             if save:
                 q_list = smi_data.q_ver
                 i_list = smi_data.I_ver
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list)
+                mask = smi_data.masks
+                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -876,7 +891,8 @@ class NexusFile:
                         file_number = len(self.nx_files)
                         dims = int(np.ceil(np.sqrt(file_number)))
                         fig, ax = plt.subplots(dims, dims, layout="constrained")
-                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
+                    if dims != 1:
+                        current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
                 else:
                     fig, ax = plt.subplots(layout="constrained")
                     current_ax = ax

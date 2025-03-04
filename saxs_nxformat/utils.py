@@ -65,7 +65,6 @@ def string_2_value(string: str, unit_type: str = None) -> str | int | float | No
         value = string.upper()
 
     else:
-        print(f"{string} couldn't be converted")
         value = string
 
     return value

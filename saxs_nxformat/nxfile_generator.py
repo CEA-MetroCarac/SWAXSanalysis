@@ -62,7 +62,9 @@ def data_treatment(data, h5_file):
     data_r = np.stack((x_grid, y_grid), axis=-1)
     data_i = data
 
-    output = {"R_data": data_r, "I_data": data_i}
+    logical_mask = np.logical_not(data_i >= 0)
+
+    output = {"R_data": data_r, "I_data": data_i, "mask": logical_mask}
 
     return output
 
@@ -135,19 +137,23 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
 
+    # We build the file name
+    # TODO : Think of a better file name template
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M-%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
-    # TODO : Think of a better file name template
     hdf5_path = os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5")
+
+    # We save
     with h5py.File(hdf5_path, "w") as save_file:
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
         replace_h5_dataset(save_file, "ENTRY/DATA/R", treated_data["R_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
+        replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
     return hdf5_path
 
 
@@ -248,6 +254,7 @@ def print_to_gui(message):
 
 def auto_generate():
     """
+    # TODO : no need to sleep as long as there are files, if there is not sleep for 5 minutes
     This is a thread that runs continuously and tries to export edf files found in the parent folder
     into h5 files using the settings file found in the same folder.
     """
@@ -298,6 +305,7 @@ def auto_generate():
         nx_file = NexusFile([new_file_path])
         # TODO : add processes
         nx_file.process_q_space(save=True)
+        nx_file.process_radial_average(save=True)
         nx_file.nexus_close()
 
         del nx_file
