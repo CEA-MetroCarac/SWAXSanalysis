@@ -20,123 +20,10 @@ from pathlib import Path
 import fabio
 import h5py
 import numpy as np
-from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH
+
+from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT
 from saxs_nxformat.class_nexus_file import NexusFile
-
-# TODO : put in __init__
-json_path = BASE_DIR / "nexus_standards" / "structure_NXunits.json"
-with open(json_path, "r", encoding="utf-8") as file_dict:
-    DICT_UNIT = json.load(file_dict)
-
-
-def convert(number, unit_start, unit_end, testing=False):
-    """
-    TODo : put in utils file
-    Converts a value that is expressed in the unitStart into a value expressed in the unitEnd
-
-    Parameters
-    ----------
-    number :
-        the value that needs to be converted
-    unit_start :
-        the starting unit of the value
-    unit_end :
-        the unit we want to convert it to
-    testing :
-        a boolean var to know if we are in testing conditions or not
-
-    Returns
-    -------
-    number :
-        The converted value
-    """
-    if unit_start == "arbitrary" or unit_end == "arbitrary" or number is None:
-        return number
-    unit_type1 = None
-    unit_type2 = None
-    for key, value in DICT_UNIT.items():
-        if unit_start in value:
-            unit_type1 = key
-
-        if unit_end in value:
-            unit_type2 = key
-
-    if unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and not testing:
-        tkinter.messagebox.showerror("Error",
-                                     f"The value {number} {unit_start} could not be converted to "
-                                     f"{unit_end} :\n")
-    elif unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and testing:
-        return "fail"
-
-    unit_type = unit_type1
-
-    if unit_type == "NX_ANGLE":
-        starting_unit = DICT_UNIT[unit_type][unit_start]
-        intermediate_unit = DICT_UNIT[unit_type]["turn"]
-        ending_unit = DICT_UNIT[unit_type][unit_end]
-
-        number = number * (intermediate_unit / starting_unit)
-        number = number * (ending_unit / intermediate_unit)
-    elif unit_type == "NX_TEMPERATURE":
-        starting_unit = DICT_UNIT[unit_type][unit_start]
-        ending_unit = DICT_UNIT[unit_type][unit_end]
-        if unit_end == "C":
-            number = number - ending_unit
-        else:
-            number = number + starting_unit
-    else:
-        starting_unit = DICT_UNIT[unit_type][unit_start]
-        ending_unit = DICT_UNIT[unit_type][unit_end]
-
-        number = number * (starting_unit / ending_unit)
-
-    # print(number_start, unitStart, number, unitEnd)
-    return number
-
-
-def string_2_value(string: str, unit_type: str) -> str | int | float | None:
-    """
-    TODO : put in utils file
-    Convert a string to a specific data type based on its format.
-
-    The conversion rules are as follows:
-    - Converts to `float` if the string matches a floating-point or scientific
-    notation format (e.g., "X.Y", "XeY").
-    - Converts to `int` if the string matches an integer format (e.g., "XXXX").
-    - Converts to `None` if the string is empty or equals "None" (case insensitive).
-    - Returns a lowercase version of the string otherwise.
-
-    Parameters
-    ----------
-    string : str
-        The input string to be converted.
-
-    Returns
-    -------
-    str | int | float | None
-        The converted value:
-        - A `float` if the string represents a floating-point number.
-        - An `int` if the string represents an integer.
-        - `None` if the string is empty or equals "None".
-        - A lowercase `str` otherwise.
-    """
-    if string is None:
-        if unit_type == "NX_NUMBER":
-            return 0.0
-        if unit_type == "NX_CHAR":
-            return "N/A"
-        if unit_type == "NX_DATE_TIME":
-            return "0000-00-00T00:00:00"
-        else:
-            return "None"
-    if re.search("(^-?\\d*[.,]\\d*$)|(^-?\\d?[.,]?\\d*e[+-]\\d*$)", string):
-        value = float(string)
-    elif re.search("^-?\\d+$", string):
-        value = int(string)
-    else:
-        value = str(string)
-
-    return value
+from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset
 
 
 def data_treatment(data, h5_file):
@@ -178,37 +65,6 @@ def data_treatment(data, h5_file):
     output = {"R_data": data_r, "I_data": data_i}
 
     return output
-
-
-def replace_h5_dataset(file, dataset_path, new_data):
-    """
-    TODO : put in utils file
-    Function used to replace a dataset that's already been created
-    in a hdf5 file
-
-    Parameters
-    ----------
-    file :
-        File containing the dataset
-
-    dataset_path :
-        Path of the dataset in the hdf5 file
-
-    new_data :
-        new value for the dataset
-    """
-    old_dataset = file[dataset_path]
-    attributes = dict(old_dataset.attrs)
-
-    del file[dataset_path]
-
-    new_dataset = file.create_dataset(dataset_path,
-                                      data=new_data,
-                                      compression="gzip",
-                                      compression_opts=9)
-
-    for key, value in attributes.items():
-        new_dataset.attrs[key] = value
 
 
 def generate_nexus(edf_path, hdf5_path, settings_path):

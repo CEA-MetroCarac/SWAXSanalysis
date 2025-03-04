@@ -8,137 +8,7 @@ from tkinter import ttk, filedialog
 
 from saxs_nxformat import TREATED_PATH, ICON_PATH
 from saxs_nxformat.class_nexus_file import NexusFile
-
-
-class VerticalScrolledFrame(ttk.Frame):
-    """
-    # TODO : put in __init__
-    A scrollable frame widget using a canvas and a vertical scrollbar.
-
-    This class creates a scrollable frame, allowing content
-    larger than the visible area to be scrolled vertically.
-    It is based on the implementation from:
-    https://coderslegacy.com/python/make-scrollable-frame-in-tkinter/
-
-    Parameters
-    ----------
-    parent : tk.Widget
-        The parent widget in which the scrollable frame will be placed.
-    *args : tuple
-        Additional positional arguments to pass to the ttk.Frame initializer.
-    **kw : dict
-        Additional keyword arguments to pass to the ttk.Frame initializer.
-    """
-
-    def __init__(self, parent, *args, **kw):
-        """
-        Initialize the VerticalScrolledFrame.
-
-        Parameters
-        ----------
-        parent :
-            The parent widget in which the scrollable frame will be placed.
-        *args :
-            Additional positional arguments to pass to the ttk.Frame initializer.
-        **kw :
-            Additional keyword arguments to pass to the ttk.Frame initializer.
-        """
-        ttk.Frame.__init__(self, parent, *args, **kw)
-
-        # Create a canvas object and a vertical scrollbar for scrolling it.
-        vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
-        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                                width=200, height=200,
-                                yscrollcommand=vscrollbar.set)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
-        vscrollbar.config(command=self.canvas.yview)
-
-        # Reset the view
-        self.canvas.xview_moveto(0)
-        self.canvas.yview_moveto(0)
-
-        # Create a frame inside the canvas which will be scrolled with it.
-        self.interior = ttk.Frame(self.canvas)
-        self.interior.columnconfigure(0, weight=1)
-        self.interior.bind('<Configure>', self._configure_interior)
-        self.canvas.bind('<Configure>', self._configure_canvas)
-        self.interior_id = self.canvas.create_window(0, 0, window=self.interior,
-                                                     anchor=tk.NW)
-
-    def _configure_interior(self, event):
-        """
-        Update the scroll region of the canvas to match the size of the inner frame.
-
-        Parameters
-        ----------
-        event : tk.Event
-            The event object containing information about the configuration change.
-        """
-        size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
-        self.canvas.config(scrollregion=(0, 0, size[0], size[1]))
-        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
-            # Update the canvas's width to fit the inner frame.
-            self.canvas.config(width=self.interior.winfo_reqwidth())
-
-    def _configure_canvas(self, event):
-        """
-        Update the inner frame's width to match the canvas's width.
-
-        Parameters
-        ----------
-        event : tk.Event
-            The event object containing information about the configuration change.
-        """
-        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
-            # Update the inner frame's width to fill the canvas.
-            self.canvas.itemconfigure(self.interior_id,
-                                      width=self.canvas.winfo_width())
-
-
-def string_2_value(string: str) -> str | int | float | None:
-    """
-    TODo : put in utils file
-    Convert a string to a specific data type based on its format.
-
-    The conversion rules are as follows:
-    - Converts to `float` if the string matches a floating-point or scientific
-    notation format (e.g., "X.Y", "XeY").
-    - Converts to `int` if the string matches an integer format (e.g., "XXXX").
-    - Converts to `None` if the string is empty or equals "None" (case insensitive).
-    - Returns a lowercase version of the string otherwise.
-
-    Parameters
-    ----------
-    string : str
-        The input string to be converted.
-
-    Returns
-    -------
-    str | int | float | None
-        The converted value:
-        - A `float` if the string represents a floating-point number.
-        - An `int` if the string represents an integer.
-        - `None` if the string is empty or equals "None".
-        - A lowercase `str` otherwise.
-    """
-    if re.search("(^none$)|(^defaul?t$)|(^$)", string.lower()):
-        return None
-    if re.search("(^-?\\d*[.,]\\d*$)|(^-?\\d?[.,]?\\d*e[+-]\\d*$)", string.lower()):
-        value = float(string)
-    elif re.search("^-?\\d+$", string):
-        value = int(string)
-    elif re.search("^true$", string.lower()):
-        value = True
-    elif re.search("^false$", string.lower()):
-        value = False
-    elif re.search("^[a-z]+(_[a-z]+)*$", string.lower()):
-        value = string.upper()
-    else:
-        print(f"{string} couldn't be converted, set to None")
-        return None
-
-    return value
+from saxs_nxformat.utils import string_2_value
 
 
 class GUI_process(tk.Tk):
@@ -304,15 +174,20 @@ class GUI_process(tk.Tk):
         for param in param_list:
             if param[0] != "self":
                 param_str = str(param[1])
-                name, value = param_str.split("=")
+                param_name, param_value = param_str.split("=")
                 label_param = tk.Label(self.param_frame,
-                                       text=name,
+                                       text=param_name,
                                        font=("Arial", 12))
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
 
-                entry_param = tk.Entry(self.param_frame,
-                                       font=("Arial", 12))
-                entry_param.insert(0, str(value.strip("'")))
+                if param_name == "group_name":
+                    entry_param = ttk.Combobox(self.param_frame,
+                                               font=("Arial", 12))
+                    entry_param["values"] =
+                else:
+                    entry_param = tk.Entry(self.param_frame,
+                                           font=("Arial", 12))
+                entry_param.insert(0, str(param_value.strip("'")))
                 entry_param.grid(column=1, row=current_row, pady=5, padx=5, sticky="we")
                 entry_param.tag = f"{param[0]}"
                 current_row += 1

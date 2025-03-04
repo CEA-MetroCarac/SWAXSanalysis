@@ -12,142 +12,8 @@ from pathlib import Path
 from tkinter import ttk, filedialog
 
 import fabio
-from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH
-
-
-#############################
-### Some utility function ###
-#############################
-
-
-def string_2_value(string: str) -> str | int | float | None:
-    """
-    TODO : put in utils file
-    Convert a string to a specific data type based on its format.
-
-    The conversion rules are as follows:
-    - Converts to `float` if the string matches a floating-point or scientific
-    notation format (e.g., "X.Y", "XeY").
-    - Converts to `int` if the string matches an integer format (e.g., "XXXX").
-    - Converts to `None` if the string is empty or equals "None" (case insensitive).
-    - Returns a lowercase version of the string otherwise.
-
-    Parameters
-    ----------
-    string : str
-        The input string to be converted.
-
-    Returns
-    -------
-    str | int | float | None
-        The converted value:
-        - A `float` if the string represents a floating-point number.
-        - An `int` if the string represents an integer.
-        - `None` if the string is empty or equals "None".
-        - A lowercase `str` otherwise.
-    """
-
-    if re.search("(^-?\\d*[.,]\\d*$)|(^-?\\d?[.,]\\d*e[+-]\\d*$)", string):
-        value = float(string)
-    elif re.search("^-?\\d+$", string):
-        value = int(string)
-    elif string.lower().strip() in ["none", ""]:
-        value = None
-    else:
-        value = str(string).lower()
-
-    return value
-
-
-##############################
-### Scrollable frame class ###
-##############################
-
-
-class VerticalScrolledFrame(ttk.Frame):
-    """
-    TODo : put in utils file
-    A scrollable frame widget using a canvas and a vertical scrollbar.
-
-    This class creates a scrollable frame, allowing content
-    larger than the visible area to be scrolled vertically.
-    It is based on the implementation from:
-    https://coderslegacy.com/python/make-scrollable-frame-in-tkinter/
-
-    Parameters
-    ----------
-    parent : tk.Widget
-        The parent widget in which the scrollable frame will be placed.
-    *args : tuple
-        Additional positional arguments to pass to the ttk.Frame initializer.
-    **kw : dict
-        Additional keyword arguments to pass to the ttk.Frame initializer.
-    """
-
-    def __init__(self, parent, *args, **kw):
-        """
-        Initialize the VerticalScrolledFrame.
-
-        Parameters
-        ----------
-        parent :
-            The parent widget in which the scrollable frame will be placed.
-        *args :
-            Additional positional arguments to pass to the ttk.Frame initializer.
-        **kw :
-            Additional keyword arguments to pass to the ttk.Frame initializer.
-        """
-        ttk.Frame.__init__(self, parent, *args, **kw)
-
-        # Create a canvas object and a vertical scrollbar for scrolling it.
-        vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
-        vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
-        self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                                width=200, height=500,
-                                yscrollcommand=vscrollbar.set)
-        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
-        vscrollbar.config(command=self.canvas.yview)
-
-        # Reset the view
-        self.canvas.xview_moveto(0)
-        self.canvas.yview_moveto(0)
-
-        # Create a frame inside the canvas which will be scrolled with it.
-        self.interior = ttk.Frame(self.canvas)
-        self.interior.columnconfigure(1, weight=1)
-        self.interior.bind('<Configure>', self._configure_interior)
-        self.canvas.bind('<Configure>', self._configure_canvas)
-        self.interior_id = self.canvas.create_window(0, 0, window=self.interior,
-                                                     anchor=tk.NW)
-
-    def _configure_interior(self, event):
-        """
-        Update the scroll region of the canvas to match the size of the inner frame.
-
-        Parameters
-        ----------
-        event : tk.Event
-            The event object containing information about the configuration change.
-        """
-        size = (self.interior.winfo_reqwidth(), self.interior.winfo_reqheight())
-        self.canvas.config(scrollregion=(0, 0, size[0], size[1]))
-        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
-            # Update the canvas's width to fit the inner frame.
-            self.canvas.config(width=self.interior.winfo_reqwidth())
-
-    def _configure_canvas(self, event):
-        """
-        Update the inner frame's width to match the canvas's width.
-
-        Parameters
-        ----------
-        event : tk.Event
-            The event object containing information about the configuration change.
-        """
-        if self.interior.winfo_reqwidth() != self.canvas.winfo_width():
-            # Update the inner frame's width to fill the canvas.
-            self.canvas.itemconfigure(self.interior_id,
-                                      width=self.canvas.winfo_width())
+from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
+from saxs_nxformat.utils import VerticalScrolledFrame
 
 
 ######################
@@ -188,9 +54,6 @@ class Setting(tk.Tk):
         self.iconbitmap(ICON_PATH)
         self.focus_force()
 
-        # We get the path of this script to load the necessary dict
-        # TODO : put in __init__
-        BASE_DIR = Path(__file__).parent
         json_path = BASE_DIR / "nexus_standards" / "structure_NXcanSAS.json"
         with open(json_path, "r", encoding="utf-8") as file:
             self.dict_config = json.load(file)
@@ -555,8 +418,3 @@ class Setting(tk.Tk):
             tk.messagebox.showerror("Error",
                                     f"An error occurred while saving:\n "
                                     f"{str(error)}")
-
-
-if __name__ == "__main__":
-    app = Setting()
-    app.mainloop()

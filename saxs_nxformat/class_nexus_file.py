@@ -13,6 +13,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP
+from saxs_nxformat.utils import replace_h5_dataset
 from smi_analysis import SMI_beamline
 
 
@@ -29,47 +30,6 @@ def repack_hdf5(input_file, output_file):
     """
     with h5py.File(input_file, 'r') as src, h5py.File(output_file, 'w') as dest:
         src.copy("/ENTRY", dest)
-
-
-def replace_h5_dataset(hdf5_file, dataset_h5path, new_dataset, new_dataset_h5path=None):
-    """
-    Function used to replace a dataset that's already been created
-    in a hdf5 file
-
-    Parameters
-    ----------
-    hdf5_file :
-        File containing the dataset
-
-    dataset_h5path :
-        Path of the dataset in the hdf5 file
-
-    new_dataset :
-        new value for the dataset
-
-    new_dataset_h5path :
-        default is None. Change to change the name of the dataset as ou replace it
-    """
-    # We get the old dataset and it's attributes and then delete it
-    old_dataset = hdf5_file[dataset_h5path]
-    attributes = dict(old_dataset.attrs)
-    del hdf5_file[dataset_h5path]
-
-    # We create the new dataset with the new data provided
-    if new_dataset_h5path:
-        new_dataset = hdf5_file.create_dataset(new_dataset_h5path,
-                                               data=new_dataset,
-                                               compression="gzip",
-                                               compression_opts=9)
-    else:
-        new_dataset = hdf5_file.create_dataset(dataset_h5path,
-                                               data=new_dataset,
-                                               compression="gzip",
-                                               compression_opts=9)
-
-    # We add the attributes to the new dataset so that we do not lose them
-    for attr_name, attr_value in attributes.items():
-        new_dataset.attrs[attr_name] = attr_value
 
 
 def create_process(hdf5_file, group_h5path, process_name, process_desc):
@@ -150,6 +110,9 @@ def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset):
 
     Parameters
     ----------
+    nx_file :
+        file object
+
     parameter_symbol :
         Symbol of the parameter. will be the name of its dataset
 
@@ -185,6 +148,9 @@ def delete_data(nx_file, group_name):
 
     Parameters
     ----------
+    nx_file :
+        file object
+
     group_name :
         Name of the data group to delete
     """
@@ -199,7 +165,7 @@ class NexusFile:
     """
     A class that can load and treat data formated in the NXcanSAS standard
     TODO : manage data stitching, ask for example files
-    TODO : If there is a group name parameter, force DATA_ in front
+    TODO : If there is a group name parameter, force DATA_ in front ?
     TODO : Detect optimal range for parameter automatically
 
     Attributes
@@ -886,7 +852,6 @@ class NexusFile:
         plot_count = 0
         for index, nxfile in enumerate(self.nx_files):
             extracted_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
-            print(np.shape(extracted_data))
             if np.isscalar(extracted_data):
                 print(extracted_data)
             elif len(np.shape(extracted_data)) == 1:
@@ -895,8 +860,6 @@ class NexusFile:
                         _, ax = plt.subplots(figsize=(10, 6))
                 else:
                     _, ax = plt.subplots(figsize=(10, 6))
-                file_path = Path(self.file_paths[index])
-                file_name = file_path.name
                 ax.plot(extracted_data)
                 plot_count += 1
 

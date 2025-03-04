@@ -5,6 +5,7 @@ TODo : change docstring on the structure to specify the fact that we use roll pi
 """
 import os
 import sys
+import json
 from pathlib import Path
 
 
@@ -32,3 +33,6 @@ ICON_PATH = BASE_DIR / "Images" / "nxformat_icon.ico"
 
 # Global variables to the file
 PLT_CMAP = "magma"
+json_path = BASE_DIR / "nexus_standards" / "structure_NXunits.json"
+with open(json_path, "r", encoding="utf-8") as file_dict:
+    DICT_UNIT = json.load(file_dict)
