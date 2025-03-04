@@ -12,6 +12,7 @@ from saxs_nxformat.class_nexus_file import NexusFile
 
 class VerticalScrolledFrame(ttk.Frame):
     """
+    # TODO : put in __init__
     A scrollable frame widget using a canvas and a vertical scrollbar.
 
     This class creates a scrollable frame, allowing content
@@ -97,6 +98,7 @@ class VerticalScrolledFrame(ttk.Frame):
 
 def string_2_value(string: str) -> str | int | float | None:
     """
+    TODo : put in utils file
     Convert a string to a specific data type based on its format.
 
     The conversion rules are as follows:

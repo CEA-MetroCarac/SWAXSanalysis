@@ -199,6 +199,8 @@ class NexusFile:
     """
     A class that can load and treat data formated in the NXcanSAS standard
     TODO : manage data stitching, ask for example files
+    TODO : If there is a group name parameter, force DATA_ in front
+    TODO : Detect optimal range for parameter automatically
 
     Attributes
     ----------
@@ -874,6 +876,7 @@ class NexusFile:
         - axes and title
         - colormap ?
         TODO : find a way to dynamically get the other axes
+        TODO : Put the parameter as a combobox of all the DATA_ groups
 
         Parameters
         ----------
@@ -938,22 +941,6 @@ class NexusFile:
         """
         for index, file in enumerate(self.nx_files):
             file.close()
-            print("starting repacking")
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
             os.remove(self.file_paths[index])
             shutil.move(self.file_paths[index] + ".tmp", self.file_paths[index])
-            print("Repacking done")
-
-
-if __name__ == "__main__":
-    FILE_NAME = "/edf2NxSAS/treated data/instrument - Xeuss/config - 2024-12-19T15-00/sample - SafeLiMove/experiment " \
-                "- WAXS1/format - NXsas/defaultSampleName_SAXS_2025-02-19T10-36-52.h5"
-
-    nx_file = NexusFile(FILE_NAME)
-    nx_file.process_q_space(display=True, save=True)
-    nx_file.process_caking(display=True, save=True)
-    nx_file.process_radial_average(display=True, save=True)
-    nx_file.process_azimuthal_average(display=True, save=True)
-    nx_file.process_vertical_integration(display=True, save=True)
-
-    nx_file.close()

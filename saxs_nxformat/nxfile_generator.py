@@ -23,27 +23,15 @@ import numpy as np
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH
 from saxs_nxformat.class_nexus_file import NexusFile
 
+# TODO : put in __init__
 json_path = BASE_DIR / "nexus_standards" / "structure_NXunits.json"
 with open(json_path, "r", encoding="utf-8") as file_dict:
     DICT_UNIT = json.load(file_dict)
 
 
-def get_desktop_path():
-    """Return the path to the user's desktop"""
-    if sys.platform == "win32":
-        return Path(os.path.join(os.environ["USERPROFILE"], "Desktop"))
-
-    desktop = Path.home() / "Desktop"
-    xdg_path = os.popen('xdg-user-dir DESKTOP').read().strip()
-
-    if xdg_path:
-        desktop = Path(xdg_path)
-
-    return desktop
-
-
 def convert(number, unit_start, unit_end, testing=False):
     """
+    TODo : put in utils file
     Converts a value that is expressed in the unitStart into a value expressed in the unitEnd
 
     Parameters
@@ -108,6 +96,7 @@ def convert(number, unit_start, unit_end, testing=False):
 
 def string_2_value(string: str, unit_type: str) -> str | int | float | None:
     """
+    TODO : put in utils file
     Convert a string to a specific data type based on its format.
 
     The conversion rules are as follows:
@@ -193,6 +182,7 @@ def data_treatment(data, h5_file):
 
 def replace_h5_dataset(file, dataset_path, new_data):
     """
+    TODO : put in utils file
     Function used to replace a dataset that's already been created
     in a hdf5 file
 
@@ -450,6 +440,7 @@ def auto_generate():
         shutil.move(file_path, result[1] / file_path.name)
 
         nx_file = NexusFile([new_file_path])
+        # TODO : add processes
         nx_file.process_q_space(save=True)
         nx_file.nexus_close()
 

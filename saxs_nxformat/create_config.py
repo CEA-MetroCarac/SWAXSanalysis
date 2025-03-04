@@ -22,6 +22,7 @@ from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH
 
 def string_2_value(string: str) -> str | int | float | None:
     """
+    TODO : put in utils file
     Convert a string to a specific data type based on its format.
 
     The conversion rules are as follows:
@@ -65,6 +66,7 @@ def string_2_value(string: str) -> str | int | float | None:
 
 class VerticalScrolledFrame(ttk.Frame):
     """
+    TODo : put in utils file
     A scrollable frame widget using a canvas and a vertical scrollbar.
 
     This class creates a scrollable frame, allowing content
@@ -187,6 +189,7 @@ class Setting(tk.Tk):
         self.focus_force()
 
         # We get the path of this script to load the necessary dict
+        # TODO : put in __init__
         BASE_DIR = Path(__file__).parent
         json_path = BASE_DIR / "nexus_standards" / "structure_NXcanSAS.json"
         with open(json_path, "r", encoding="utf-8") as file:
