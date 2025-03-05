@@ -1,7 +1,6 @@
 """
 TODO : Add global variable for colormap, .ico path and other parameters
 TODO : Add a utils file containing all repeating functions
-TODo : change docstring on the structure to specify the fact that we use roll pitch yaw according to the pyfai convention
 """
 import os
 import sys

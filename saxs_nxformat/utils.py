@@ -62,7 +62,7 @@ def string_2_value(string: str, unit_type: str = None) -> str | int | float | No
     elif re.search("^false$", string.lower()):
         value = False
 
-    elif re.search("^[a-z]+(_[a-z]+)*$", string.lower()):
+    elif re.search("^[a-z]+_[a-z]+(_[a-z]+)*$", string.lower()):
         value = string.upper()
 
     else:

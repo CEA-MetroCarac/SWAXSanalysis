@@ -170,8 +170,6 @@ def delete_data(nx_file, group_name):
 class NexusFile:
     """
     A class that can load and treat data formated in the NXcanSAS standard
-    TODO : manage data stitching, ask for example files
-    TODO : If there is a group name parameter, force DATA_ in front ?
     TODO : Detect optimal range for parameter automatically
 
     Attributes
@@ -428,7 +426,7 @@ class NexusFile:
                     index, self.nx_files[index],
                     extracted_value_data=smi_data.cake,
                     scale_x="log", scale_y="log",
-                    label_x="$$q_r (A^{-1})$$",
+                    label_x="$q_r (A^{-1})$",
                     label_y="$\\chi$",
                     title=f"Caked q-space data",
                     percentile=percentile
@@ -498,7 +496,7 @@ class NexusFile:
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
             defaults = {
-                "r_max": np.sqrt(max(smi_data.qp) ** 2 + max(smi_data.qz) ** 2),
+                "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
                 "r_min": 0,
                 "angle_min": -180,
                 "angle_max": 180,
@@ -581,7 +579,7 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
-                "r_max": np.sqrt(max(smi_data.qp) ** 2 + max(smi_data.qz) ** 2),
+                "r_max": np.sqrt(max(abs(smi_data.qp)) ** 2 + max(abs(smi_data.qz)) ** 2),
                 "r_min": 0,
                 "angle_min": -180,
                 "angle_max": 180,

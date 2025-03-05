@@ -750,7 +750,7 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the axis of the source",
+                                "docstring": "Rotation of the detector on the axis of the source. The same as pyFAI's rot3",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",
@@ -776,7 +776,7 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the horizontal axis",
+                                "docstring": "Rotation of the detector on the horizontal axis. The same as pyFAI's rot2",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",
@@ -802,7 +802,7 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the vertical axis",
+                                "docstring": "Rotation of the detector on the vertical axis. The same as pyFAI's rot1",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",

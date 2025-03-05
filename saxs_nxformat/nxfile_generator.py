@@ -254,7 +254,6 @@ def print_to_gui(message):
 
 def auto_generate():
     """
-    # TODO : no need to sleep as long as there are files, if there is not sleep for 5 minutes
     This is a thread that runs continuously and tries to export edf files found in the parent folder
     into h5 files using the settings file found in the same folder.
     """
@@ -281,6 +280,11 @@ def auto_generate():
 
         file_path, settings_path = search_setting_edf()
         if file_path is None or settings_path is None:
+            root.after(
+                0,
+                print_to_gui,
+                f"No file found, sleeping for {sleep_time} seconds."
+            )
             time.sleep(sleep_time)
             continue
 
@@ -303,7 +307,7 @@ def auto_generate():
         shutil.move(file_path, result[1] / file_path.name)
 
         nx_file = NexusFile([new_file_path])
-        # TODO : add processes
+        # TODO : when the user chooses processes they should be executed here
         nx_file.process_q_space(save=True)
         nx_file.process_radial_average(save=True)
         nx_file.nexus_close()
@@ -314,9 +318,8 @@ def auto_generate():
         root.after(
             0,
             print_to_gui,
-            f"{file_path.name} has been converted successfully\n" +
-            f"sleeping for {sleep_time} seconds...")
-        time.sleep(sleep_time)
+            f"{file_path.name} has been converted successfully\n"
+        )
     tracemalloc.stop()
     root.after(
         0,
