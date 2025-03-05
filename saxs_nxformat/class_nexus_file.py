@@ -13,7 +13,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP
-from saxs_nxformat.utils import replace_h5_dataset
+from saxs_nxformat.utils import replace_h5_dataset, detect_variation
 from smi_analysis import SMI_beamline
 
 
@@ -207,6 +207,9 @@ class NexusFile:
             displayed a single figure or not
         """
         self.file_paths = h5_paths
+        self.init_plot = True
+        self.fig = None
+        self.ax = None
         if "selected" in do_batch:
             self.do_batch = True
         else:
@@ -297,16 +300,18 @@ class NexusFile:
         return self.nx_files
 
     def process_q_space(
-            self, display=False, save=False, group_name="DATA_Q_SPACE"
+            self, display=False, save=False, group_name="DATA_Q_SPACE", percentile=99
     ):
         """
-        TODO : add param to control the percentile
         Method used to put the data in Q space (Fourier space). This will save an array
         containing the intensity values and another array containing the vector Q associated
         to each intensities
 
         Parameters
         ----------
+        percentile :
+            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+
         display :
             Choose if you want the result displayed or not
 
@@ -316,44 +321,21 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
-        plot_count = 0
+        self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
             # smi_data.masks = self.nx_files[index]["/ENTRY/DATA/mask"]
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        file_number = len(self.nx_files)
-                        dims = int(np.ceil(np.sqrt(file_number)))
-                        fig, ax = plt.subplots(dims, dims, layout="constrained")
-                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
-                else:
-                    fig, ax = plt.subplots(layout="constrained")
-                    current_ax = ax
-                current_ax.set_title('2D Data in q-space')
-                current_ax.set_xlabel('$q_{x} (A^{-1}$)')
-                current_ax.set_ylabel('$q_{y} (A^{-1}$)')
-                cplot = current_ax.imshow(
-                    smi_data.img_st,
-                    extent=[smi_data.qp[0], smi_data.qp[-1],
-                            smi_data.qz[0], smi_data.qz[-1]],
-                    vmin=0,
-                    vmax=np.percentile(
-                        smi_data.img_st[~np.isnan(smi_data.img_st)],
-                        99),
-                    cmap=PLT_CMAP
+                self._display(
+                    index, self.nx_files[index],
+                    extracted_value_data=smi_data.img_st,
+                    label_x="$q_{hor} (A^{-1})$",
+                    label_y="$q_{ver} (A^{-1})$",
+                    title=f"2D Data in q-space",
+                    percentile=percentile
                 )
-                cbar = plt.colorbar(cplot, ax=current_ax)
-                cbar.set_label("Intensity")
-                plot_count += 1
-
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        plt.show()
-                else:
-                    plt.show()
 
             # Saving the data and the process it just went trough
             if save:
@@ -377,13 +359,17 @@ class NexusFile:
     def process_caking(
             self, display=False, save=False, group_name="DATA_CAKED",
             azi_min=None, azi_max=None, pts_azi=None,
-            radial_min=None, radial_max=None, pts_rad=None
+            radial_min=None, radial_max=None, pts_rad=None,
+            percentile=99
     ):
         """
         Method used to cake the data. This will display the data in the (q_r, chi) coordinate system.
 
         Parameters
         ----------
+        percentile :
+            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+
         display :
             Choose if you want the result displayed or not
 
@@ -411,7 +397,7 @@ class NexusFile:
         azi_min:
             Minimum of the azimuthal angle range
         """
-        plot_count = 0
+        self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
             defaults = {
                 "azi_min": -180,
@@ -438,36 +424,15 @@ class NexusFile:
             )
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        file_number = len(self.nx_files)
-                        dims = int(np.ceil(np.sqrt(file_number)))
-                        fig, ax = plt.subplots(dims, dims, layout="constrained")
-                    current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
-                else:
-                    fig, ax = plt.subplots(layout="constrained")
-                    current_ax = ax
-                current_ax.set_title('Caked q-space data')
-                current_ax.set_xlabel('$q (A^{-1}$)')
-                current_ax.set_ylabel('$\\chi$')
-                cplot = current_ax.pcolormesh(
-                    smi_data.q_cake,
-                    smi_data.chi_cake,
-                    smi_data.cake,
-                    cmap=PLT_CMAP, shading='auto',
-                    vmin=0,
-                    vmax=np.percentile(
-                        smi_data.cake[~np.isnan(smi_data.cake)],
-                        99.8),
+                self._display(
+                    index, self.nx_files[index],
+                    extracted_value_data=smi_data.cake,
+                    scale_x="log", scale_y="log",
+                    label_x="$$q_r (A^{-1})$$",
+                    label_y="$\\chi$",
+                    title=f"Caked q-space data",
+                    percentile=percentile
                 )
-                cbar = plt.colorbar(cplot, ax=current_ax)
-                cbar.set_label("Intensity")
-                plot_count += 1
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        plt.show()
-                else:
-                    plt.show()
 
             if save:
                 q_list = smi_data.q_cake
@@ -522,12 +487,16 @@ class NexusFile:
         pts : int, optional
             Number of points for the averaging process.
         """
-        plot_count = 0
+        if r_min is None:
+            optimize_range = True
+        else:
+            optimize_range = False
+
+        self.init_plot = True
+
         for index, smi_data in enumerate(self.list_smi_data):
-            # TODO : cette ligne pose problème
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
-
             defaults = {
                 "r_max": np.sqrt(max(smi_data.qp) ** 2 + max(smi_data.qz) ** 2),
                 "r_min": 0,
@@ -549,26 +518,16 @@ class NexusFile:
             )
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        _, ax = plt.subplots(figsize=(10, 6))
-                else:
-                    _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Radial average of data in q-space')
-                ax.set_xlabel('$q_r (A^{-1}$)')
-                ax.set_ylabel('I (A.u.)')
-                file_path = Path(self.file_paths[index])
-                file_name = file_path.name
-                ax.loglog(smi_data.q_rad, smi_data.I_rad, label=f"{file_name}")
-                plot_count += 1
-
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        ax.legend()
-                        plt.show()
-                else:
-                    ax.legend()
-                    plt.show()
+                self._display(
+                    index, self.nx_files[index],
+                    extracted_param_data=smi_data.q_rad, extracted_value_data=smi_data.I_rad,
+                    scale_x="log", scale_y="log",
+                    label_x="$q_r (A^{-1})$",
+                    label_y="Intensity (a.u.)",
+                    title=f"Radial integration over the regions \n "
+                          f"[{angle_min}, {angle_max}] and [{r_min}, {r_max}]",
+                    optimize_range=optimize_range
+                )
 
             if save:
                 q_list = smi_data.q_rad
@@ -614,7 +573,9 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
-        plot_count = 0
+
+        self.init_plot = True
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -637,26 +598,15 @@ class NexusFile:
             )
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        _, ax = plt.subplots(figsize=(10, 6))
-                else:
-                    _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Azimuthal average of data in q-space')
-                ax.set_xlabel('$\\chi$')
-                ax.set_ylabel('I (A.u.)')
-                file_path = Path(self.file_paths[index])
-                file_name = file_path.name
-                ax.loglog(smi_data.chi_azi, smi_data.I_azi, label=f"{file_name}")
-                plot_count += 1
-
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        ax.legend()
-                        plt.show()
-                else:
-                    ax.legend()
-                    plt.show()
+                self._display(
+                    index, self.nx_files[index],
+                    extracted_param_data=smi_data.chi_azi, extracted_value_data=smi_data.I_azi,
+                    scale_x="log", scale_y="log",
+                    label_x="$\\Chi (rad)$",
+                    label_y="Intensity (a.u.)",
+                    title=f"Azimuthal integration over the regions \n "
+                          f"[{angle_min}, {angle_max}] and [{r_min}, {r_max}]"
+                )
 
             if save:
                 chi_list = smi_data.chi_azi
@@ -702,8 +652,7 @@ class NexusFile:
             Name of the group that will contain the data.
 
         """
-        plot_count = 0
-
+        self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -726,26 +675,15 @@ class NexusFile:
             )
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        _, ax = plt.subplots(figsize=(10, 6))
-                else:
-                    _, ax = plt.subplots(figsize=(10, 6))
-                ax.set_title('Horizontal integration of data in q-space')
-                ax.set_xlabel('$q_{x} (A^{-1}$)')
-                ax.set_ylabel('I (A.u.)')
-                file_path = Path(self.file_paths[index])
-                file_name = file_path.name
-                ax.plot(smi_data.q_hor, smi_data.I_hor, label=f"{file_name}")
-                plot_count += 1
-
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        ax.legend()
-                        plt.show()
-                else:
-                    ax.legend()
-                    plt.show()
+                self._display(
+                    index, self.nx_files[index],
+                    extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
+                    scale_x="log", scale_y="log",
+                    label_x="$q_{ver} (A^{-1})$",
+                    label_y="Intensity (a.u.)",
+                    title=f"Vertical integration in the region \n "
+                          f"[{qy_min}, {qy_max}] and [{qx_min}, {qx_max}]"
+                )
 
             if save:
                 q_list = smi_data.q_hor
@@ -792,7 +730,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
         """
-        plot_count = 0
+        self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -815,26 +753,16 @@ class NexusFile:
             )
 
             if display:
-                if self.do_batch:
-                    if plot_count == 0:
-                        _, ax = plt.subplots(figsize=(10, 6))
-                else:
-                    _, ax = plt.subplots(figsize=(10, 6))
-                    ax.set_title('Horizontal integration of data in q-space')
-                    ax.set_xlabel('$q_{y} (A^{-1}$)')
-                    ax.set_ylabel('I (A.u.)')
-                file_path = Path(self.file_paths[index])
-                file_name = file_path.name
-                ax.plot(smi_data.q_ver, smi_data.I_ver, label=f"{file_name}")
-                plot_count += 1
-
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        ax.legend()
-                        plt.show()
-                else:
-                    ax.legend()
-                    plt.show()
+                self._display(
+                    index, self.nx_files[index],
+                    group_name=group_name,
+                    extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
+                    scale_x="log", scale_y="log",
+                    label_x="$q_{hor} (A^{-1})$",
+                    label_y="Intensity (a.u.)",
+                    title=f"Vertical integration in the region \n "
+                          f"[{qy_min}, {qy_max}] and [{qx_min}, {qx_max}]"
+                )
 
             if save:
                 q_list = smi_data.q_ver
@@ -849,70 +777,175 @@ class NexusFile:
                                "effectively rendering the signal 1D instead of 2D"
                                )
 
-    def process_display(self, group_name="DATA_Q_SPACE"):
+    def process_display(
+            self, group_name="DATA_Q_SPACE",
+            scale_x="log", scale_y="log",
+            label_x="", label_y="", title="",
+            percentile=99
+    ):
+        self.init_plot = True
+        for index, nxfile in enumerate(self.nx_files):
+            self._display(
+                index=index, nxfile=nxfile,
+                group_name=group_name,
+                scale_x=scale_x, scale_y=scale_y,
+                label_x=label_x, label_y=label_y,
+                title=title, percentile=percentile
+            )
+
+    def _display(
+            self, index=None, nxfile=None,
+            group_name=None,
+            extracted_param_data=None, extracted_value_data=None,
+            scale_x="log", scale_y="log",
+            label_x="", label_y="", title="",
+            percentile=99, optimize_range=False
+    ):
         """
         Displays the data contained in the DATA_... group
-        TODO : Add parameters controlling the display like :
-        - log scale
-        - axes and title
-        - colormap ?
-        TODO : find a way to dynamically get the other axes
-        TODO : Put the parameter as a combobox of all the DATA_ groups
+        TODo : manage extent on 2D plot
 
         Parameters
         ----------
+        nxfile :
+            File object
+
+        index :
+            Index of the file
+
+        optimize_range :
+            Bool to know if the range should be optimized for display
+
+        extracted_param_data :
+            Data on which extracted_value_data depends
+
+        extracted_value_data :
+            The value we want to display (Intensity mostly)
+
+        percentile :
+            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+
+        title :
+            Title of the plot
+
+        label_y :
+            Title of the y axis
+
+        label_x :
+            Title of the x axis
+
+        scale_y :
+            Scale of the y axis "linear" or "log"
+
+        scale_x :
+            Scale of the x axis "linear" or "log"
+
         group_name:
             Name of the data group to be displayed
         """
-        plot_count = 0
-        for index, nxfile in enumerate(self.nx_files):
-            extracted_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
-            if np.isscalar(extracted_data):
-                print(extracted_data)
-            elif len(np.shape(extracted_data)) == 1:
-                if self.do_batch:
-                    if plot_count == 0:
-                        _, ax = plt.subplots(figsize=(10, 6))
-                else:
-                    _, ax = plt.subplots(figsize=(10, 6))
-                ax.plot(extracted_data)
-                plot_count += 1
+        # We extract the intensity
+        param_not_inserted = extracted_param_data is None
+        value_not_inserted = extracted_param_data is None
 
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        ax.legend()
-                        plt.show()
-                else:
-                    plt.show()
+        group_name_inserted = group_name is not None
 
-            elif len(np.shape(extracted_data)) == 2:
-                if self.do_batch:
-                    if plot_count == 0:
-                        file_number = len(self.nx_files)
-                        dims = int(np.ceil(np.sqrt(file_number)))
-                        fig, ax = plt.subplots(dims, dims, layout="constrained")
-                    if dims != 1:
-                        current_ax = ax[int(plot_count // dims), int(plot_count % dims)]
-                else:
-                    fig, ax = plt.subplots(layout="constrained")
-                    current_ax = ax
-                cplot = current_ax.imshow(
-                    extracted_data,
-                    vmin=0,
-                    vmax=np.percentile(
-                        extracted_data[~np.isnan(extracted_data)],
-                        99),
-                    cmap=PLT_CMAP
+        # We extract the data
+        if value_not_inserted and group_name_inserted:
+            if f"ENTRY/{group_name}" in nxfile:
+                extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+
+        # We extract the parameter
+        if param_not_inserted and group_name_inserted:
+            if f"ENTRY/{group_name}/R" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
+            elif f"ENTRY/{group_name}/Q" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
+            elif f"ENTRY/{group_name}/Chi" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
+            else:
+                extracted_param_data = None
+
+        # If the intensity value is a scalar we print it
+        if np.isscalar(extracted_value_data):
+            print(extracted_value_data)
+
+        # If the intensity value is a 1D array we plot it
+        elif len(np.shape(extracted_value_data)) == 1:
+            # Separation required because in the batch case we need to have the graphs
+            # in the same figure
+            if self.do_batch:
+                if self.init_plot:
+                    self.fig, self.ax = plt.subplots(figsize=(10, 6))
+                    self.init_plot = False
+            else:
+                self.fig, self.ax = plt.subplots(figsize=(10, 6))
+            self.ax.set_xscale(scale_x)
+            self.ax.set_yscale(scale_y)
+
+            self.ax.set_xlabel(label_x)
+            self.ax.set_ylabel(label_y)
+            self.ax.set_title(title)
+
+            file_path = Path(self.file_paths[index])
+            if optimize_range:
+                indices_high_var = detect_variation(extracted_value_data, 1e5)
+                first_index, last_index = indices_high_var[0], indices_high_var[-1]
+                self.ax.plot(
+                    extracted_param_data[first_index:last_index],
+                    extracted_value_data[first_index:last_index],
+                    label=f"{file_path.name}"
                 )
-                cbar = plt.colorbar(cplot, ax=current_ax)
-                cbar.set_label("Intensity")
-                plot_count += 1
+            else:
+                self.ax.plot(
+                    extracted_param_data,
+                    extracted_value_data,
+                    label=f"{file_path.name}"
+                )
 
-                if self.do_batch:
-                    if plot_count == len(self.nx_files):
-                        plt.show()
-                else:
+            if self.do_batch:
+                if index == len(self.nx_files)-1:
+                    self.ax.legend()
                     plt.show()
+            else:
+                plt.show()
+
+        # If the intensity value is a 2D array we imshow it
+        elif len(np.shape(extracted_value_data)) == 2:
+            if self.do_batch:
+                file_number = len(self.nx_files)
+                dims = int(np.ceil(np.sqrt(file_number)))
+                if self.init_plot:
+                    self.fig, self.ax = plt.subplots(dims, dims, layout="constrained")
+                    self.init_plot = False
+
+                if dims != 1:
+                    current_ax = self.ax[int(index // dims), int(index % dims)]
+                else:
+                    current_ax = self.ax
+            else:
+                fig, ax = plt.subplots(layout="constrained")
+                current_ax = ax
+
+            current_ax.set_xlabel(label_x)
+            current_ax.set_ylabel(label_y)
+            current_ax.set_title(title)
+
+            cplot = current_ax.imshow(
+                extracted_value_data,
+                vmin=0,
+                vmax=np.percentile(
+                    extracted_value_data[~np.isnan(extracted_value_data)],
+                    percentile),
+                cmap=PLT_CMAP
+            )
+            cbar = plt.colorbar(cplot, ax=current_ax)
+            cbar.set_label("Intensity")
+
+            if self.do_batch:
+                if index == len(self.nx_files)-1:
+                    plt.show()
+            else:
+                plt.show()
 
     def process_delete_data(self, group_name="DATA_Q_SPACE"):
         for index, nxfile in enumerate(self.nx_files):

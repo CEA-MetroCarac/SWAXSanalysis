@@ -1,5 +1,6 @@
 """
 This module is meant to help the user process their data
+TODO : Allow the user to make a sequence of process and execute it
 """
 import inspect
 import re
@@ -186,7 +187,7 @@ class GUI_process(tk.Tk):
 
         current_row = 2
         for param in param_list:
-            if param[0] != "self":
+            if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name, param_value = param_str.split("=")
                 label_param = tk.Label(self.param_frame,

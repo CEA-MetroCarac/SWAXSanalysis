@@ -5,6 +5,7 @@ import re
 import tkinter as tk
 from tkinter import ttk
 
+import numpy as np
 from saxs_nxformat import DICT_UNIT
 
 
@@ -173,6 +174,28 @@ def replace_h5_dataset(hdf5_file, dataset_h5path, new_dataset, new_dataset_h5pat
     # We add the attributes to the new dataset so that we do not lose them
     for attr_name, attr_value in attributes.items():
         new_dataset.attrs[attr_name] = attr_value
+
+def detect_variation(array, variation_threshold):
+    """
+    return the indices where we go from a value under low to a value aboce high
+
+    Parameters
+    ----------
+    array :
+        The array where the variation have to be detected
+
+    low :
+        low threshold
+
+    high :
+        high threshold
+
+    Returns
+    -------
+    list of indices where the variations are detected
+    """
+    diff_array = np.diff(array)
+    return np.where(diff_array > variation_threshold)[0] + 1
 
 
 class VerticalScrolledFrame(ttk.Frame):
