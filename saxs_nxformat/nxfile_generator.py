@@ -229,7 +229,7 @@ def tree_structure_manager(file: str, settings: str):
     common_path = (
             TREATED_PATH /
             f"instrument - {instrument}" /
-            f"year - {year}"
+            f"year - {year}" /
             f"config ID - {date}" /
             f"experiment - {exp_name}" /
             f"detector - {detector}"

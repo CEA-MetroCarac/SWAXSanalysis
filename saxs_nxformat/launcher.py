@@ -8,13 +8,14 @@ opens a GUI allowing the user to:
 
 import os
 import sys
+import shutil
 import tkinter as tk
 
 # Adds the package to the python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We build the environment
-from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH
+from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
 from saxs_nxformat.create_config import Setting
 from saxs_nxformat.data_processing import GUI_process
 from saxs_nxformat.nxfile_generator import create_gui
@@ -56,6 +57,13 @@ def launcher_gui():
     DTC_PATH.mkdir(parents=True, exist_ok=True)
     CONF_PATH.mkdir(parents=True, exist_ok=True)
     TREATED_PATH.mkdir(parents=True, exist_ok=True)
+    IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+
+    # We move the notebook and settings file
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
+        IPYNB_PATH
+    )
 
     root = tk.Tk()
     root.title("Launcher")

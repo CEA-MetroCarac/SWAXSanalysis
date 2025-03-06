@@ -404,6 +404,16 @@ class NexusFile:
             Minimum of the azimuthal angle range
         """
         self.init_plot = True
+
+        initial_none_flags = {
+            "azi_min": azi_min is None,
+            "azi_max": azi_max is None,
+            "radial_min": radial_min is None,
+            "radial_max": radial_max is None,
+            "pts_azi": pts_azi is None,
+            "pts_rad": pts_rad is None,
+        }
+
         for index, smi_data in enumerate(self.list_smi_data):
             defaults = {
                 "azi_min": -180,
@@ -415,12 +425,18 @@ class NexusFile:
             }
 
             # Set default values if parameters are None
-            azi_min = azi_min if azi_min is not None else defaults["azi_min"]
-            azi_max = azi_max if azi_max is not None else defaults["azi_max"]
-            radial_min = radial_min if radial_min is not None else defaults["radial_min"]
-            radial_max = radial_max if radial_max is not None else defaults["radial_max"]
-            pts_azi = pts_azi if pts_azi is not None else defaults["pts_azi"]
-            pts_rad = pts_rad if pts_rad is not None else defaults["pts_rad"]
+            if initial_none_flags["azi_min"]:
+                azi_min = defaults["azi_min"]
+            if initial_none_flags["azi_max"]:
+                azi_max = defaults["azi_max"]
+            if initial_none_flags["radial_min"]:
+                radial_min = defaults["radial_min"]
+            if initial_none_flags["radial_max"]:
+                radial_max = defaults["radial_max"]
+            if initial_none_flags["pts_azi"]:
+                pts_azi = defaults["pts_azi"]
+            if initial_none_flags["pts_rad"]:
+                pts_rad = defaults["pts_rad"]
 
             smi_data.caking(
                 azimuth_range=[azi_min, azi_max],
@@ -510,7 +526,6 @@ class NexusFile:
 
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
-            print(smi_data.masks)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
@@ -608,7 +623,7 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
-                "r_max": np.sqrt(max(abs(smi_data.qp)) ** 2 + max(abs(smi_data.qz)) ** 2),
+                "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
                 "r_min": 0,
                 "angle_min": -180,
                 "angle_max": 180,

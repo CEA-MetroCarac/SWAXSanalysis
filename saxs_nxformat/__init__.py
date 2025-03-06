@@ -28,6 +28,7 @@ DESKTOP_PATH = get_desktop_path()
 DTC_PATH = DESKTOP_PATH / "Data Treatment Center"
 CONF_PATH = DTC_PATH / "Configs"
 TREATED_PATH = DTC_PATH / "Treated Data"
+IPYNB_PATH = DTC_PATH / "Notebooks"
 ICON_PATH = BASE_DIR / "Images" / "nxformat_icon.ico"
 
 # Global variables to the file
