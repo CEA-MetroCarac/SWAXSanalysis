@@ -206,6 +206,7 @@ def tree_structure_manager(file: str, settings: str):
     """
     # Dissecting the settings file name
     settings = settings.removeprefix("settings_")
+    current_time = datetime.now()
     year = str(current_time.strftime("%Y"))
     try:
         origin2ending, instrument, date_txt = settings.rsplit("_", 2)
