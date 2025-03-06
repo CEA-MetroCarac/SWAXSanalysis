@@ -500,8 +500,17 @@ class NexusFile:
 
         self.init_plot = True
 
+        initial_none_flags = {
+            "r_min": r_min is None,
+            "r_max": r_max is None,
+            "angle_min": angle_min is None,
+            "angle_max": angle_max is None,
+            "pts": pts is None,
+        }
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
+            print(smi_data.masks)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
@@ -511,11 +520,16 @@ class NexusFile:
                 "pts": 2000
             }
 
-            r_min = r_min if r_min is not None else defaults["r_min"]
-            r_max = r_max if r_max is not None else defaults["r_max"]
-            angle_min = angle_min if angle_min is not None else defaults["angle_min"]
-            angle_max = angle_max if angle_max is not None else defaults["angle_max"]
-            pts = pts if pts is not None else defaults["pts"]
+            if initial_none_flags["r_min"]:
+                r_min = defaults["r_min"]
+            if initial_none_flags["r_max"]:
+                r_max = defaults["r_max"]
+            if initial_none_flags["angle_min"]:
+                angle_min = defaults["angle_min"]
+            if initial_none_flags["angle_max"]:
+                angle_max = defaults["angle_max"]
+            if initial_none_flags["pts"]:
+                pts = defaults["pts"]
 
             smi_data.radial_averaging(
                 azimuth_range=[angle_min, angle_max],
@@ -582,6 +596,13 @@ class NexusFile:
 
         self.init_plot = True
 
+        initial_none_flags = {
+            "r_min": r_min is None,
+            "r_max": r_max is None,
+            "angle_min": angle_min is None,
+            "angle_max": angle_max is None,
+        }
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -593,10 +614,14 @@ class NexusFile:
                 "angle_max": 180,
             }
 
-            r_min = r_min if r_min is not None else defaults["r_min"]
-            r_max = r_max if r_max is not None else defaults["r_max"]
-            angle_min = angle_min if angle_min is not None else defaults["angle_min"]
-            angle_max = angle_max if angle_max is not None else defaults["angle_max"]
+            if initial_none_flags["r_min"]:
+                r_min = defaults["r_min"]
+            if initial_none_flags["r_max"]:
+                r_max = defaults["r_max"]
+            if initial_none_flags["angle_min"]:
+                angle_min = defaults["angle_min"]
+            if initial_none_flags["angle_max"]:
+                angle_max = defaults["angle_max"]
 
             smi_data.azimuthal_averaging(
                 azimuth_range=[angle_min, angle_max],
@@ -659,6 +684,14 @@ class NexusFile:
 
         """
         self.init_plot = True
+
+        initial_none_flags = {
+            "qx_min": qx_min is None,
+            "qx_max": qx_max is None,
+            "qy_min": qy_min is None,
+            "qy_max": qy_max is None,
+        }
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -670,10 +703,14 @@ class NexusFile:
                 "qy_max": smi_data.qz[-1]
             }
 
-            qx_min = qx_min if qx_min is not None else defaults["qx_min"]
-            qx_max = qx_max if qx_max is not None else defaults["qx_max"]
-            qy_min = qy_min if qy_min is not None else defaults["qy_min"]
-            qy_max = qy_max if qy_max is not None else defaults["qy_max"]
+            if initial_none_flags["qx_min"]:
+                qx_min = defaults["qx_min"]
+            if initial_none_flags["qx_max"]:
+                qx_max = defaults["qx_max"]
+            if initial_none_flags["qy_min"]:
+                qy_min = defaults["qy_min"]
+            if initial_none_flags["qy_max"]:
+                qy_max = defaults["qy_max"]
 
             smi_data.horizontal_integration(
                 q_per_range=[qy_min, qy_max],
@@ -737,6 +774,14 @@ class NexusFile:
             Name of the group that will contain the data
         """
         self.init_plot = True
+
+        initial_none_flags = {
+            "qx_min": qx_min is None,
+            "qx_max": qx_max is None,
+            "qy_min": qy_min is None,
+            "qy_max": qy_max is None,
+        }
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
@@ -748,10 +793,14 @@ class NexusFile:
                 "qy_max": smi_data.qz[-1]
             }
 
-            qx_min = qx_min if qx_min is not None else defaults["qx_min"]
-            qx_max = qx_max if qx_max is not None else defaults["qx_max"]
-            qy_min = qy_min if qy_min is not None else defaults["qy_min"]
-            qy_max = qy_max if qy_max is not None else defaults["qy_max"]
+            if initial_none_flags["qx_min"]:
+                qx_min = defaults["qx_min"]
+            if initial_none_flags["qx_max"]:
+                qx_max = defaults["qx_max"]
+            if initial_none_flags["qy_min"]:
+                qy_min = defaults["qy_min"]
+            if initial_none_flags["qy_max"]:
+                qy_max = defaults["qy_max"]
 
             smi_data.vertical_integration(
                 q_per_range=[qy_min, qy_max],
@@ -909,7 +958,7 @@ class NexusFile:
                 )
 
             if self.do_batch:
-                if index == len(self.nx_files)-1:
+                if index == len(self.nx_files) - 1:
                     self.ax.legend()
                     plt.show()
             else:
@@ -948,7 +997,7 @@ class NexusFile:
             cbar.set_label("Intensity")
 
             if self.do_batch:
-                if index == len(self.nx_files)-1:
+                if index == len(self.nx_files) - 1:
                     plt.show()
             else:
                 plt.show()
@@ -964,3 +1013,25 @@ class NexusFile:
         for index, file in enumerate(self.nx_files):
             file.close()
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
+
+
+if __name__ == "__main__":
+    import cProfile, pstats
+
+    profiler = cProfile.Profile()
+    profiler.enable()
+
+    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - Xeuss\config - " \
+               r"2024-12-19T15-00\experiment - measure\detector - SAXS\format - NX"
+    path_list = []
+
+    for file in os.listdir(data_dir):
+        path_list.append(os.path.join(data_dir, file))
+
+    nx_files = NexusFile(path_list, do_batch=True)
+    nx_files.process_radial_average(display=True)
+    nx_files.nexus_close()
+
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats()
