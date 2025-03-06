@@ -206,7 +206,7 @@ class NexusFile:
             Determines wether the data is assembled in a new file or not and whether it is
             displayed a single figure or not
         """
-        if isinstance(h5_paths, list):
+        if not(isinstance(h5_paths, list)):
             self.file_paths = h5_paths
         elif isinstance(h5_paths, str):
             self.file_paths = [h5_paths]
@@ -219,10 +219,7 @@ class NexusFile:
         self.init_plot = True
         self.fig = None
         self.ax = None
-        if "selected" in do_batch:
-            self.do_batch = True
-        else:
-            self.do_batch = False
+        self.do_batch = do_batch
 
         self.nx_files = []
         self.dicts_parameters = []

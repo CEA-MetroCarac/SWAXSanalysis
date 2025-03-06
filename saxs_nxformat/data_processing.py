@@ -264,8 +264,13 @@ class GUI_process(tk.Tk):
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
+        do_batch_state = self.do_batch.state()
+        if "selected" in do_batch_state:
+            do_batch_state = True
+        else:
+            do_batch_state = False
 
-        nxfiles = NexusFile(self.to_process, self.do_batch.state())
+        nxfiles = NexusFile(self.to_process, do_batch_state)
         try:
             process(nxfiles, **param_dict)
         except Exception as exception:
