@@ -397,7 +397,7 @@ class Setting(tk.Tk):
 
         try:
             current_time = datetime.now()
-            time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M"))
+            time_stamp = str(current_time.strftime("%Y%m%d%H%M"))
             if "_" in self.stringvar_file_name.get():
                 tk.messagebox.showerror("Error",
                                         "Do not use underscores (_) in your "

@@ -30,6 +30,8 @@ def repack_hdf5(input_file, output_file):
     """
     with h5py.File(input_file, 'r') as src, h5py.File(output_file, 'w') as dest:
         src.copy("/ENTRY", dest)
+    os.remove(input_file)
+    shutil.move(output_file, input_file)
 
 
 def create_process(hdf5_file, group_h5path, process_name, process_desc):
@@ -956,5 +958,3 @@ class NexusFile:
         for index, file in enumerate(self.nx_files):
             file.close()
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
-            os.remove(self.file_paths[index])
-            shutil.move(self.file_paths[index] + ".tmp", self.file_paths[index])

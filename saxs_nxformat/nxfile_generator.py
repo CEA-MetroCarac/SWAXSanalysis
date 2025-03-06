@@ -142,7 +142,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     current_time = datetime.now()
-    time_stamp = str(current_time.strftime("%Y-%m-%dT%H-%M-%S"))
+    time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
     hdf5_path = os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5")
 
@@ -206,6 +206,7 @@ def tree_structure_manager(file: str, settings: str):
     """
     # Dissecting the settings file name
     settings = settings.removeprefix("settings_")
+    year = str(current_time.strftime("%Y"))
     try:
         origin2ending, instrument, date_txt = settings.rsplit("_", 2)
     except ValueError:
@@ -227,7 +228,8 @@ def tree_structure_manager(file: str, settings: str):
     common_path = (
             TREATED_PATH /
             f"instrument - {instrument}" /
-            f"config - {date}" /
+            f"year - {year}"
+            f"config ID - {date}" /
             f"experiment - {exp_name}" /
             f"detector - {detector}"
     )
