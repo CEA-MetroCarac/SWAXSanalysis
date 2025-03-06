@@ -192,7 +192,7 @@ class NexusFile:
         list of array of intensities
     """
 
-    def __init__(self, h5_paths, do_batch=()):
+    def __init__(self, h5_paths, do_batch=False):
         """
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
