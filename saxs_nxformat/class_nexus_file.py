@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-from saxs_nxformat import PLT_CMAP
+from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
 from saxs_nxformat.utils import replace_h5_dataset, detect_variation
 from smi_analysis import SMI_beamline
 
@@ -172,7 +172,6 @@ def delete_data(nx_file, group_name):
 class NexusFile:
     """
     A class that can load and treat data formated in the NXcanSAS standard
-    TODO : Detect optimal range for parameter automatically
 
     Attributes
     ----------
@@ -329,13 +328,19 @@ class NexusFile:
         """
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
-            # smi_data.masks = self.nx_files[index]["/ENTRY/DATA/mask"]
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+
+            dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
+            qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[1])
+            qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
+            qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
+            mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
 
             if display:
                 self._display(
                     index, self.nx_files[index],
+                    extracted_param_data=mesh_q,
                     extracted_value_data=smi_data.img_st,
                     label_x="$q_{hor} (A^{-1})$",
                     label_y="$q_{ver} (A^{-1})$",
@@ -345,11 +350,6 @@ class NexusFile:
 
             # Saving the data and the process it just went trough
             if save:
-                dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
-                qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[1])
-                qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
-                qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
-                mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
                 mask = smi_data.masks
 
                 save_data(self.nx_files[index], "Q", mesh_q, group_name, smi_data.img_st, mask)
@@ -445,9 +445,15 @@ class NexusFile:
                 npt_rad=pts_rad
             )
 
+            q_list = smi_data.q_cake
+            chi_list = smi_data.chi_cake
+            q_grid, chi_grid = np.meshgrid(q_list, chi_list)
+            mesh_cake = np.stack((q_grid, chi_grid), axis=-1)
+
             if display:
                 self._display(
                     index, self.nx_files[index],
+                    extracted_param_data=mesh_cake,
                     extracted_value_data=smi_data.cake,
                     scale_x="log", scale_y="log",
                     label_x="$q_r (A^{-1})$",
@@ -457,10 +463,6 @@ class NexusFile:
                 )
 
             if save:
-                q_list = smi_data.q_cake
-                chi_list = smi_data.chi_cake
-                q_grid, chi_grid = np.meshgrid(q_list, chi_list)
-                mesh_cake = np.stack((q_grid, chi_grid), axis=-1)
                 mask = smi_data.masks
 
                 save_data(self.nx_files[index], "Q", mesh_cake, group_name, smi_data.cake, mask)
@@ -873,7 +875,6 @@ class NexusFile:
     ):
         """
         Displays the data contained in the DATA_... group
-        TODo : manage extent on 2D plot
 
         Parameters
         ----------
@@ -941,6 +942,7 @@ class NexusFile:
 
         # If the intensity value is a 1D array we plot it
         elif len(np.shape(extracted_value_data)) == 1:
+            # TODO : add a colormap for the color of the line to avoid the same repeating fugly colors
             # Separation required because in the batch case we need to have the graphs
             # in the same figure
             if self.do_batch:
@@ -956,6 +958,8 @@ class NexusFile:
             self.ax.set_ylabel(label_y)
             self.ax.set_title(title)
 
+            plot_color = PLT_CMAP_OBJ(index / len(self.nx_files))
+
             file_path = Path(self.file_paths[index])
             if optimize_range:
                 indices_high_var = detect_variation(extracted_value_data, 1e5)
@@ -963,13 +967,15 @@ class NexusFile:
                 self.ax.plot(
                     extracted_param_data[first_index:last_index],
                     extracted_value_data[first_index:last_index],
-                    label=f"{file_path.name}"
+                    label=f"{file_path.name}",
+                    color=plot_color
                 )
             else:
                 self.ax.plot(
                     extracted_param_data,
                     extracted_value_data,
-                    label=f"{file_path.name}"
+                    label=f"{file_path.name}",
+                    color=plot_color
                 )
 
             if self.do_batch:
@@ -1000,7 +1006,9 @@ class NexusFile:
             current_ax.set_ylabel(label_y)
             current_ax.set_title(title)
 
-            cplot = current_ax.imshow(
+            cplot = current_ax.pcolormesh(
+                extracted_param_data[..., 0],
+                extracted_param_data[..., 1],
                 extracted_value_data,
                 vmin=0,
                 vmax=np.percentile(

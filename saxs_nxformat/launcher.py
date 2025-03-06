@@ -12,7 +12,8 @@ import shutil
 import tkinter as tk
 
 # Adds the package to the python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# The version used is not the local one but the one installed in metro-carac !!!
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
