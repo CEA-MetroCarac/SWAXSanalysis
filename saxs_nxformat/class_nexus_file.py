@@ -206,7 +206,7 @@ class NexusFile:
             Determines wether the data is assembled in a new file or not and whether it is
             displayed a single figure or not
         """
-        if not(isinstance(h5_paths, list)):
+        if isinstance(h5_paths, list):
             self.file_paths = h5_paths
         elif isinstance(h5_paths, str):
             self.file_paths = [h5_paths]
