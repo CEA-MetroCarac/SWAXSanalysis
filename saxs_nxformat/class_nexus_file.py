@@ -206,7 +206,16 @@ class NexusFile:
             Determines wether the data is assembled in a new file or not and whether it is
             displayed a single figure or not
         """
-        self.file_paths = h5_paths
+        if isinstance(h5_paths, list):
+            self.file_paths = h5_paths
+        elif isinstance(h5_paths, str):
+            self.file_paths = [h5_paths]
+        else:
+            raise TypeError(
+                f"You tried to pass the path of the file(s) you want to open "
+                f"as something other than a string or a list of string"
+            )
+
         self.init_plot = True
         self.fig = None
         self.ax = None
