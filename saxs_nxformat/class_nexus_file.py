@@ -172,7 +172,8 @@ def delete_data(nx_file, group_name):
 class NexusFile:
     """
     TODO : build method get_raw_data() that returns the arrays of data
-    TODO : build method show_method(method) that show every method name if method is None and method + doc if method is not None
+    TODO : build method show_method(method) that show every method name if method is None and method + doc if method
+    is not None
     Todo : build method to show the process description
     A class that can load and treat data formated in the NXcanSAS standard
 
@@ -309,10 +310,20 @@ class NexusFile:
 
     def get_raw_data(self, group_name="DATA_Q_SPACE"):
         """
-        Getter of the raw dataS as A LIST numpy arrays
+        Get raw data of the group name. The parameter and intensity are returned as python dict :
+            - key : file name
+            - value : param | intensity
+
+        Parameters
+        ----------
+        group_name :
+            name of the group that contains the data to extract
 
         Returns
         -------
+        2 dict :
+            - The first one contains the parameter
+            - The second one contains the intensity
 
         """
         extracted_value_data = {}
@@ -321,18 +332,41 @@ class NexusFile:
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
-                extracted_value_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+                extracted_value_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/I"))
 
             if f"ENTRY/{group_name}/R" in nxfile:
-                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
+                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/R"))
             elif f"ENTRY/{group_name}/Q" in nxfile:
-                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
+                extracted_param_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Q"))
             elif f"ENTRY/{group_name}/Chi" in nxfile:
-                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
+                extracted_param_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi"))
             else:
                 extracted_param_data[file_name] = None
 
         return extracted_param_data, extracted_value_data
+
+    def get_process_desc(self, group_name="PROCESS_Q_SPACE"):
+        """
+        Getter of a process' description
+
+        Parameters
+        ----------
+        group_name :
+            Name of the group from which the description is extracted
+
+        Returns
+        -------
+        Description of the process as a string
+        """
+        extracted_description = {}
+        for index, nxfile in enumerate(self.nx_files):
+            file_path = Path(self.file_paths[index])
+            file_name = file_path.name
+            if f"ENTRY/{group_name}" in nxfile:
+                string = extract_from_h5(nxfile, f"ENTRY/{group_name}/description").decode("utf-8")
+                extracted_description[file_name] = string
+
+        return extracted_description
 
     def process_q_space(
             self, display=False, save=False, group_name="DATA_Q_SPACE", percentile=99
@@ -1102,15 +1136,18 @@ if __name__ == "__main__":
     profiler = cProfile.Profile()
     profiler.enable()
 
-    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - Xeuss\config - " \
-               r"2024-12-19T15-00\experiment - measure\detector - SAXS\format - NX"
+    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - Xeuss\year - 2025\config " \
+               r"ID - 2024-12-19T15-00\experiment - measure\detector - SWAXS"
     path_list = []
 
     for file in os.listdir(data_dir):
         path_list.append(os.path.join(data_dir, file))
 
     nx_files = NexusFile(path_list, do_batch=True)
-    nx_files.process_radial_average(display=True)
+    dico = nx_files.get_process_desc(group_name="PROCESS_RAD_AVG")
+    for key, value in dico.items():
+        print(key)
+        print(value)
     nx_files.nexus_close()
 
     profiler.disable()
