@@ -171,6 +171,9 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
+    TODO : build method get_raw_data() that returns the arrays of data
+    TODO : build method show_method(method) that show every method name if method is None and method + doc if method is not None
+    Todo : build method to show the process description
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -303,6 +306,33 @@ class NexusFile:
         Getter of the actual h5 files
         """
         return self.nx_files
+
+    def get_raw_data(self, group_name="DATA_Q_SPACE"):
+        """
+        Getter of the raw dataS as A LIST numpy arrays
+
+        Returns
+        -------
+
+        """
+        extracted_value_data = {}
+        extracted_param_data = {}
+        for index, nxfile in enumerate(self.nx_files):
+            file_path = Path(self.file_paths[index])
+            file_name = file_path.name
+            if f"ENTRY/{group_name}" in nxfile:
+                extracted_value_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+
+            if f"ENTRY/{group_name}/R" in nxfile:
+                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
+            elif f"ENTRY/{group_name}/Q" in nxfile:
+                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
+            elif f"ENTRY/{group_name}/Chi" in nxfile:
+                extracted_param_data[file_name] = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
+            else:
+                extracted_param_data[file_name] = None
+
+        return extracted_param_data, extracted_value_data
 
     def process_q_space(
             self, display=False, save=False, group_name="DATA_Q_SPACE", percentile=99
@@ -473,8 +503,8 @@ class NexusFile:
                                "This process plots the intensity with respect to the azimuthal angle and the distance "
                                "from the center of the q-space.\n"
                                "Parameters used :\n"
-                               f"   - Azimuthal range : [{azi_min:.2f}, {azi_max:.2f}] with {pts_azi} points\n"
-                               f"   - Radial Q range : [{radial_min:.2f}, {radial_max:.2f}] with {pts_rad} points\n"
+                               f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
+                               f"   - Radial Q range : [{radial_min:.4f}, {radial_max:.4f}] with {pts_rad} points\n"
                                )
 
     def process_radial_average(
@@ -564,7 +594,7 @@ class NexusFile:
                     label_x="$q_r (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
-                          f"[{angle_min}, {angle_max}] and [{r_min}, {r_max}]",
+                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]",
                     optimize_range=optimize_range
                 )
 
@@ -580,8 +610,8 @@ class NexusFile:
                                "This process integrates the intensity signal over a specified radial angle range"
                                "and radial q range.\n"
                                "Parameters used :\n"
-                               f"   - Azimuthal range : [{angle_min:.2f}, {angle_max:.2f}]\n"
-                               f"   - Radial Q range : [{r_min:.2f}, {r_max:.2f}] with {pts} points\n"
+                               f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}]\n"
+                               f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {pts} points\n"
                                )
 
     def process_azimuthal_average(
@@ -674,7 +704,7 @@ class NexusFile:
                     label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
                     title=f"Azimuthal integration over the regions \n "
-                          f"[{angle_min}, {angle_max}] and [{r_min}, {r_max}]"
+                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]"
                 )
 
             if save:
@@ -688,8 +718,8 @@ class NexusFile:
                                "This process integrates the intensity signal over a specified azimuthal angle range"
                                " and radial q range.\n"
                                "Parameters used :\n"
-                               f"   - Azimuthal range : [{angle_min:.2f}, {angle_max:.2f}] with {npt_azi} points\n"
-                               f"   - Radial Q range : [{r_min:.2f}, {r_max:.2f}] with {npt_rad} points\n"
+                               f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}] with {npt_azi} points\n"
+                               f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {npt_rad} points\n"
                                )
 
     def process_horizontal_integration(
@@ -766,7 +796,7 @@ class NexusFile:
                     label_x="$q_{ver} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
-                          f"[{qy_min}, {qy_max}] and [{qx_min}, {qx_max}]"
+                          f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
                 )
 
             if save:
@@ -781,8 +811,8 @@ class NexusFile:
                                "This process integrates the intensity signal over a specified horizontal strip in "
                                "q-space.\n"
                                "Parameters used :\n"
-                               f"   - Horizontal Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
-                               f"   - Vertical Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
+                               f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                               f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                )
 
     def process_vertical_integration(
@@ -859,7 +889,7 @@ class NexusFile:
                     label_x="$q_{hor} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
-                          f"[{qy_min}, {qy_max}] and [{qx_min}, {qx_max}]"
+                          f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
                 )
 
             if save:
@@ -874,8 +904,8 @@ class NexusFile:
                                "This process integrates the intensity signal over a specified vertical strip in "
                                "q-space\n"
                                "Parameters used :\n"
-                               f"   - Horizontal Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
-                               f"   - Vertical Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
+                               f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                               f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                )
 
     def process_display(
