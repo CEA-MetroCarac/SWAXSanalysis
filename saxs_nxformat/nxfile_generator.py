@@ -249,164 +249,157 @@ def tree_structure_manager(file: str, settings: str):
 STOP_THREAD = False
 
 
-def print_to_gui(message):
-    """Function to print logs in the Tkinter Text widget."""
-    log_text.insert(tk.END, message + "\n\n")
-    log_text.see(tk.END)
+class GUI_generator(tk.Tk):
 
+    def __init__(self):
+        self.activate_thread = False
 
-def auto_generate():
-    """
-    This is a thread that runs continuously and tries to export edf files found in the parent folder
-    into h5 files using the settings file found in the same folder.
-    """
-    global STOP_THREAD
-    tracemalloc.start()
-    sleep_time = 10
-    while not STOP_THREAD:
-        current, peak = tracemalloc.get_traced_memory()
-        root.after(
+        super().__init__()
+        self.title("Auto Generate Controller")
+        self.iconbitmap(ICON_PATH)
+
+        # Label
+        title = tk.Label(self, text="Auto conversion control panel", font=("Arial", 18, "bold"))
+        title.grid(pady=10, padx=10, row=0, column=0, columnspan=2)
+
+        # Start Button
+        start_button = tk.Button(self,
+                                 text="Start",
+                                 command=self.start_thread,
+                                 bg="#25B800",
+                                 fg="white",
+                                 padx=10,
+                                 font=("Arial", 16, "bold")
+                                 )
+        start_button.grid(padx=10, pady=10, row=1, column=0)
+
+        # Stop Button
+        stop_button = tk.Button(self,
+                                text="Stop",
+                                command=self.stop_thread_func,
+                                bg="#D9481C",
+                                fg="white",
+                                padx=10,
+                                font=("Arial", 16, "bold")
+                                )
+        stop_button.grid(padx=10, pady=10, row=1, column=1)
+
+        # Close Button
+        close_button = tk.Button(self,
+                                 text="Close",
+                                 command=lambda: self.destroy(),
+                                 bg="#DBDFAC",
+                                 fg="black",
+                                 padx=10,
+                                 font=("Arial", 16, "bold")
+                                 )
+        close_button.grid(pady=10, padx=10, row=2, column=0, columnspan=2)
+
+        # Log output area
+        self.log_text = tk.Text(self, height=10, width=75, font=("Arial", 12))
+        self.log_text.grid(pady=10, padx=10, row=3, column=0, columnspan=2)
+        self.log_text.config(state=tk.NORMAL)
+
+    def print_to_gui(self, message):
+        """Function to print logs in the Tkinter Text widget."""
+        self.log_text.insert(tk.END, message + "\n\n")
+        self.log_text.see(tk.END)
+
+    def auto_generate(self):
+        """
+        This is a thread that runs continuously and tries to export edf files found in the parent folder
+        into h5 files using the settings file found in the same folder.
+        """
+        tracemalloc.start()
+        sleep_time = 10
+        while self.activate_thread:
+            current, peak = tracemalloc.get_traced_memory()
+            self.after(
+                0,
+                self.print_to_gui,
+                f"Memory used:\n"
+                f"  - Current: {current / (1024 ** 2):.2f} MB\n"
+                f"  - Peak: {peak / (1024 ** 2):.2f} MB"
+            )
+
+            if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
+                self.after(
+                    0,
+                    self.print_to_gui,
+                    f"Too much memory used: {current}, {peak}"
+                )
+                break
+
+            file_path, settings_path = search_setting_edf()
+            if file_path is None or settings_path is None:
+                self.after(
+                    0,
+                    self.print_to_gui,
+                    f"No file found, sleeping for {sleep_time} seconds."
+                )
+                time.sleep(sleep_time)
+                continue
+
+            result = tree_structure_manager(file_path.name, settings_path.name)
+            if result[0] == "perm error":
+                self.after(
+                    0,
+                    self.print_to_gui,
+                    "The program could not create the file due to a permission error"
+                )
+                sys.exit()
+
+            self.after(
+                0,
+                self.print_to_gui,
+                f"Converting : {file_path.name}, please wait"
+            )
+
+            new_file_path = generate_nexus(file_path, result[0], settings_path)
+            shutil.move(file_path, result[1] / file_path.name)
+
+            nx_file = NexusFile([new_file_path])
+            # TODO : when the user chooses processes they should be executed here
+            nx_file.process_q_space(save=True)
+            nx_file.process_radial_average(save=True)
+            nx_file.nexus_close()
+
+            del nx_file
+            gc.collect()
+
+            self.after(
+                0,
+                self.print_to_gui,
+                f"{file_path.name} has been converted successfully\n"
+            )
+        tracemalloc.stop()
+        self.after(
             0,
-            print_to_gui,
-            f"Memory used:\n"
-            f"  - Current: {current / (1024 ** 2):.2f} MB\n"
-            f"  - Peak: {peak / (1024 ** 2):.2f} MB"
+            self.print_to_gui,
+            "The program is done sleeping! you can start it again."
         )
 
-        if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
-            root.after(
-                0,
-                print_to_gui,
-                f"Too much memory used: {current}, {peak}"
-            )
-            break
-
-        file_path, settings_path = search_setting_edf()
-        if file_path is None or settings_path is None:
-            root.after(
-                0,
-                print_to_gui,
-                f"No file found, sleeping for {sleep_time} seconds."
-            )
-            time.sleep(sleep_time)
-            continue
-
-        result = tree_structure_manager(file_path.name, settings_path.name)
-        if result[0] == "perm error":
-            root.after(
-                0,
-                print_to_gui,
-                "The program could not create the file due to a permission error"
-            )
-            sys.exit()
-
-        root.after(
+    def start_thread(self):
+        """Start the auto_generate function in a separate thread."""
+        self.activate_thread = True
+        thread = threading.Thread(target=self.auto_generate, daemon=True)
+        thread.start()
+        self.after(
             0,
-            print_to_gui,
-            f"Converting : {file_path.name}, please wait"
+            self.print_to_gui,
+            "Auto-generation started!"
         )
 
-        new_file_path = generate_nexus(file_path, result[0], settings_path)
-        shutil.move(file_path, result[1] / file_path.name)
-
-        nx_file = NexusFile([new_file_path])
-        # TODO : when the user chooses processes they should be executed here
-        nx_file.process_q_space(save=True)
-        nx_file.process_radial_average(save=True)
-        nx_file.nexus_close()
-
-        del nx_file
-        gc.collect()
-
-        root.after(
+    def stop_thread_func(self):
+        """Stop the auto_generate function."""
+        self.activate_thread = False
+        self.after(
             0,
-            print_to_gui,
-            f"{file_path.name} has been converted successfully\n"
+            self.print_to_gui,
+            "Auto-generation stopped. The program is still sleeping!"
         )
-    tracemalloc.stop()
-    root.after(
-        0,
-        print_to_gui,
-        "The program is done sleeping! you can start it again."
-    )
-
-
-def start_thread():
-    """Start the auto_generate function in a separate thread."""
-    global STOP_THREAD
-    STOP_THREAD = False
-    thread = threading.Thread(target=auto_generate, daemon=True)
-    thread.start()
-    root.after(
-        0,
-        print_to_gui,
-        "Auto-generation started!"
-    )
-
-
-def stop_thread_func():
-    """Stop the auto_generate function."""
-    global STOP_THREAD
-    STOP_THREAD = True
-    root.after(
-        0,
-        print_to_gui,
-        "Auto-generation stopped. The program is still sleeping!"
-    )
-
-
-def create_gui():
-    """Create the GUI with a Start and Stop button."""
-    global root, log_text
-    root = tk.Tk()
-    root.title("Auto Generate Controller")
-    root.iconbitmap(ICON_PATH)
-
-    # Label
-    label = tk.Label(root, text="Auto conversion control panel", font=("Arial", 18, "bold"))
-    label.grid(pady=10, padx=10, row=0, column=0, columnspan=2)
-
-    # Start Button
-    start_button = tk.Button(root,
-                             text="Start",
-                             command=start_thread,
-                             bg="#25B800",
-                             fg="white",
-                             padx=10,
-                             font=("Arial", 16, "bold")
-                             )
-    start_button.grid(padx=10, pady=10, row=1, column=0)
-
-    # Stop Button
-    stop_button = tk.Button(root,
-                            text="Stop",
-                            command=stop_thread_func,
-                            bg="#D9481C",
-                            fg="white",
-                            padx=10,
-                            font=("Arial", 16, "bold")
-                            )
-    stop_button.grid(padx=10, pady=10, row=1, column=1)
-
-    # Close Button
-    close_button = tk.Button(root,
-                             text="Close",
-                             command=lambda: root.destroy(),
-                             bg="#DBDFAC",
-                             fg="black",
-                             padx=10,
-                             font=("Arial", 16, "bold")
-                             )
-    close_button.grid(pady=10, padx=10, row=2, column=0, columnspan=2)
-
-    # Log output area
-    log_text = tk.Text(root, height=10, width=75, font=("Arial", 12))
-    log_text.grid(pady=10, padx=10, row=3, column=0, columnspan=2)
-    log_text.config(state=tk.NORMAL)
-
-    # Run the GUI loop
-    root.mainloop()
 
 
 if __name__ == "__main__":
-    create_gui()
+    app = GUI_generator()
+    app.mainloop()

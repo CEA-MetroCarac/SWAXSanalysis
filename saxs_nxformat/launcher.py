@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
 from saxs_nxformat.create_config import Setting
 from saxs_nxformat.data_processing import GUI_process
-from saxs_nxformat.nxfile_generator import create_gui
+from saxs_nxformat.nxfile_generator import GUI_generator
 
 
 # Launch commands
@@ -43,7 +43,8 @@ def launch_app(old_root, selection):
         app = Setting()
         app.mainloop()
     elif selection == "convert":
-        create_gui()
+        app = GUI_generator()
+        app.mainloop()
     elif selection == "process":
         app = GUI_process()
         app.mainloop()

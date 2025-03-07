@@ -580,14 +580,14 @@ class NexusFile:
                                "This process integrates the intensity signal over a specified radial angle range"
                                "and radial q range.\n"
                                "Parameters used :\n"
-                               f"   - Azimuthal range : [{azi_min:.2f}, {azi_max:.2f}]\n"
-                               f"   - Radial Q range : [{radial_min:.2f}, {radial_max:.2f}] with {pts} points\n"
+                               f"   - Azimuthal range : [{angle_min:.2f}, {angle_max:.2f}]\n"
+                               f"   - Radial Q range : [{r_min:.2f}, {r_max:.2f}] with {pts} points\n"
                                )
 
     def process_azimuthal_average(
             self, display=False, save=False, group_name="DATA_AZI_AVG",
             r_min=None, r_max=None, npt_rad=None,
-            angle_min=None, angle_max=None, npt_azi = None
+            angle_min=None, angle_max=None, npt_azi=None
     ):
         """
         Method used to do the radial average of the data in fourier space
@@ -671,7 +671,7 @@ class NexusFile:
                     index, self.nx_files[index],
                     extracted_param_data=smi_data.chi_azi, extracted_value_data=smi_data.I_azi,
                     scale_x="log", scale_y="log",
-                    label_x="$\\Chi (rad)$",
+                    label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
                     title=f"Azimuthal integration over the regions \n "
                           f"[{angle_min}, {angle_max}] and [{r_min}, {r_max}]"
@@ -971,7 +971,6 @@ class NexusFile:
 
         # If the intensity value is a 1D array we plot it
         elif len(np.shape(extracted_value_data)) == 1:
-            # TODO : add a colormap for the color of the line to avoid the same repeating fugly colors
             # Separation required because in the batch case we need to have the graphs
             # in the same figure
             if self.do_batch:
