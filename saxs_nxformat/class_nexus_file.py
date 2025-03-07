@@ -349,7 +349,7 @@ class NexusFile:
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
-                extracted_value_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/I"))
+                extracted_value_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/I"))
 
             if f"ENTRY/{group_name}/R" in nxfile:
                 extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/R"))
