@@ -6,7 +6,7 @@ to the NXcanSAS standard
 import os
 import shutil
 import re
-
+import inspect
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -171,10 +171,8 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : build method get_raw_data() that returns the arrays of data
     TODO : build method show_method(method) that show every method name if method is None and method + doc if method
     is not None
-    Todo : build method to show the process description
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -301,6 +299,25 @@ class NexusFile:
             self.dicts_parameters.append(dict_parameters)
             self.intensities_data.append(intensity_data)
             self.list_smi_data.append(smi_data)
+
+    def show_method(self, method_name=None):
+        return_string = ""
+        for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
+            if method_name is None or method_name == name:
+                return_string += f"\n{name}"
+            if method_name == name:
+                return_string += f"\nDocstring : {method.__doc__}"
+                signature = inspect.signature(method)
+                param_list = list(signature.parameters.items())
+                for param in param_list:
+                    if param[0] != "self":
+                        param_str = str(param[1])
+                        return_string += f"\n    {param_str}"
+        if method_name is None:
+            return_string += f"\nPlease rerun this function and pass the name of one method as a parameter\n" \
+                             f"to get more information concerning this particular method"
+        return return_string
+
 
     def get_file(self):
         """
@@ -1144,10 +1161,8 @@ if __name__ == "__main__":
         path_list.append(os.path.join(data_dir, file))
 
     nx_files = NexusFile(path_list, do_batch=True)
-    dico = nx_files.get_process_desc(group_name="PROCESS_RAD_AVG")
-    for key, value in dico.items():
-        print(key)
-        print(value)
+    info = nx_files.show_method(method_name="process_q_space")
+    print(info)
     nx_files.nexus_close()
 
     profiler.disable()
