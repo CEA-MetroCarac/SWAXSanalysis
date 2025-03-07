@@ -338,7 +338,7 @@ class NexusFile:
             mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=mesh_q,
                     extracted_value_data=smi_data.img_st,
@@ -358,7 +358,7 @@ class NexusFile:
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Conversion to q-space",
                                "This process converts the 2D array Q containing the position in A into a 2D "
-                               "array containing the positions in q-space, A^-1. "
+                               "array containing the positions in q-space, A^-1.\n"
                                "Each element of the array Q is a vector containing qx and qy"
                                )
 
@@ -451,7 +451,7 @@ class NexusFile:
             mesh_cake = np.stack((q_grid, chi_grid), axis=-1)
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=mesh_cake,
                     extracted_value_data=smi_data.cake,
@@ -471,8 +471,10 @@ class NexusFile:
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Data caking",
                                "This process plots the intensity with respect to the azimuthal angle and the distance "
-                               "from"
-                               "the center of the q-space. That way the rings are flattened."
+                               "from the center of the q-space.\n"
+                               "Parameters used :\n"
+                               f"   - Azimuthal range : [{azi_min:.2f}, {azi_max:.2f}] with {pts_azi} points\n"
+                               f"   - Radial Q range : [{radial_min:.2f}, {radial_max:.2f}] with {pts_rad} points\n"
                                )
 
     def process_radial_average(
@@ -555,7 +557,7 @@ class NexusFile:
             )
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=smi_data.q_rad, extracted_value_data=smi_data.I_rad,
                     scale_x="log", scale_y="log",
@@ -576,19 +578,28 @@ class NexusFile:
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Radial averaging",
                                "This process integrates the intensity signal over a specified radial angle range"
-                               " and q range, effectively rendering the signal 1D instead of 2D"
+                               "and radial q range.\n"
+                               "Parameters used :\n"
+                               f"   - Azimuthal range : [{azi_min:.2f}, {azi_max:.2f}]\n"
+                               f"   - Radial Q range : [{radial_min:.2f}, {radial_max:.2f}] with {pts} points\n"
                                )
 
     def process_azimuthal_average(
             self, display=False, save=False, group_name="DATA_AZI_AVG",
-            r_min=None, r_max=None,
-            angle_min=None, angle_max=None,
+            r_min=None, r_max=None, npt_rad=None,
+            angle_min=None, angle_max=None, npt_azi = None
     ):
         """
         Method used to do the radial average of the data in fourier space
 
         Parameters
         ----------
+        npt_azi :
+            Number of points in the azimuthal range
+
+        npt_rad :
+            Number of points in the radial range
+
         angle_max :
             Maximum azimuthal angle
 
@@ -616,8 +627,10 @@ class NexusFile:
         initial_none_flags = {
             "r_min": r_min is None,
             "r_max": r_max is None,
+            "npt_rad": npt_rad is None,
             "angle_min": angle_min is None,
             "angle_max": angle_max is None,
+            "npt_azi": npt_azi is None
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
@@ -627,26 +640,34 @@ class NexusFile:
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
                 "r_min": 0,
+                "npt_rad": 500,
                 "angle_min": -180,
                 "angle_max": 180,
+                "npt_azi": 500
             }
 
             if initial_none_flags["r_min"]:
                 r_min = defaults["r_min"]
             if initial_none_flags["r_max"]:
                 r_max = defaults["r_max"]
+            if initial_none_flags["npt_rad"]:
+                npt_rad = defaults["npt_rad"]
             if initial_none_flags["angle_min"]:
                 angle_min = defaults["angle_min"]
             if initial_none_flags["angle_max"]:
                 angle_max = defaults["angle_max"]
+            if initial_none_flags["npt_azi"]:
+                npt_azi = defaults["npt_azi"]
 
             smi_data.azimuthal_averaging(
                 azimuth_range=[angle_min, angle_max],
-                radial_range=[r_min, r_max]
+                npt_azim=npt_azi,
+                radial_range=[r_min, r_max],
+                npt_rad=npt_rad
             )
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=smi_data.chi_azi, extracted_value_data=smi_data.I_azi,
                     scale_x="log", scale_y="log",
@@ -665,7 +686,10 @@ class NexusFile:
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Azimuthal averaging",
                                "This process integrates the intensity signal over a specified azimuthal angle range"
-                               " and q range, effectively rendering the signal 1D instead of 2D"
+                               " and radial q range.\n"
+                               "Parameters used :\n"
+                               f"   - Azimuthal range : [{angle_min:.2f}, {angle_max:.2f}] with {npt_azi} points\n"
+                               f"   - Radial Q range : [{r_min:.2f}, {r_max:.2f}] with {npt_rad} points\n"
                                )
 
     def process_horizontal_integration(
@@ -735,7 +759,7 @@ class NexusFile:
             )
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
                     scale_x="log", scale_y="log",
@@ -755,8 +779,10 @@ class NexusFile:
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Horizontal integration",
                                "This process integrates the intensity signal over a specified horizontal strip in "
-                               "q-space"
-                               "effectively rendering the signal 1D instead of 2D"
+                               "q-space.\n"
+                               "Parameters used :\n"
+                               f"   - Horizontal Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
+                               f"   - Vertical Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
                                )
 
     def process_vertical_integration(
@@ -825,7 +851,7 @@ class NexusFile:
             )
 
             if display:
-                self._display(
+                self._display_data(
                     index, self.nx_files[index],
                     group_name=group_name,
                     extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
@@ -845,8 +871,11 @@ class NexusFile:
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Vertical integration",
-                               "This process integrates the intensity signal over a specified vertical strip in q-space"
-                               "effectively rendering the signal 1D instead of 2D"
+                               "This process integrates the intensity signal over a specified vertical strip in "
+                               "q-space\n"
+                               "Parameters used :\n"
+                               f"   - Horizontal Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
+                               f"   - Vertical Q range : [{qx_min:.2f}, {qx_max:.2f}]\n"
                                )
 
     def process_display(
@@ -857,7 +886,7 @@ class NexusFile:
     ):
         self.init_plot = True
         for index, nxfile in enumerate(self.nx_files):
-            self._display(
+            self._display_data(
                 index=index, nxfile=nxfile,
                 group_name=group_name,
                 scale_x=scale_x, scale_y=scale_y,
@@ -865,7 +894,7 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-    def _display(
+    def _display_data(
             self, index=None, nxfile=None,
             group_name=None,
             extracted_param_data=None, extracted_value_data=None,

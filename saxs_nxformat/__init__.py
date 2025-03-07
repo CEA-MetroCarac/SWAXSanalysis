@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 def get_desktop_path():
-    """Return the path to the user's desktop"""
+    """Returns the path to the user's desktop"""
     if sys.platform == "win32":
         return Path(os.path.join(os.environ["USERPROFILE"], "Desktop"))
 
