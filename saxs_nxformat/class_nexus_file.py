@@ -171,7 +171,7 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : build method show_method(method) that show every method name if method is None and method + doc if method
+    TODO : build method to save data
     is not None
     A class that can load and treat data formated in the NXcanSAS standard
 
