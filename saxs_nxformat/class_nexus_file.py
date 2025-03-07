@@ -354,9 +354,9 @@ class NexusFile:
             if f"ENTRY/{group_name}/R" in nxfile:
                 extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/R"))
             elif f"ENTRY/{group_name}/Q" in nxfile:
-                extracted_param_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Q"))
+                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Q"))
             elif f"ENTRY/{group_name}/Chi" in nxfile:
-                extracted_param_data[file_name] = array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi"))
+                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi"))
             else:
                 extracted_param_data[file_name] = None
 
