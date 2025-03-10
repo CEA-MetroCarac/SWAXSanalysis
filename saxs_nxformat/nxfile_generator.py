@@ -151,7 +151,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
-        replace_h5_dataset(save_file, "ENTRY/DATA/R", treated_data["R_data"])
+        replace_h5_dataset(save_file, "ENTRY/DATA/Q", treated_data["R_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
     return hdf5_path

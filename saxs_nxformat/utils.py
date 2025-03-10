@@ -103,7 +103,7 @@ def convert(number, unit_start, unit_end, testing=False):
             unit_type2 = key
 
     if unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and not testing:
-        tkinter.messagebox.showerror("Error",
+        tk.messagebox.showerror("Error",
                                      f"The value {number} {unit_start} could not be converted to "
                                      f"{unit_end} :\n")
     elif unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and testing:

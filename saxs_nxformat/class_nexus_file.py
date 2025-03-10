@@ -142,7 +142,7 @@ def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset, mask)
     nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], dataset_name)
 
     # we replace the raw data with the new data
-    replace_h5_dataset(nx_file, f"{dataset_path}/R",
+    replace_h5_dataset(nx_file, f"{dataset_path}/Q",
                        parameter, f"{dataset_path}/{parameter_symbol}")
     replace_h5_dataset(nx_file, f"{dataset_path}/I",
                        dataset)
@@ -238,7 +238,7 @@ class NexusFile:
 
             # We extract the relevant info from the H5 file
             intensity_data = [nx_file["ENTRY/DATA/I"][:]]
-            position_data = [nx_file["ENTRY/DATA/R"][:]]
+            position_data = [nx_file["ENTRY/DATA/Q"][:]]
             dict_parameters["I raw data"] = intensity_data
             dict_parameters["R raw data"] = position_data
 

@@ -23,6 +23,14 @@
         "C": 273.15,
         "K": 0
     },
+    "NX_TIME": {
+        "arbitrary": 1,
+        "s": 1,
+        "ms": 0.001,
+        "µs": 1e-6,
+        "min": 60,
+        "h": 3600
+    },
     "NX_UNITLESS": {
         "arbitrary": 1
     }

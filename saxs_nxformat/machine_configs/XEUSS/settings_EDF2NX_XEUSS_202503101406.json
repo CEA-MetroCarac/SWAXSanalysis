@@ -18,24 +18,46 @@
                 "docstring": "Name of the default dataset",
                 "content": null
             },
-            "/definition": {
-                "element type": "dataset",
-                "value": "NXsas",
+            "@canSAS_class": {
+                "element type": "attribute",
+                "value": "SASentry",
                 "possible value": [
-                    "NXsas"
+                    "SASentry"
                 ],
                 "EX_required": true,
                 "type": "NX_CHAR",
-                "docstring": "NeXus schema used for this file",
+                "docstring": "Official canSAS group",
+                "content": null
+            },
+            "@version": {
+                "element type": "attribute",
+                "value": "1.1",
+                "possible value": [
+                    "1.1"
+                ],
+                "EX_required": true,
+                "type": "NX_CHAR",
+                "docstring": "canSAS standard version",
+                "content": null
+            },
+            "/definition": {
+                "element type": "dataset",
+                "value": "NXcanSAS",
+                "possible value": [
+                    "NXcanSAS"
+                ],
+                "EX_required": true,
+                "type": "NX_CHAR",
+                "docstring": "NeXus schema used for the file",
                 "content": null
             },
             "/title": {
                 "element type": "dataset",
-                "value": "Test_config_xeuss",
+                "value": "",
                 "possible value": [],
                 "type": "NX_CHAR",
                 "EX_required": true,
-                "docstring": "Title of this file, should be something meaningfull",
+                "docstring": "Title of the file, should be something meaningfull",
                 "content": null
             },
             "/run": {
@@ -44,7 +66,7 @@
                 "possible value": [],
                 "type": "NX_CHAR",
                 "EX_required": true,
-                "docstring": "Identification of this experiment",
+                "docstring": "Identification of the experiment",
                 "content": {
                     "@name": {
                         "element type": "attribute",
@@ -52,7 +74,7 @@
                         "possible value": [],
                         "type": "NX_CHAR",
                         "EX_required": false,
-                        "docstring": "Name of this particular run",
+                        "docstring": "Name of the run",
                         "content": null
                     }
                 }
@@ -63,8 +85,19 @@
                 "possible value": [],
                 "type": "NXdata",
                 "EX_required": true,
-                "docstring": "Group containing the data for I and R",
+                "docstring": "Group containing the data for I and Q,\n there can be multiple but they have to have different names",
                 "content": {
+                    "@canSAS_class": {
+                        "element type": "attribute",
+                        "value": "SASdata",
+                        "possible value": [
+                            "SASdata"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "official canSAS group",
+                        "content": null
+                    },
                     "@signal": {
                         "element type": "attribute",
                         "value": "I",
@@ -78,16 +111,16 @@
                     },
                     "@I_axes": {
                         "element type": "attribute",
-                        "value": "Q, Q",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_CHAR",
-                        "docstring": "Will specify which dimension corresponds to each parameters\nString with this format : \"parameter1, parameter2, ..., parameterN\"",
+                        "docstring": "Will specify which dimension correpsond to each parameters\nString with this format : \"parameter1, parameter2, ..., parameterN\"",
                         "content": null
                     },
                     "@Q_indices": {
                         "element type": "attribute",
-                        "value": "0, 1",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_INT",
@@ -107,7 +140,7 @@
                     },
                     "@mask_indices": {
                         "element type": "attribute",
-                        "value": "0, 1",
+                        "value": "",
                         "possible value": [],
                         "EX_required": false,
                         "type": "NX_INT",
@@ -116,14 +149,14 @@
                     },
                     "@timestamp": {
                         "element type": "attribute",
-                        "value": "Date",
+                        "value": "",
                         "possible value": [],
                         "EX_required": false,
                         "type": "NX_DATE_TIME",
-                        "docstring": "Timestamp of the data (ISO-8601 format)",
+                        "docstring": "Timestamp of the data",
                         "content": null
                     },
-                    "/R": {
+                    "/Q": {
                         "element type": "dataset",
                         "value": "Autofilled",
                         "possible value": [
@@ -131,45 +164,44 @@
                         ],
                         "EX_required": true,
                         "type": "NX_NUMBER",
-                        "docstring": "Array of R (positions), can be an array of 3D vector or an array of scalar representing |R|",
+                        "docstring": "Array of Q, can be an array of 3D vector or an array of scalar representing |Q|",
                         "content": {
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
                                     "arbitrary",
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
                                     ],
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of R (will be converted to nm).",
+                                "docstring": "Unit of Q (will be converted to 1/nm).",
                                 "content": null
                             },
                             "@uncertainties": {
                                 "element type": "attribute",
-                                "value": "Rdev",
+                                "value": "Qdev",
                                 "possible value": [
-                                    "Rdev"
+                                    "Qdev"
                                 ],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
-                                "docstring": "Name of the R uncertainties dataset",
+                                "docstring": "Name of the Q uncertainties dataset",
                                 "content": null
                             },
                             "@resolutions": {
                                 "element type": "attribute",
-                                "value": "dRl, dRw",
+                                "value": "dQl, dQw",
                                 "possible value": [
-                                    "dRl, dRw"
+                                    "dQl, dQw"
                                 ],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
@@ -194,7 +226,7 @@
                             }
                         }
                     },
-                    "/Rdev": {
+                    "/Qdev": {
                         "element type": "dataset",
                         "value": "Autofilled",
                         "possible value": [
@@ -202,32 +234,31 @@
                         ],
                         "EX_required": false,
                         "type": "NX_NUMBER",
-                        "docstring": "Array of R's uncertainties'",
+                        "docstring": "Array of Q's uncertainties'",
                         "content": {
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
                                     "arbitrary",
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
                                     ],
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of Rdev (will be converted to nm)",
+                                "docstring": "Unit of Qdev (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
                     },
-                    "/dRl": {
+                    "/dQl": {
                         "element type": "dataset",
                         "value": "Autofilled",
                         "possible value": [
@@ -235,32 +266,31 @@
                         ],
                         "EX_required": false,
                         "type": "NX_NUMBER",
-                        "docstring": "Array of R's horizontal resolution'",
+                        "docstring": "Array of Q's horizontal resolution'",
                         "content": {
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
                                     "arbitrary",
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
                                     ],
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of dRl (will be converted to nm)",
+                                "docstring": "Unit of dQl (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
                     },
-                    "/dRw": {
+                    "/dQw": {
                         "element type": "dataset",
                         "value": "Autofilled",
                         "possible value": [
@@ -268,32 +298,31 @@
                         ],
                         "EX_required": false,
                         "type": "NX_NUMBER",
-                        "docstring": "Array of R's vertical resolution'",
+                        "docstring": "Array of Q's vertical resolution'",
                         "content": {
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
                                     "arbitrary",
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
                                     ],
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of dRw (will be converted to nm)",
+                                "docstring": "Unit of dQw (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
                     },
-                    "/Rmean": {
+                    "/Qmean": {
                         "element type": "dataset",
                         "value": "Autofilled",
                         "possible value": [
@@ -301,27 +330,26 @@
                         ],
                         "EX_required": false,
                         "type": "NX_NUMBER",
-                        "docstring": "Mean value of R at that point, usefull when binning",
+                        "docstring": "Mean value of Q at that point, usefull when binning",
                         "content": {
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
                                     "arbitrary",
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "1/m",
+                                        "1/nm",
+                                        "1/angstrom"
                                     ],
-                                    "nm"
+                                    "1/nm"
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of Rmean (will be converted to nm)",
+                                "docstring": "Unit of Qmean (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
@@ -427,6 +455,17 @@
                 "EX_required": true,
                 "docstring": "Group containing relevant information concerning the instrument",
                 "content": {
+                    "@canSAS_class": {
+                        "element type": "attribute",
+                        "value": "SASinstrument",
+                        "possible value": [
+                            "SASinstrument"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official canSAS group",
+                        "content": null
+                    },
                     "/APERTURE": {
                         "element type": "group",
                         "value": null,
@@ -435,6 +474,17 @@
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the aperture of instrument",
                         "content": {
+                            "@canSAS_class": {
+                                "element type": "attribute",
+                                "value": "SASaperture",
+                                "possible value": [
+                                    "SASaperture"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official canSAS group",
+                                "content": null
+                            },
                             "/shape": {
                                 "element type": "dataset",
                                 "value": "4-blade slit",
@@ -518,6 +568,17 @@
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the collimator of instrument",
                         "content": {
+                            "@canSAS_class": {
+                                "element type": "attribute",
+                                "value": "SAScollimation",
+                                "possible value": [
+                                    "SAScollimation"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official canSAS group",
+                                "content": null
+                            },
                             "/length": {
                                 "element type": "dataset",
                                 "value": "",
@@ -586,8 +647,19 @@
                         "possible value": [],
                         "type": "NXdetector",
                         "EX_required": false,
-                        "docstring": "Group containing relevant information concerning the detector of the instrument",
+                        "docstring": "Group containing relevant information concerning the detector of instrument",
                         "content": {
+                            "@canSAS_class": {
+                                "element type": "attribute",
+                                "value": "SASdetector",
+                                "possible value": [
+                                    "SASdetector"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official canSAS group",
+                                "content": null
+                            },
                             "/name": {
                                 "element type": "dataset",
                                 "value": "DetectorModel",
@@ -609,7 +681,7 @@
                                         "element type": "attribute",
                                         "value": [
                                             "m",
-                                            "m"
+                                            "arbitrary"
                                         ],
                                         "possible value": [
                                             [
@@ -623,7 +695,7 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the sample-detector distance"
+                                        "docstring": "Unit of the sample-detector distance, must be the same as Q's"
                                     }
                                 }
                             },
@@ -653,13 +725,13 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's slit (will be converted to nm)"
+                                        "docstring": "Unit of the detector's slit, must be the same as Q's"
                                     }
                                 }
                             },
                             "/x_position": {
                                 "element type": "dataset",
-                                "value": "det0y",
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
@@ -668,7 +740,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "mm",
+                                            "arbitrary",
                                             "arbitrary"
                                         ],
                                         "possible value": [
@@ -689,7 +761,7 @@
                             },
                             "/y_position": {
                                 "element type": "dataset",
-                                "value": "det0z",
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
@@ -698,7 +770,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "mm",
+                                            "arbitrary",
                                             "arbitrary"
                                         ],
                                         "possible value": [
@@ -719,16 +791,16 @@
                             },
                             "/roll": {
                                 "element type": "dataset",
-                                "value": 0,
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the axis of the source",
+                                "docstring": "Rotation of the detector on the axis of the source. The same as pyFAI's rot3",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "deg",
+                                            "arbitrary",
                                             "rad"
                                         ],
                                         "possible value": [
@@ -752,12 +824,12 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the horizontal axis",
+                                "docstring": "Rotation of the detector on the horizontal axis. The same as pyFAI's rot2",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "deg",
+                                            "rad",
                                             "rad"
                                         ],
                                         "possible value": [
@@ -781,7 +853,7 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_NUMBER",
-                                "docstring": "Rotation of the detector on the vertical axis",
+                                "docstring": "Rotation of the detector on the vertical axis. The same as pyFAI's rot1",
                                 "content": {
                                     "@units": {
                                         "element type": "attribute",
@@ -934,6 +1006,17 @@
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the source used.",
                         "content": {
+                            "@canSAS_class": {
+                                "element type": "attribute",
+                                "value": "SASsource",
+                                "possible value": [
+                                    "SASsource"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official canSAS group",
+                                "content": null
+                            },
                             "/type": {
                                 "element type": "dataset",
                                 "value": "Fixed Tube X-ray",
@@ -977,7 +1060,7 @@
                             },
                             "/beam_shape": {
                                 "element type": "attribute",
-                                "value": "",
+                                "value": "Circular",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
@@ -1040,7 +1123,7 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                        "docstring": "Unit of the incident minimum wavelength"
                                     }
                                 }
                             },
@@ -1070,7 +1153,7 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                        "docstring": "Unit of the incident maximum wavelength"
                                     }
                                 }
                             },
@@ -1100,13 +1183,13 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                        "docstring": "Unit of the incident wavelength spread"
                                     }
                                 }
                             },
                             "/beam_size_x": {
                                 "element type": "dataset",
-                                "value": "",
+                                "value": "30",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1136,7 +1219,7 @@
                             },
                             "/beam_size_y": {
                                 "element type": "dataset",
-                                "value": "",
+                                "value": "30",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1176,6 +1259,17 @@
                 "EX_required": true,
                 "docstring": "Group containing information concerning the Sample used",
                 "content": {
+                    "@canSAS_class": {
+                        "element type": "attribute",
+                        "value": "SASsample",
+                        "possible value": [
+                            "SASsample"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "official canSAS group",
+                        "content": null
+                    },
                     "name": {
                         "element type": "attribute",
                         "value": "Sample",
@@ -1241,10 +1335,8 @@
                                 "possible value": [
                                     [
                                         "arbitrary",
-                                        "m",
-                                        "mm",
-                                        "nm",
-                                        "angstrom"
+                                        "C",
+                                        "K"
                                     ],
                                     "arbitrary"
                                 ],
@@ -1256,7 +1348,7 @@
                     },
                     "/x_position": {
                         "element type": "dataset",
-                        "value": "x",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_NUMBER",
@@ -1265,7 +1357,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "m",
+                                    "arbitrary",
                                     "arbitrary"
                                 ],
                                 "possible value": [
@@ -1286,7 +1378,7 @@
                     },
                     "/y_position": {
                         "element type": "dataset",
-                        "value": "z",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_NUMBER",
@@ -1295,7 +1387,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "m",
+                                    "arbitrary",
                                     "arbitrary"
                                 ],
                                 "possible value": [
@@ -1316,7 +1408,7 @@
                     },
                     "/roll": {
                         "element type": "dataset",
-                        "value": 0,
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_NUMBER",
@@ -1325,7 +1417,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "deg",
+                                    "arbitrary",
                                     "rad"
                                 ],
                                 "possible value": [
@@ -1345,7 +1437,7 @@
                     },
                     "/pitch": {
                         "element type": "dataset",
-                        "value": "om",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_NUMBER",
@@ -1354,7 +1446,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "deg",
+                                    "arbitrary",
                                     "rad"
                                 ],
                                 "possible value": [
@@ -1374,7 +1466,7 @@
                     },
                     "/yaw": {
                         "element type": "dataset",
-                        "value": "phi",
+                        "value": "",
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_NUMBER",
@@ -1383,7 +1475,7 @@
                             "@units": {
                                 "element type": "attribute",
                                 "value": [
-                                    "deg",
+                                    "arbitrary",
                                     "rad"
                                 ],
                                 "possible value": [
@@ -1398,6 +1490,130 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Unit of the rotation (will be converted to rad)"
+                            }
+                        }
+                    }
+                }
+            },
+            "/PROCESS": {
+                "element type": "group",
+                "value": null,
+                "possible value": [],
+                "type": "NXprocess",
+                "EX_required": true,
+                "docstring": "Group containing information concerning the Sample used",
+                "content": {
+                    "@canSAS_class": {
+                        "element type": "attribute",
+                        "value": "SASsample",
+                        "possible value": [
+                            "SASsample"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "official canSAS group",
+                        "content": null
+                    },
+                    "/name": {
+                        "element type": "dataset",
+                        "value": "Fourier transform",
+                        "possible value": [
+                            "Fourier transform"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "name of the process the file was subjected to",
+                        "content": null
+                    },
+                    "/date": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_DATE_TIME",
+                        "docstring": "date of the process",
+                        "content": null
+                    },
+                    "/description": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_CHAR",
+                        "docstring": "description of the process",
+                        "content": null
+                    }
+                }
+            },
+            "/COLLECTION": {
+                "element type": "group",
+                "value": null,
+                "possible value": [],
+                "type": "NXcollection",
+                "EX_required": false,
+                "docstring": "Free form description of anything not covered by other elements.",
+                "content": {
+                    "@canSAS_class": {
+                        "element type": "attribute",
+                        "value": "SASnote",
+                        "possible value": [
+                            "SASnote"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "official canSAS group",
+                        "content": null
+                    },
+                    "/experiment_type": {
+                        "element type": "dataset",
+                        "value": "",
+                        "possible value": [
+                            "SAXS",
+                            "WAXS",
+                            "GI-SAXS",
+                            "GI-WAXS"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_CHAR",
+                        "docstring": "Type of the experiment",
+                        "content": null
+                    },
+                    "/geometry": {
+                        "element type": "dataset",
+                        "value": "Geometry",
+                        "possible value": [
+                            "Reflexion",
+                            "Transmission"
+                        ],
+                        "EX_required": false,
+                        "type": "NX_CHAR",
+                        "docstring": "Whether the incident beam was transmitted or reflected to get the measurement",
+                        "content": null
+                    },
+                    "/exposition_time": {
+                        "element type": "dataset",
+                        "value": "ExposureTime",
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Exposition time of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "s",
+                                    "s"
+                                ],
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "s"
+                                    ],
+                                    "s"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the exposition time (will be converted to s)"
                             }
                         }
                     }
