@@ -9,11 +9,15 @@ opens a GUI allowing the user to:
 import os
 import sys
 import shutil
+import ctypes
 import tkinter as tk
 
 # Adds the package to the python path
 # The version used is not the local one but the one installed in metro-carac !!!
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+myappid = 'CEA.nxformat.launcher'
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
