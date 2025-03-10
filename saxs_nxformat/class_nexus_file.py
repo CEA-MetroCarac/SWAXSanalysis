@@ -25,6 +25,7 @@ def repack_hdf5(input_file, output_file):
     ----------
     input_file : str
         Path to the input HDF5 file.
+
     output_file : str
         Path to the output (repacked) HDF5 file.
     """
@@ -318,7 +319,6 @@ class NexusFile:
             return_string += f"\nPlease rerun this function and pass the name of one method as a parameter\n" \
                              f"to get more information concerning this particular method"
         return return_string
-
 
     def get_file(self):
         """

@@ -1484,6 +1484,30 @@
                         "type": "NX_CHAR",
                         "docstring": "Whether the incident beam was transmitted or reflected to get the measurement",
                         "content": null
+                    },
+                    "/exposition_time": {
+                        "element type": "dataset",
+                        "value": null,
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_NUMBER",
+                        "docstring": "Exposition time of the sample",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": null,
+                                "possible value": [
+                                    [
+                                        "arbitrary",
+                                        "s"
+                                    ],
+                                    "s"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Unit of the exposition time (will be converted to s)"
+                            }
+                        }
                     }
                 }
             }
