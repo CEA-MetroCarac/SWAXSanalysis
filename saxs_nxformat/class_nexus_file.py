@@ -171,7 +171,8 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : build method to save data
+    TODO : build method to add file to an opened NexusFile object
+    TODO : build method to display in realtime
     is not None
     A class that can load and treat data formated in the NXcanSAS standard
 
