@@ -65,10 +65,20 @@ def launcher_gui():
     TREATED_PATH.mkdir(parents=True, exist_ok=True)
     IPYNB_PATH.mkdir(parents=True, exist_ok=True)
 
-    # We move the notebook and settings file
+    # We move the notebook, jupyter launcher and settings into the DTC
     shutil.copy(
         BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
         IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202503101406.json",
+        CONF_PATH
     )
 
     root = tk.Tk()
