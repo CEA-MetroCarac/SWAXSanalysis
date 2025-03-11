@@ -246,9 +246,6 @@ def tree_structure_manager(file: str, settings: str):
         return "Permission to create directory denied"
 
 
-STOP_THREAD = False
-
-
 class GUI_generator(tk.Tk):
 
     def __init__(self):
