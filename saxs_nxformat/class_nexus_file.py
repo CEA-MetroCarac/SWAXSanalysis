@@ -656,9 +656,15 @@ class NexusFile:
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+
+            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+                r_min = 0
+            else:
+                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": 0,
+                "r_min": r_min,
                 "angle_min": -180,
                 "angle_max": 180,
                 "pts": 2000
@@ -762,9 +768,14 @@ class NexusFile:
             smi_data.masks = [extract_from_h5(self.nx_files[index], "/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
+            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)):
+                r_min = 0
+            else:
+                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": 0,
+                "r_min": r_min,
                 "npt_rad": 500,
                 "angle_min": -180,
                 "angle_max": 180,

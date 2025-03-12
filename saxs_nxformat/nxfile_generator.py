@@ -316,7 +316,7 @@ class GUI_generator(tk.Tk):
         # Close Button
         close_button = tk.Button(self.control_panel,
                                  text="Close",
-                                 command=lambda: self.destroy(),
+                                 command=self.close,
                                  bg="#DBDFAC",
                                  fg="black",
                                  padx=10,
@@ -363,12 +363,16 @@ class GUI_generator(tk.Tk):
         for line_name, line in self.line_dict.items():
             line.set_visible(line_name in selected_items)
 
-        visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
-        labels = [name for name, line in self.line_dict.items() if line.get_visible()]
-        self.ax.get_legend().remove()
-        self.ax.legend(visible_lines, labels)
+        self.update_plot()
 
         self.canvas.draw()
+
+    def update_plot(self):
+        visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
+        labels = [name for name, line in self.line_dict.items() if line.get_visible()]
+        if self.ax.get_legend():
+            self.ax.get_legend().remove()
+        self.ax.legend(visible_lines, labels)
 
     def auto_generate(self):
         """
@@ -433,8 +437,8 @@ class GUI_generator(tk.Tk):
                 line, = self.ax.loglog(param, dict_I[name], label=f"{name}")
                 self.line_dict[name] = line
                 self.list_plot.insert(tk.END, name)
-                self.ax.legend()
                 self.canvas.draw()
+                self.update_plot()
 
             nx_file.nexus_close()
 
@@ -472,6 +476,10 @@ class GUI_generator(tk.Tk):
             self.print_log,
             "Auto-generation stopped. The program is still sleeping!"
         )
+
+    def close(self):
+        plt.close("all")
+        self.destroy()
 
 
 if __name__ == "__main__":
