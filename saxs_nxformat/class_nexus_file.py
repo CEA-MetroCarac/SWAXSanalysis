@@ -228,6 +228,7 @@ def delete_data(nx_file, group_name):
 class NexusFile:
     """
     TODO : build method to display in realtime
+    TODO : add a return to all process that return the parameter and the intensity
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -1048,6 +1049,7 @@ class NexusFile:
 
         percentile :
             Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+            This parameter is only usefull for 2D plotting
 
         title :
             Title of the plot
@@ -1185,7 +1187,6 @@ class NexusFile:
         """
         Method used to close the loaded file correctly by repacking it and then closing it
         """
-        print(len(self.nx_files))
         for index, file in enumerate(self.nx_files):
             file.close()
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")

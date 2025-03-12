@@ -14,12 +14,17 @@ import time
 import tkinter as tk
 import tkinter.messagebox
 import tracemalloc
+import matplotlib.pyplot as plt
 from datetime import datetime
 from pathlib import Path
 
 import fabio
 import h5py
 import numpy as np
+
+from matplotlib.backend_bases import key_press_handler
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
+                                               NavigationToolbar2Tk)
 
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT
 from saxs_nxformat.class_nexus_file import NexusFile
@@ -254,13 +259,29 @@ class GUI_generator(tk.Tk):
         super().__init__()
         self.title("Auto Generate Controller")
         self.iconbitmap(ICON_PATH)
+        self.columnconfigure(1, weight=2)
+        self.rowconfigure(0, weight=1)
 
+        self.control_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
+        self.control_panel.grid(column=0, row=0, padx=5, pady=5, sticky="news")
+        self._build_control_frame()
+
+        self.plot_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
+        self.plot_panel.grid(column=1, row=0, padx=5, pady=5, sticky="news")
+        self._build_plot_frame()
+
+        self.log_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
+        self.log_panel.grid(column=2, row=0, padx=5, pady=5, sticky="news")
+        self.log_panel.rowconfigure(1, weight=1)
+        self._build_log_frame()
+
+    def _build_control_frame(self):
         # Label
-        title = tk.Label(self, text="Auto conversion control panel", font=("Arial", 18, "bold"))
-        title.grid(pady=10, padx=10, row=0, column=0, columnspan=2)
+        title = tk.Label(self.control_panel, text="Auto conversion control panel", font=("Arial", 18, "bold"))
+        title.grid(pady=10, padx=10, row=0, column=0)
 
         # Start Button
-        start_button = tk.Button(self,
+        start_button = tk.Button(self.control_panel,
                                  text="Start",
                                  command=self.start_thread,
                                  bg="#25B800",
@@ -271,7 +292,7 @@ class GUI_generator(tk.Tk):
         start_button.grid(padx=10, pady=10, row=1, column=0)
 
         # Stop Button
-        stop_button = tk.Button(self,
+        stop_button = tk.Button(self.control_panel,
                                 text="Stop",
                                 command=self.stop_thread_func,
                                 bg="#D9481C",
@@ -279,10 +300,10 @@ class GUI_generator(tk.Tk):
                                 padx=10,
                                 font=("Arial", 16, "bold")
                                 )
-        stop_button.grid(padx=10, pady=10, row=1, column=1)
+        stop_button.grid(padx=10, pady=10, row=2, column=0)
 
         # Close Button
-        close_button = tk.Button(self,
+        close_button = tk.Button(self.control_panel,
                                  text="Close",
                                  command=lambda: self.destroy(),
                                  bg="#DBDFAC",
@@ -290,14 +311,36 @@ class GUI_generator(tk.Tk):
                                  padx=10,
                                  font=("Arial", 16, "bold")
                                  )
-        close_button.grid(pady=10, padx=10, row=2, column=0, columnspan=2)
+        close_button.grid(pady=10, padx=10, row=3)
+
+    def _build_plot_frame(self):
+        self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 4), dpi=100, layout="constrained")
+        self.ax.set_xlabel("$q_r (A^{-1})$")
+        self.ax.set_ylabel("Intensity (A.U.)")
+        self.ax.grid()
+        self.ax.set_xscale("log")
+        self.ax.set_yscale("log")
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_panel)
+        self.canvas.draw()
+
+        toolbar = NavigationToolbar2Tk(self.canvas, self.plot_panel, pack_toolbar=False)
+        toolbar.update()
+
+        toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
+    def _build_log_frame(self):
+        # Label
+        title = tk.Label(self.log_panel, text="Console log", font=("Arial", 18, "bold"))
+        title.grid(pady=10, padx=10, row=0, column=0)
 
         # Log output area
-        self.log_text = tk.Text(self, height=10, width=75, font=("Arial", 12))
-        self.log_text.grid(pady=10, padx=10, row=3, column=0, columnspan=2)
+        self.log_text = tk.Text(self.log_panel, height=20, width=50, font=("Arial", 12))
+        self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
         self.log_text.config(state=tk.NORMAL)
 
-    def print_to_gui(self, message):
+    def print_log(self, message):
         """Function to print logs in the Tkinter Text widget."""
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
@@ -313,7 +356,7 @@ class GUI_generator(tk.Tk):
             current, peak = tracemalloc.get_traced_memory()
             self.after(
                 0,
-                self.print_to_gui,
+                self.print_log,
                 f"Memory used:\n"
                 f"  - Current: {current / (1024 ** 2):.2f} MB\n"
                 f"  - Peak: {peak / (1024 ** 2):.2f} MB"
@@ -322,7 +365,7 @@ class GUI_generator(tk.Tk):
             if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
                 self.after(
                     0,
-                    self.print_to_gui,
+                    self.print_log,
                     f"Too much memory used: {current}, {peak}"
                 )
                 break
@@ -331,7 +374,7 @@ class GUI_generator(tk.Tk):
             if file_path is None or settings_path is None:
                 self.after(
                     0,
-                    self.print_to_gui,
+                    self.print_log,
                     f"No file found, sleeping for {sleep_time} seconds."
                 )
                 time.sleep(sleep_time)
@@ -341,14 +384,14 @@ class GUI_generator(tk.Tk):
             if result[0] == "perm error":
                 self.after(
                     0,
-                    self.print_to_gui,
+                    self.print_log,
                     "The program could not create the file due to a permission error"
                 )
-                sys.exit()
+                self.destroy()
 
             self.after(
                 0,
-                self.print_to_gui,
+                self.print_log,
                 f"Converting : {file_path.name}, please wait"
             )
 
@@ -359,6 +402,12 @@ class GUI_generator(tk.Tk):
             # TODO : when the user chooses processes they should be executed here
             nx_file.process_q_space(save=True)
             nx_file.process_radial_average(save=True)
+
+            dict_Q, dict_I = nx_file.get_raw_data("DATA_RAD_AVG")
+            for index, (name, param) in enumerate(dict_Q.items()):
+                self.ax.loglog(param, dict_I[name])
+                self.canvas.draw()
+
             nx_file.nexus_close()
 
             del nx_file
@@ -366,13 +415,13 @@ class GUI_generator(tk.Tk):
 
             self.after(
                 0,
-                self.print_to_gui,
+                self.print_log,
                 f"{file_path.name} has been converted successfully\n"
             )
         tracemalloc.stop()
         self.after(
             0,
-            self.print_to_gui,
+            self.print_log,
             "The program is done sleeping! you can start it again."
         )
 
@@ -383,7 +432,7 @@ class GUI_generator(tk.Tk):
         thread.start()
         self.after(
             0,
-            self.print_to_gui,
+            self.print_log,
             "Auto-generation started!"
         )
 
@@ -392,7 +441,7 @@ class GUI_generator(tk.Tk):
         self.activate_thread = False
         self.after(
             0,
-            self.print_to_gui,
+            self.print_log,
             "Auto-generation stopped. The program is still sleeping!"
         )
 
