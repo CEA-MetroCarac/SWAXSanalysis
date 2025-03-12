@@ -107,6 +107,61 @@ def extract_from_h5(nx_file, h5path, data_type="dataset", attribute_name=None):
         return None
 
 
+def extract_smi_param(h5obj):
+    dict_parameters = {
+        "beam stop": [[0, 0]]
+    }
+
+    # We extract the relevant info from the H5 file
+    intensity_data = [h5obj["ENTRY/DATA/I"][:]]
+    position_data = [h5obj["ENTRY/DATA/Q"][:]]
+    dict_parameters["I raw data"] = intensity_data
+    dict_parameters["R raw data"] = position_data
+
+    # Concerning the source
+    wavelength = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/SOURCE/incident_wavelength")
+    dict_parameters["wavelength"] = wavelength * 1e-9
+
+    # Concerning the sample
+    incident_angle = extract_from_h5(h5obj, "ENTRY/SAMPLE/yaw")
+    dict_parameters["incident angle"] = incident_angle
+
+    # Concerning the detector
+    # We use a regex that detects the keyword required in the detector's name
+    detector_name = extract_from_h5(h5obj, "/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
+    if re.search(
+            "(?i)(?=.*dectris)" +
+            "(?i)(?=.*eiger2)" +
+            "(?i)(?=.*1m)",
+            detector_name.lower()
+    ):
+        dict_parameters["detector name"] = "Eiger1M_xeuss"
+    if re.search(
+            "(?i)(?=.*" + "dectris" + ")" +
+            "(?i)(?=.*" + "eiger2" + ")" +
+            "(?i)(?=.*" + "500k" + ")",
+            detector_name.lower()
+    ):
+        dict_parameters["detector name"] = "Eiger500k_xeuss"
+
+    # Concerning the beamcenter
+    beam_center_x = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
+    beam_center_y = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y")
+    dict_parameters["beam center"] = [beam_center_x, beam_center_y]
+
+    # Concerning the rotations of the detector
+    rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
+    rotation_2 = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/pitch")
+    rotation_3 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/roll")
+    dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
+
+    # Concerning the sample-detector distance
+    sample_detector_distance = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/SDD")
+    dict_parameters["distance"] = sample_detector_distance * 1e3
+
+    return dict_parameters, intensity_data
+
+
 def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset, mask):
     """
     Method used to save a dataset in the h5 file
@@ -172,9 +227,7 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : build method to add file to an opened NexusFile object
     TODO : build method to display in realtime
-    is not None
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -232,56 +285,7 @@ class NexusFile:
         for index, file_path in enumerate(self.file_paths):
             nx_file = h5py.File(file_path, "r+")
 
-            dict_parameters = {
-                "beam stop": [[0, 0]]
-            }
-
-            # We extract the relevant info from the H5 file
-            intensity_data = [nx_file["ENTRY/DATA/I"][:]]
-            position_data = [nx_file["ENTRY/DATA/Q"][:]]
-            dict_parameters["I raw data"] = intensity_data
-            dict_parameters["R raw data"] = position_data
-
-            # Concerning the source
-            wavelength = extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/incident_wavelength")
-            dict_parameters["wavelength"] = wavelength * 1e-9
-
-            # Concerning the sample
-            incident_angle = extract_from_h5(nx_file, "ENTRY/SAMPLE/yaw")
-            dict_parameters["incident angle"] = incident_angle
-
-            # Concerning the detector
-            # We use a regex that detects the keyword required in the detector's name
-            detector_name = extract_from_h5(nx_file, "/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
-            if re.search(
-                    "(?i)(?=.*dectris)" +
-                    "(?i)(?=.*eiger2)" +
-                    "(?i)(?=.*1m)",
-                    detector_name.lower()
-            ):
-                dict_parameters["detector name"] = "Eiger1M_xeuss"
-            if re.search(
-                    "(?i)(?=.*" + "dectris" + ")" +
-                    "(?i)(?=.*" + "eiger2" + ")" +
-                    "(?i)(?=.*" + "500k" + ")",
-                    detector_name.lower()
-            ):
-                dict_parameters["detector name"] = "Eiger500k_xeuss"
-
-            # Concerning the beamcenter
-            beam_center_x = extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
-            beam_center_y = extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y")
-            dict_parameters["beam center"] = [beam_center_x, beam_center_y]
-
-            # Concerning the rotations of the detector
-            rotation_1 = - extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/yaw")
-            rotation_2 = extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/pitch")
-            rotation_3 = - extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/roll")
-            dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
-
-            # Concerning the sample-detector distance
-            sample_detector_distance = extract_from_h5(nx_file, "ENTRY/INSTRUMENT/DETECTOR/SDD")
-            dict_parameters["distance"] = sample_detector_distance * 1e3
+            dict_parameters, intensity_data = extract_smi_param(nx_file)
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
@@ -325,6 +329,44 @@ class NexusFile:
         Getter of the actual h5 files
         """
         return self.nx_files
+
+    def add_file(self, h5_paths):
+
+        if isinstance(h5_paths, list):
+            for path in h5_paths:
+                self.file_paths.append(path)
+        elif isinstance(h5_paths, str):
+            self.file_paths.append(h5_paths)
+            h5_paths = [h5_paths]
+        else:
+            raise TypeError(
+                f"You tried to pass the path of the file(s) you want to open "
+                f"as something other than a string or a list of string"
+            )
+
+        for index, file_path in enumerate(h5_paths):
+            nx_file = h5py.File(file_path, "r+")
+
+            dict_parameters, intensity_data = extract_smi_param(nx_file)
+
+            # We input the info in the SMI package
+            smi_data = SMI_beamline.SMI_geometry(
+                geometry="Transmission",
+                sdd=dict_parameters["distance"],
+                wav=dict_parameters["wavelength"],
+                alphai=dict_parameters["incident angle"],
+                center=dict_parameters["beam center"],
+                bs_pos=dict_parameters["beam stop"],
+                detector=dict_parameters["detector name"],
+                det_angles=dict_parameters["detector rotation"]
+            )
+            smi_data.open_data_db(dict_parameters["I raw data"])
+            smi_data.stitching_data()
+
+            self.nx_files.append(nx_file)
+            self.dicts_parameters.append(dict_parameters)
+            self.intensities_data.append(intensity_data)
+            self.list_smi_data.append(smi_data)
 
     def get_raw_data(self, group_name="DATA_Q_SPACE"):
         """
@@ -1143,6 +1185,7 @@ class NexusFile:
         """
         Method used to close the loaded file correctly by repacking it and then closing it
         """
+        print(len(self.nx_files))
         for index, file in enumerate(self.nx_files):
             file.close()
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
@@ -1154,16 +1197,17 @@ if __name__ == "__main__":
     profiler = cProfile.Profile()
     profiler.enable()
 
-    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - Xeuss\year - 2025\config " \
-               r"ID - 2024-12-19T15-00\experiment - measure\detector - SWAXS"
+    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - XEUSS" \
+               r"\year - 2025\config ID - 202503101406\experiment - measure\detector - SAXS\format - NX"
     path_list = []
 
     for file in os.listdir(data_dir):
         path_list.append(os.path.join(data_dir, file))
 
-    nx_files = NexusFile(path_list, do_batch=True)
-    info = nx_files.show_method(method_name="process_q_space")
-    print(info)
+    nx_files = NexusFile(path_list[0:2], do_batch=True)
+    print(nx_files.nx_files)
+    nx_files.add_file(path_list[2:4])
+    print(nx_files.nx_files)
     nx_files.nexus_close()
 
     profiler.disable()
