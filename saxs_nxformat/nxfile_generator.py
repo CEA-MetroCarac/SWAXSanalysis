@@ -255,6 +255,7 @@ class GUI_generator(tk.Tk):
 
     def __init__(self):
         self.activate_thread = False
+        self.line_dict = {}
 
         super().__init__()
         self.title("Auto Generate Controller")
@@ -264,6 +265,7 @@ class GUI_generator(tk.Tk):
 
         self.control_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
         self.control_panel.grid(column=0, row=0, padx=5, pady=5, sticky="news")
+        self.columnconfigure(0, weight=1)
         self._build_control_frame()
 
         self.plot_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
@@ -281,26 +283,35 @@ class GUI_generator(tk.Tk):
         title.grid(pady=10, padx=10, row=0, column=0)
 
         # Start Button
-        start_button = tk.Button(self.control_panel,
-                                 text="Start",
-                                 command=self.start_thread,
-                                 bg="#25B800",
-                                 fg="white",
-                                 padx=10,
-                                 font=("Arial", 16, "bold")
-                                 )
+        start_button = tk.Button(
+            self.control_panel,
+            text="Start",
+            command=self.start_thread,
+            bg="#25B800",
+            fg="white",
+            padx=10,
+            font=("Arial", 16, "bold")
+        )
         start_button.grid(padx=10, pady=10, row=1, column=0)
 
         # Stop Button
-        stop_button = tk.Button(self.control_panel,
-                                text="Stop",
-                                command=self.stop_thread_func,
-                                bg="#D9481C",
-                                fg="white",
-                                padx=10,
-                                font=("Arial", 16, "bold")
-                                )
+        stop_button = tk.Button(
+            self.control_panel,
+            text="Stop",
+            command=self.stop_thread_func,
+            bg="#D9481C",
+            fg="white",
+            padx=10,
+            font=("Arial", 16, "bold")
+        )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
+
+        self.list_plot = tk.Listbox(
+            self.control_panel, selectmode=tk.MULTIPLE,
+            width=80
+        )
+        self.list_plot.grid(padx=10, pady=10, row=3, column=0)
+        self.list_plot.bind("<<ListboxSelect>>", self.toggle_lines)
 
         # Close Button
         close_button = tk.Button(self.control_panel,
@@ -311,7 +322,7 @@ class GUI_generator(tk.Tk):
                                  padx=10,
                                  font=("Arial", 16, "bold")
                                  )
-        close_button.grid(pady=10, padx=10, row=3)
+        close_button.grid(pady=10, padx=10, row=4, column=0)
 
     def _build_plot_frame(self):
         self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 4), dpi=100, layout="constrained")
@@ -344,6 +355,20 @@ class GUI_generator(tk.Tk):
         """Function to print logs in the Tkinter Text widget."""
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
+
+    def toggle_lines(self, event):
+        """Toggle line visibility based on selected items in the Listbox"""
+        selected_items = {self.list_plot.get(i) for i in self.list_plot.curselection()}
+
+        for line_name, line in self.line_dict.items():
+            line.set_visible(line_name in selected_items)
+
+        visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
+        labels = [name for name, line in self.line_dict.items() if line.get_visible()]
+        self.ax.get_legend().remove()
+        self.ax.legend(visible_lines, labels)
+
+        self.canvas.draw()
 
     def auto_generate(self):
         """
@@ -405,7 +430,10 @@ class GUI_generator(tk.Tk):
 
             dict_Q, dict_I = nx_file.get_raw_data("DATA_RAD_AVG")
             for index, (name, param) in enumerate(dict_Q.items()):
-                self.ax.loglog(param, dict_I[name])
+                line, = self.ax.loglog(param, dict_I[name], label=f"{name}")
+                self.line_dict[name] = line
+                self.list_plot.insert(tk.END, name)
+                self.ax.legend()
                 self.canvas.draw()
 
             nx_file.nexus_close()
