@@ -829,7 +829,7 @@
                                     "@units": {
                                         "element type": "attribute",
                                         "value": [
-                                            "rad",
+                                            "deg",
                                             "rad"
                                         ],
                                         "possible value": [
