@@ -277,6 +277,7 @@ class NexusFile:
         self.fig = None
         self.ax = None
         self.do_batch = do_batch
+        self.input_data_group = input_data_group
 
         self.nx_files = []
         self.dicts_parameters = []
@@ -286,7 +287,7 @@ class NexusFile:
         for index, file_path in enumerate(self.file_paths):
             nx_file = h5py.File(file_path, "r+")
 
-            dict_parameters = extract_smi_param(nx_file, input_data_group)
+            dict_parameters = extract_smi_param(nx_file, self.input_data_group)
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
@@ -453,7 +454,7 @@ class NexusFile:
         """
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
@@ -654,7 +655,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
@@ -765,7 +766,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)):
@@ -870,7 +871,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -962,7 +963,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
