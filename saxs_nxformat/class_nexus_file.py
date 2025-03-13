@@ -659,17 +659,17 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
-                r_min = 0
+                default_r_min = 0
             elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
-                r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
+                default_r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
             elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
             else:
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
 
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": rmin,
+                "r_min": default_r_min,
                 "angle_min": -180,
                 "angle_max": 180,
                 "pts": 2000
