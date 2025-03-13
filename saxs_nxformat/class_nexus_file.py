@@ -227,7 +227,6 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : build method to display in realtime
     TODO : add a return to all process that return the parameter and the intensity
     A class that can load and treat data formated in the NXcanSAS standard
 
@@ -454,12 +453,13 @@ class NexusFile:
         """
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/DATA/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
             qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[1])
             qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
+            print(qy_list)
             qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
             mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
 
@@ -658,14 +658,18 @@ class NexusFile:
             smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
-            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
-                r_min = 0
-            else:
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+            # if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+            #     r_min = 0
+            # elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
+            #     r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
+            # elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
+            #     r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+            # else:
+            #     r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
 
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": r_min,
+                "r_min": 0,
                 "angle_min": -180,
                 "angle_max": 180,
                 "pts": 2000
@@ -697,7 +701,7 @@ class NexusFile:
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
                           f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]",
-                    optimize_range=optimize_range
+                    optimize_range=False
                 )
 
             if save:
@@ -769,14 +773,18 @@ class NexusFile:
             smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
-            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)):
-                r_min = 0
-            else:
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+            # if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+            #     r_min = 0
+            # elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
+            #     r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
+            # elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
+            #     r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+            # else:
+            #     r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
 
             defaults = {
                 "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": r_min,
+                "r_min": 0,
                 "npt_rad": 500,
                 "angle_min": -180,
                 "angle_max": 180,
