@@ -1129,7 +1129,10 @@ class NexusFile:
             file_path = Path(self.file_paths[index])
             if optimize_range:
                 indices_high_var = detect_variation(extracted_value_data, 1e5)
-                first_index, last_index = indices_high_var[0], indices_high_var[-1]
+                if len(indices_high_var):
+                    first_index, last_index = indices_high_var[0], indices_high_var[-1]
+                else:
+                    first_index, last_index = 0, -1
                 self.ax.plot(
                     extracted_param_data[first_index:last_index],
                     extracted_value_data[first_index:last_index],
