@@ -1027,6 +1027,8 @@ class NexusFile:
             self, group_name="DATA_Q_SPACE",
             scale_x="log", scale_y="log",
             label_x="", label_y="", title="",
+            xmin=None, xmax=None,
+            ymin=None, ymax=None,
             percentile=99
     ):
         self.init_plot = True
@@ -1036,6 +1038,8 @@ class NexusFile:
                 group_name=group_name,
                 scale_x=scale_x, scale_y=scale_y,
                 label_x=label_x, label_y=label_y,
+                xmin=xmin, xmax=xmax,
+                ymin=ymin, ymax=ymax,
                 title=title, percentile=percentile
             )
 
@@ -1045,6 +1049,8 @@ class NexusFile:
             extracted_param_data=None, extracted_value_data=None,
             scale_x="log", scale_y="log",
             label_x="", label_y="", title="",
+            xmin=None, xmax=None,
+            ymin=None, ymax=None,
             percentile=99, optimize_range=False
     ):
         """
@@ -1131,6 +1137,12 @@ class NexusFile:
             self.ax.set_xlabel(label_x)
             self.ax.set_ylabel(label_y)
             self.ax.set_title(title)
+
+            if xmin and xmax:
+                self.ax.set_xlim(xmin, xmax)
+                
+            if ymin and ymax:
+                self.ax.set_ylim(ymin, ymax)
 
             plot_color = PLT_CMAP_OBJ(index / len(self.nx_files))
 
