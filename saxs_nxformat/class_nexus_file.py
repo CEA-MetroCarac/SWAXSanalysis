@@ -13,7 +13,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
-from saxs_nxformat.utils import replace_h5_dataset, detect_variation
+from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value
 from smi_analysis import SMI_beamline
 
 
@@ -1138,10 +1138,10 @@ class NexusFile:
             self.ax.set_ylabel(label_y)
             self.ax.set_title(title)
 
-            if xmin and xmax:
+            if xmin is not None and xmax is not None:
                 self.ax.set_xlim(xmin, xmax)
-                
-            if ymin and ymax:
+
+            if ymin is not None and ymax is not None:
                 self.ax.set_ylim(ymin, ymax)
 
             plot_color = PLT_CMAP_OBJ(index / len(self.nx_files))
