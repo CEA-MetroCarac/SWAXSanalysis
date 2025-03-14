@@ -72,6 +72,11 @@ def launcher_gui():
     )
 
     shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
         BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
         IPYNB_PATH
     )

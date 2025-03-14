@@ -227,7 +227,6 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : add a return to all process that return the parameter and the intensity
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -250,7 +249,6 @@ class NexusFile:
 
     def __init__(self, h5_paths, do_batch=False, input_data_group="DATA"):
         """
-        TODO : if the group DATA is used as input and DATA_Q_SPACE exists, load that group in SMI instead
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
 
@@ -460,7 +458,6 @@ class NexusFile:
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
             qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[1])
             qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
-            print(qy_list)
             qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
             mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
 
