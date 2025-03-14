@@ -1043,8 +1043,6 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-        return self.fig, self.ax
-
     def _display_data(
             self, index=None, nxfile=None,
             group_name=None,
