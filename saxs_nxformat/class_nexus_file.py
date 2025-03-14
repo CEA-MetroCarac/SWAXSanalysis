@@ -250,6 +250,7 @@ class NexusFile:
 
     def __init__(self, h5_paths, do_batch=False, input_data_group="DATA"):
         """
+        TODO : if the group DATA is used as input and DATA_Q_SPACE exists, load that group in SMI instead
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
 
