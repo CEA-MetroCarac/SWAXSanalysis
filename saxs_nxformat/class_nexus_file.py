@@ -814,8 +814,8 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=smi_data.chi_azi, extracted_value_data=smi_data.I_azi,
-                    scale_x="log", scale_y="log",
+                    extracted_param_data=np.deg2rad(smi_data.chi_azi), extracted_value_data=smi_data.I_azi,
+                    scale_x="linear", scale_y="log",
                     label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
                     title=f"Azimuthal integration over the regions \n "
@@ -823,7 +823,7 @@ class NexusFile:
                 )
 
             if save:
-                chi_list = smi_data.chi_azi
+                chi_list = np.deg2rad(smi_data.chi_azi)
                 i_list = smi_data.I_azi
                 mask = smi_data.masks
                 save_data(self.nx_files[index], "Chi", chi_list, group_name, i_list, mask)

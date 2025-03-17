@@ -21,6 +21,7 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
+from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from saxs_nxformat.create_config import Setting
 from saxs_nxformat.data_processing import GUI_process
 from saxs_nxformat.nxfile_generator import GUI_generator
@@ -90,18 +91,16 @@ def launcher_gui():
     root.title("Launcher")
     root.iconbitmap(ICON_PATH)
 
-    normal_font = ("Arial", 12)
-
     prompt = tk.Label(
         root,
-        font=("Arial", 14, "bold"),
+        font=FONT_TITLE,
         text="What would you like to do ?"
     )
     prompt.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="we")
 
     button_config = tk.Button(
         root,
-        font=normal_font,
+        font=FONT_BUTTON,
         text="Create config",
         width=20,
         padx=5,
@@ -112,7 +111,7 @@ def launcher_gui():
 
     button_convert = tk.Button(
         root,
-        font=normal_font,
+        font=FONT_BUTTON,
         text="Convert to NeXus",
         width=20,
         padx=5,
@@ -123,7 +122,7 @@ def launcher_gui():
 
     button_process = tk.Button(
         root,
-        font=normal_font,
+        font=FONT_BUTTON,
         text="Process data",
         width=20,
         padx=5,
@@ -134,7 +133,7 @@ def launcher_gui():
 
     button_close = tk.Button(
         root,
-        font=normal_font,
+        font=FONT_BUTTON,
         text="Close",
         padx=5,
         pady=5,

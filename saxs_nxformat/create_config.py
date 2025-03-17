@@ -13,6 +13,7 @@ from tkinter import ttk, filedialog
 
 import fabio
 from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
+from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from saxs_nxformat.utils import VerticalScrolledFrame
 
 
@@ -62,7 +63,7 @@ class Setting(tk.Tk):
         self.geometry("700x700")
 
         label_title = tk.Label(self, text="Config builder",
-                               fg="black", font=("Arial", 16, "bold"), justify="left")
+                               fg="black", font=FONT_TITLE, justify="left")
         label_title.pack()
 
         self.frame1 = tk.Frame(self)
@@ -87,19 +88,31 @@ class Setting(tk.Tk):
         using the browse button.
         """
         # The Data row which contains a label, entry and browse button
-        label_data = tk.Label(self.frame1,
-                              text="Absolute path of the reference file")
+        label_data = tk.Label(
+            self.frame1,
+            text="Absolute path of the reference file",
+            font=FONT_TEXT
+        )
         label_data.grid(column=0, row=0, sticky="w")
 
         stringvar_datapath = tk.StringVar()
         stringvar_datapath.set("")
-        entry_datapath = ttk.Entry(self.frame1, textvariable=stringvar_datapath)
+        entry_datapath = ttk.Entry(
+            self.frame1,
+            textvariable=stringvar_datapath,
+            font=FONT_TEXT
+        )
         entry_datapath.grid(column=1, row=0, sticky="we")
 
-        button_browse_data = tk.Button(self.frame1, text="browse",
-                                       command=lambda: self._create_widget_frame2_1(
-                                           entry_datapath,
-                                           stringvar_datapath))
+        button_browse_data = tk.Button(
+            self.frame1,
+            text="browse",
+            font=FONT_BUTTON,
+            command=lambda: self._create_widget_frame2_1(
+                entry_datapath,
+                stringvar_datapath
+            )
+        )
         button_browse_data.grid(column=2, row=0, sticky="w")
 
     def _create_widget_frame2_1(self, widget, string_var):
@@ -122,19 +135,31 @@ class Setting(tk.Tk):
 
         label_param = tk.Label(self.frame2.interior,
                                text="Chose which parameters are "
-                                    "relevant.")
+                                    "relevant.",
+                               font=FONT_TEXT)
         label_param.grid(column=0, columnspan=3)
 
         row_nbr = 0
         for key, value in edf_header.items():
             row_nbr = row_nbr + 1
-            tk.Label(self.frame2.interior, text=key).grid(column=0, row=row_nbr,
-                                                          sticky="w", pady=4)
+            tk.Label(
+                self.frame2.interior,
+                text=key,
+                font=FONT_TEXT
+            ).grid(
+                column=0,
+                row=row_nbr,
+                sticky="w", pady=4
+            )
 
             string_var = tk.StringVar()
             string_var.set(value)
-            entry = tk.Entry(self.frame2.interior, textvariable=string_var,
-                             state=tk.DISABLED)
+            entry = tk.Entry(
+                self.frame2.interior,
+                textvariable=string_var,
+                font=FONT_TEXT,
+                state=tk.DISABLED
+            )
             entry.grid(column=1, row=row_nbr, sticky="we", pady=4)
 
             check_button = ttk.Checkbutton(self.frame2.interior)
@@ -181,7 +206,7 @@ class Setting(tk.Tk):
                         self.frame2.interior,
                         text=label_text,
                         fg="#BF4E30",
-                        font=("Arial", 10, "bold"),
+                        font=FONT_TEXT,
                         justify="left"
                     )
                     label_group.grid(padx=2,
@@ -203,7 +228,7 @@ class Setting(tk.Tk):
                             self.frame2.interior,
                             text=label_text,
                             fg="#008F85",
-                            font=("Arial", 10, "bold"),
+                            font=FONT_TEXT,
                             justify="left"
                         )
                     else:
@@ -211,7 +236,7 @@ class Setting(tk.Tk):
                             self.frame2.interior,
                             text=label_text,
                             fg="#147B4E",
-                            font=("Arial", 10, "bold"),
+                            font=FONT_TEXT,
                             justify="left"
                         )
 
@@ -242,7 +267,7 @@ class Setting(tk.Tk):
                     label_docstring = tk.Label(self.frame2.interior,
                                                text=f"{docstring}",
                                                fg="gray",
-                                               font=("Arial", 8, "italic"),
+                                               font=FONT_NOTE,
                                                justify="left")
                     label_docstring.grid(padx=(indent, 4),
                                          column=0,
@@ -270,12 +295,19 @@ class Setting(tk.Tk):
         self.frame3 = tk.Frame(self)
         self.frame3.pack(padx=8, pady=8, fill="x")
 
-        button_continue = tk.Button(self.frame3, text="Next step",
-                                    command=self._save_labels)
+        button_continue = tk.Button(
+            self.frame3,
+            text="Next step",
+            command=self._save_labels,
+            font=FONT_BUTTON
+        )
         button_continue.pack(padx=8, pady=8, side="right")
 
-        button_close = tk.Button(self.frame3, text="Close",
-                                 command=lambda: self.destroy())
+        button_close = tk.Button(
+            self.frame3,
+            text="Close",
+            font=FONT_BUTTON,
+            command=lambda: self.destroy())
         button_close.pack(padx=8, pady=8, side="left")
 
     def create_widget_frame3_2(self):
@@ -289,17 +321,29 @@ class Setting(tk.Tk):
 
         self.stringvar_file_name = tk.StringVar()
         self.stringvar_file_name.set("instrumentName")
-        entry_file_name = tk.Entry(self.frame3,
-                                   textvariable=self.stringvar_file_name,
-                                   width=50, justify="center")
+        entry_file_name = tk.Entry(
+            self.frame3,
+            textvariable=self.stringvar_file_name,
+            font=FONT_TEXT,
+            width=50,
+            justify="center"
+        )
         entry_file_name.pack()
 
-        button_save = tk.Button(self.frame3, text="Save settings",
-                                command=self._save_settings)
+        button_save = tk.Button(
+            self.frame3,
+            text="Save settings",
+            font=FONT_BUTTON,
+            command=self._save_settings
+        )
         button_save.pack(padx=8, pady=8, side="right")
 
-        button_close = tk.Button(self.frame3, text="Close",
-                                 command=lambda: self.destroy())
+        button_close = tk.Button(
+            self.frame3,
+            text="Close",
+            font=FONT_BUTTON,
+            command=lambda: self.destroy()
+        )
         button_close.pack(padx=8, pady=8, side="left")
 
     def _browse_load_edf(self, widget, string_var):

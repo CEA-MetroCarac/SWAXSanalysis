@@ -8,7 +8,8 @@ import h5py
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from saxs_nxformat import TREATED_PATH, ICON_PATH
+from saxs_nxformat import DESKTOP_PATH, ICON_PATH
+from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value
 
@@ -66,8 +67,8 @@ class GUI_process(tk.Tk):
         self.iconbitmap(ICON_PATH)
         self.focus_force()
         self.geometry("1200x900")
-        self.columnconfigure(0, weight=2)
-        self.columnconfigure(1, weight=3)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=2)
         self.title("Data processing")
@@ -85,40 +86,50 @@ class GUI_process(tk.Tk):
         self.frame_processes.grid(row=0, rowspan=2, column=1, columnspan=2, sticky="nsew", pady=5, padx=5)
         self._process_building()
 
-        close_button = tk.Button(self,
-                                 text="Close",
-                                 font=("Arial", 12),
-                                 command=lambda: self.destroy())
+        close_button = tk.Button(
+            self,
+            text="Close",
+            font=FONT_BUTTON,
+            command=lambda: self.destroy()
+        )
         close_button.grid(column=1, row=3, sticky="w", padx=5, pady=5)
 
-        self.progress_label = tk.Label(self,
-                                       text="No processing in progress",
-                                       font=("Arial", 14, "bold"),
-                                       fg="#6DB06E")
+        self.progress_label = tk.Label(
+            self,
+            text="No processing in progress",
+            font=FONT_TITLE,
+            fg="#6DB06E"
+        )
         self.progress_label.grid(column=2, row=3, sticky="w", padx=5, pady=5)
 
     def _inputs_building(self):
         """
         Builds the input frame
         """
-        frame_title = tk.Label(self.frame_inputs,
-                               text="Inputs",
-                               font=("Arial", 14, "bold"),
-                               padx=10, pady=10)
+        frame_title = tk.Label(
+            self.frame_inputs,
+            text="Inputs",
+            font=FONT_TITLE,
+            padx=10, pady=10)
         frame_title.grid(column=0, row=0, sticky="w", pady=(15, 20), padx=5)
 
-        browse_button = tk.Button(self.frame_inputs,
-                                  text="Select files",
-                                  font=("Arial", 12),
-                                  command=self.browse_files,
-                                  padx=20,
-                                  pady=5)
+        browse_button = tk.Button(
+            self.frame_inputs,
+            text="Select files",
+            font=FONT_BUTTON,
+            command=self.browse_files,
+            padx=20,
+            pady=5)
         browse_button.grid(column=0, row=1)
 
         self.file_list = tk.Listbox(self.frame_inputs, selectmode=tk.MULTIPLE)
         self.file_list.grid(column=0, row=2, sticky="news")
+        self.file_list.configure(exportselection=False)
 
-        self.do_batch = ttk.Checkbutton(self.frame_inputs, text="Join files and graphs")
+        self.do_batch = ttk.Checkbutton(
+            self.frame_inputs,
+            text="Join files and graphs"
+        )
         self.do_batch.grid(column=0, row=3, sticky="news")
 
     def _process_building(self):
@@ -128,29 +139,37 @@ class GUI_process(tk.Tk):
         self.frame_processes.columnconfigure(0, weight=1)
         self.frame_processes.columnconfigure(1, weight=1)
         self.frame_processes.columnconfigure(2, weight=1)
-        self.frame_processes.columnconfigure(3, weight=1)
 
         self.frame_processes.rowconfigure(1, weight=1)
         self.frame_processes.rowconfigure(2, weight=1)
         self.frame_processes.rowconfigure(3, weight=1)
-        self.frame_processes.rowconfigure(4, weight=1)
-        frame_title = tk.Label(self.frame_processes,
-                               text="Process options",
-                               font=("Arial", 14, "bold"))
+        frame_title = tk.Label(
+            self.frame_processes,
+            text="Process options",
+            font=FONT_TITLE
+        )
         frame_title.grid(column=0, row=0, sticky="w", pady=(5, 20), padx=5)
 
         current_row = 1
         current_column = 0
 
         for process_name in self.process.keys():
-            button_process = tk.Button(self.frame_processes,
-                                       text=process_name,
-                                       command=lambda name=process_name: self._create_params(name),
-                                       width=20)
-            button_process.grid(column=current_column, row=current_row,
-                                padx=15, pady=15, sticky="news")
+            button_process = tk.Button(
+                self.frame_processes,
+                text=process_name.replace("_", " "),
+                font=FONT_BUTTON,
+                command=lambda name=process_name: self._create_params(name),
+                width=20
+            )
+            button_process.grid(
+                column=current_column,
+                row=current_row,
+                padx=15,
+                pady=15,
+                sticky="news"
+            )
 
-            if current_column >= 3:
+            if current_column >= 2:
                 current_column = 0
                 current_row += 1
             else:
@@ -158,7 +177,7 @@ class GUI_process(tk.Tk):
 
     def _create_params(self, process_name):
         """
-        Builds the param frame according to the selected process
+        Builds the parameter frame according to the selected process
 
         Parameters
         ----------
@@ -169,15 +188,18 @@ class GUI_process(tk.Tk):
         for widget in self.param_frame.winfo_children():
             widget.destroy()
 
-        frame_title = tk.Label(self.param_frame,
-                               text="Process parameters",
-                               font=("Arial", 14, "bold"),
-                               )
+        frame_title = tk.Label(
+            self.param_frame,
+            text="Process parameters",
+            font=FONT_TITLE,
+        )
         frame_title.grid(column=0, row=0, sticky="we", pady=(5, 20), padx=5)
 
-        label_process = tk.Label(self.param_frame,
-                                 text=f"Process : {process_name}",
-                                 font=("Arial", 12))
+        label_process = tk.Label(
+            self.param_frame,
+            text=f"Process : {process_name}",
+            font=FONT_TEXT
+        )
         label_process.grid(column=0, row=1, sticky="w", pady=(5, 20), padx=5)
 
         # We get the method and inspect it to get its parameters and default values
@@ -190,9 +212,11 @@ class GUI_process(tk.Tk):
             if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name, param_value = param_str.split("=")
-                label_param = tk.Label(self.param_frame,
-                                       text=param_name,
-                                       font=("Arial", 12))
+                label_param = tk.Label(
+                    self.param_frame,
+                    text=param_name,
+                    font=FONT_TEXT
+                )
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
 
                 if param_name == "group_name":
@@ -207,10 +231,12 @@ class GUI_process(tk.Tk):
                 entry_param.tag = f"{param[0]}"
                 current_row += 1
 
-        confirm_button = tk.Button(self.param_frame,
-                                   text="Confirm",
-                                   font=("Arial", 12),
-                                   command=lambda process=method: self._start_processing(process))
+        confirm_button = tk.Button(
+            self.param_frame,
+            text="Confirm",
+            font=FONT_BUTTON,
+            command=lambda process=method: self._start_processing(process)
+        )
         confirm_button.grid(column=0, columnspan=2, row=current_row,
                             pady=15, padx=15)
 
@@ -219,7 +245,7 @@ class GUI_process(tk.Tk):
         Method used to browse and select files
         """
         filenames = filedialog.askopenfilenames(
-            initialdir=TREATED_PATH,
+            initialdir=DESKTOP_PATH,
             title="Select Files",
             filetypes=(
                 ("HDF5 Files", "*.h5*"),
@@ -243,8 +269,10 @@ class GUI_process(tk.Tk):
         process :
             name of the selected process
         """
-        self.progress_label.configure(text="Processing in progress, please wait...",
-                                      fg="#C16200")
+        self.progress_label.configure(
+            text="Processing in progress, please wait...",
+            fg="#C16200"
+        )
         self.progress_label.update_idletasks()
 
         # We get the selected file
@@ -276,8 +304,10 @@ class GUI_process(tk.Tk):
         except Exception as exception:
             print(exception)
         nxfiles.nexus_close()
-        self.progress_label.configure(text="No processing in progress",
-                                      fg="#6DB06E")
+        self.progress_label.configure(
+            text="No processing in progress",
+            fg="#6DB06E"
+        )
 
 
 if __name__ == "__main__":

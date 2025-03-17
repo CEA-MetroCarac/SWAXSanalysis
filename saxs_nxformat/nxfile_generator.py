@@ -7,6 +7,7 @@ import gc
 import json
 import os
 import glob
+import inspect
 import re
 import shutil
 import sys
@@ -28,6 +29,7 @@ from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
 
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT
+from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset
 
@@ -265,6 +267,7 @@ class GUI_generator(tk.Tk):
     def __init__(self):
         self.activate_thread = False
         self.line_dict = {}
+        self.selected_processes = {}
 
         super().__init__()
         self.title("Auto Generate Controller")
@@ -288,7 +291,11 @@ class GUI_generator(tk.Tk):
 
     def _build_control_frame(self):
         # Label
-        title = tk.Label(self.control_panel, text="Auto conversion control panel", font=("Arial", 18, "bold"))
+        title = tk.Label(
+            self.control_panel,
+            text="Auto conversion control panel",
+            font=FONT_TITLE
+        )
         title.grid(pady=10, padx=10, row=0, column=0)
 
         # Start Button
@@ -299,7 +306,7 @@ class GUI_generator(tk.Tk):
             bg="#25B800",
             fg="white",
             padx=10,
-            font=("Arial", 16, "bold")
+            font=FONT_BUTTON
         )
         start_button.grid(padx=10, pady=10, row=1, column=0)
 
@@ -311,27 +318,64 @@ class GUI_generator(tk.Tk):
             bg="#D9481C",
             fg="white",
             padx=10,
-            font=("Arial", 16, "bold")
+            font=FONT_BUTTON
         )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
 
+        plot_list_label = tk.Label(
+            self.control_panel,
+            text="Select plots to show",
+            font=FONT_TEXT,
+            padx=10, pady=10)
+        plot_list_label.grid(column=0, row=3, sticky="w", padx=5)
+
         self.list_plot = tk.Listbox(
-            self.control_panel, selectmode=tk.MULTIPLE,
-            width=80
+            self.control_panel,
+            selectmode=tk.MULTIPLE,
+            width=80,
+            font=FONT_TEXT
         )
-        self.list_plot.grid(padx=10, pady=10, row=3, column=0)
+        self.list_plot.grid(padx=10, pady=10, row=4, column=0)
+        self.list_plot.configure(exportselection=False)
         self.list_plot.bind("<<ListboxSelect>>", self.toggle_lines)
 
+        self.process_list_label = tk.Label(
+            self.control_panel,
+            text="Select processes to apply",
+            font=FONT_TEXT,
+            padx=10, pady=10)
+        self.process_list_label.grid(column=0, row=5, sticky="w", padx=5)
+
+        self.process_list = tk.Listbox(
+            self.control_panel,
+            selectmode=tk.MULTIPLE,
+            width=80,
+            font=FONT_TEXT
+        )
+        self.process_list.grid(padx=10, pady=10, row=6, column=0)
+        self.process_list.configure(exportselection=False)
+        self.process_list.bind("<<ListboxSelect>>", self.build_process_list)
+
+        self.process = {}
+        for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
+            if name.startswith("process_"):
+                process_name = name.removeprefix("process_").replace("_", " ")
+                self.process[process_name] = method
+                self.process_list.insert(tk.END, process_name)
+                if process_name in ["q space", "radial average"]:
+                    self.process_list.selection_set(tk.END)
+        self.build_process_list()
         # Close Button
-        close_button = tk.Button(self.control_panel,
-                                 text="Close",
-                                 command=self.close,
-                                 bg="#DBDFAC",
-                                 fg="black",
-                                 padx=10,
-                                 font=("Arial", 16, "bold")
-                                 )
-        close_button.grid(pady=10, padx=10, row=4, column=0)
+        close_button = tk.Button(
+            self.control_panel,
+            text="Close",
+            command=self.close,
+            bg="#DBDFAC",
+            fg="black",
+            padx=10,
+            font=FONT_BUTTON
+        )
+        close_button.grid(pady=10, padx=10, row=7, column=0)
 
     def _build_plot_frame(self):
         self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 4), dpi=100, layout="constrained")
@@ -352,11 +396,20 @@ class GUI_generator(tk.Tk):
 
     def _build_log_frame(self):
         # Label
-        title = tk.Label(self.log_panel, text="Console log", font=("Arial", 18, "bold"))
+        title = tk.Label(
+            self.log_panel,
+            text="Console log",
+            font=FONT_TITLE
+        )
         title.grid(pady=10, padx=10, row=0, column=0)
 
         # Log output area
-        self.log_text = tk.Text(self.log_panel, height=20, width=50, font=("Arial", 12))
+        self.log_text = tk.Text(
+            self.log_panel,
+            height=20,
+            width=50,
+            font=FONT_LOG
+        )
         self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
         self.log_text.config(state=tk.NORMAL)
 
@@ -366,7 +419,6 @@ class GUI_generator(tk.Tk):
         self.log_text.see(tk.END)
 
     def toggle_lines(self, event):
-        """Toggle line visibility based on selected items in the Listbox"""
         selected_items = {self.list_plot.get(i) for i in self.list_plot.curselection()}
 
         for line_name, line in self.line_dict.items():
@@ -375,6 +427,12 @@ class GUI_generator(tk.Tk):
         self.update_plot()
 
         self.canvas.draw()
+
+    def build_process_list(self, event=None):
+        self.selected_processes = {}
+        for index in self.process_list.curselection():
+            selected_item = self.process_list.get(index)
+            self.selected_processes[selected_item] = self.process[selected_item]
 
     def update_plot(self):
         visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
@@ -437,9 +495,18 @@ class GUI_generator(tk.Tk):
             shutil.move(file_path, result[1] / file_path.name)
 
             nx_file = NexusFile([new_file_path])
-            # TODO : when the user chooses processes they should be executed here
-            nx_file.process_q_space(save=True)
-            nx_file.process_radial_average(save=True)
+            for process_name, process in self.selected_processes.items():
+                self.after(
+                    0,
+                    self.print_log,
+                    f"Doing {process_name}..."
+                )
+                process(nx_file, save=True)
+                self.after(
+                    0,
+                    self.print_log,
+                    f"{process_name} done."
+                )
 
             dict_Q, dict_I = nx_file.get_raw_data("DATA_RAD_AVG")
             for index, (name, param) in enumerate(dict_Q.items()):
@@ -468,6 +535,13 @@ class GUI_generator(tk.Tk):
 
     def start_thread(self):
         """Start the auto_generate function in a separate thread."""
+        if not self.selected_processes:
+            self.after(
+                0,
+                self.print_log,
+                "You did not select any processes"
+            )
+            return
         self.activate_thread = True
         thread = threading.Thread(target=self.auto_generate, daemon=True)
         thread.start()
