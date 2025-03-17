@@ -227,6 +227,8 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
+    TODO : add process to fit peaks
+    TODO : add process to build a mask
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes

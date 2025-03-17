@@ -1508,6 +1508,24 @@
                                 "docstring": "Unit of the exposition time (will be converted to s)"
                             }
                         }
+                    },
+                    "/username": {
+                        "element type": "dataset",
+                        "value": null,
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Name of the person who setup the experiment.",
+                        "content": null
+                    },
+                    "/sample_fixture": {
+                        "element type": "dataset",
+                        "value": null,
+                        "possible value": [],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Type of fixture used to mount the sample.",
+                        "content": null
                     }
                 }
             }

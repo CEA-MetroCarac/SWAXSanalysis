@@ -6,6 +6,7 @@ settings file also present in that parent folder
 import gc
 import json
 import os
+import glob
 import re
 import shutil
 import sys
@@ -162,7 +163,7 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     return hdf5_path
 
 
-def search_setting_edf():
+def search_setting_edf(recursively=False):
     """
     This function searches an edf file and a settings file
     in the parent folder.
@@ -177,6 +178,14 @@ def search_setting_edf():
     """
     edf_name, settings_name = None, None
 
+    # Recursively searching in treatment queue
+    # for filename in glob.iglob(QUEUE_PATH / "treatment queue" + '**/*.edf', recursive=True):
+    #     if filename.endswith(".edf"):
+    #         edf_name = filename
+    #     elif "settings_edf2nx" in filename.lower() and filename.endswith(".json"):
+    #         settings_name = filename
+
+    # Search in center only
     for file in os.listdir(DTC_PATH):
         if ".edf" in file.lower():
             edf_name = file
