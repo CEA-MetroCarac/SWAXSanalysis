@@ -44,6 +44,8 @@ def string_2_value(string: str, unit_type: str = None) -> str | int | float | No
             value = "N/A"
         elif unit_type == "NX_DATE_TIME":
             value = "0000-00-00T00:00:00"
+        elif unit_type == "NX_BOOLEAN":
+            value = False
         else:
             value = "None"
 

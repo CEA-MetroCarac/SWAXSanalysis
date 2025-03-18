@@ -85,7 +85,7 @@
                 "possible value": [],
                 "type": "NXdata",
                 "EX_required": true,
-                "docstring": "Group containing the data for I and Q,\n there can be multiple but they have to have different names",
+                "docstring": "Group containing the data for I and Q,\nthere can be multiple but they have to have different names",
                 "content": {
                     "@canSAS_class": {
                         "element type": "attribute",
@@ -1489,7 +1489,7 @@
                         "element type": "dataset",
                         "value": null,
                         "possible value": [],
-                        "EX_required": true,
+                        "EX_required": false,
                         "type": "NX_NUMBER",
                         "docstring": "Exposition time of the sample",
                         "content": {
@@ -1513,7 +1513,7 @@
                         "element type": "dataset",
                         "value": null,
                         "possible value": [],
-                        "EX_required": true,
+                        "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Name of the person who setup the experiment.",
                         "content": null
@@ -1522,10 +1522,28 @@
                         "element type": "dataset",
                         "value": null,
                         "possible value": [],
-                        "EX_required": true,
+                        "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Type of fixture used to mount the sample.",
                         "content": null
+                    },
+                    "/do_absolute_intensity": {
+                        "element type": "dataset",
+                        "value": null,
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_BOOLEAN",
+                        "docstring": "Flag determining whether this file will be processes\nto get the absolute intensity or not.\nThis value should be 1 for True and 0 for False",
+                        "content": {
+                            "@dbpath": {
+                                "element type": "attribute",
+                                "value": null,
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
+                            }
+                        }
                     }
                 }
             }

@@ -1023,6 +1023,97 @@ class NexusFile:
                                f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                )
 
+    def process_absolute_intensity(
+            self, db_path=None, group_name="DATA_ABS",
+            display=False, save=False,
+            roi_size_x=30, roi_size_y=30,
+            sample_thickness=1e9,
+    ):
+        """
+        TODO : complete the method and doc
+        Parameters
+        ----------
+        save
+        display
+        sample_thickness
+        db_path
+        roi_size_x
+        roi_size_y
+
+        Returns
+        -------
+
+        """
+        if db_path is None:
+            print("No direct beam data")
+            return
+
+        self.init_plot = True
+        for index, smi_data in enumerate(self.list_smi_data):
+
+            positions = self.dicts_parameters[index]["R raw data"][0]
+
+            raw_data = self.dicts_parameters[index]["I raw data"][0]
+            beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
+            beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
+            time = extract_from_h5(self.nx_files[index], "ENTRY/COLLECTION/exposition_time")
+            print(beam_center_x, beam_center_y, roi_size_x, roi_size_y)
+
+            I_ROI_data = np.sum(
+                raw_data[
+                    beam_center_y - roi_size_y:beam_center_y + roi_size_y,
+                    beam_center_x - roi_size_x:beam_center_x + roi_size_x
+                ]
+            )
+            I_ROI_data = I_ROI_data / time
+
+            with h5py.File(db_path) as h5obj:
+                raw_db = extract_from_h5(h5obj, "ENTRY/DATA/I")
+                beam_center_x_db = int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x"))
+                beam_center_y_db = int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
+                time_db = extract_from_h5(h5obj, "ENTRY/COLLECTION/exposition_time")
+
+            I_ROI_db = np.sum(
+                raw_db[
+                    beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
+                    beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
+                ]
+            )
+            I_ROI_db = I_ROI_db / time_db
+
+            transmission = I_ROI_data / I_ROI_db
+            scaling_factor = I_ROI_data / (I_ROI_db * transmission * sample_thickness)
+
+            abs_data = raw_data * scaling_factor
+
+            if display:
+                self._display_data(
+                    index, self.nx_files[index],
+                    group_name=group_name,
+                    extracted_param_data=positions, extracted_value_data=abs_data,
+                    scale_x="log", scale_y="log",
+                    label_x="$q_{hor} (A^{-1})$",
+                    label_y="$q_{ver} (A^{-1})$",
+                    title=f"Absolute intensity of the data"
+                )
+
+            if save:
+                q_list = positions
+                i_list = abs_data
+                mask = smi_data.masks
+                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
+
+                create_process(self.nx_files[index],
+                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                               "Absolute Intensity",
+                               "This process computes the absolute intensity of the data based on "
+                               "direct beam data file\n"
+                               "Parameters used :\n"
+                               f"   - Path of the file : {db_path}"
+                               f"   - Sample thickness : {sample_thickness:.4f}"
+                               f"   - Region of interest size : ({roi_size_x:.2f}, {roi_size_y:.2f})"
+                               )
+
     def process_display(
             self, group_name="DATA_Q_SPACE",
             scale_x="log", scale_y="log",

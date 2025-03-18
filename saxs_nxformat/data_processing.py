@@ -340,6 +340,7 @@ class GUI_process(tk.Tk):
         else:
             do_batch_state = False
 
+        # TODO : put input_data_group in the parameter of the gui
         nxfiles = NexusFile(self.to_process, do_batch_state)
         try:
             process(nxfiles, **param_dict)
@@ -349,6 +350,7 @@ class GUI_process(tk.Tk):
                 self.print_log,
                 str(exception)
             )
+            raise exception
         finally:
             nxfiles.nexus_close()
             self.progress_label.configure(
