@@ -359,6 +359,8 @@ class GUI_generator(tk.Tk):
         self.process = {}
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
             if name.startswith("process_"):
+                if name.startswith("process_q_space"):
+                    continue
                 process_name = name.removeprefix("process_").replace("_", " ")
                 self.process[process_name] = method
                 self.process_list.insert(tk.END, process_name)
@@ -495,6 +497,17 @@ class GUI_generator(tk.Tk):
             shutil.move(file_path, result[1] / file_path.name)
 
             nx_file = NexusFile([new_file_path])
+            self.after(
+                0,
+                self.print_log,
+                f"Doing q space..."
+            )
+            nx_file.process_q_space(save=True)
+            self.after(
+                0,
+                self.print_log,
+                f"q space done."
+            )
             for process_name, process in self.selected_processes.items():
                 self.after(
                     0,
