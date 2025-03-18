@@ -9,7 +9,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 
 from saxs_nxformat import DESKTOP_PATH, ICON_PATH
-from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
+from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value
 
@@ -67,24 +67,29 @@ class GUI_process(tk.Tk):
         self.iconbitmap(ICON_PATH)
         self.focus_force()
         self.geometry("1200x900")
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=2)
         self.title("Data processing")
+
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=2)
+        self.columnconfigure(2, weight=1)
+
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
 
         self.frame_inputs = tk.Frame(self, border=5, relief="ridge")
         self.frame_inputs.grid(row=0, column=0, sticky="nsew", pady=5, padx=5)
-        self.frame_inputs.columnconfigure(0, weight=1)
         self._inputs_building()
 
         self.param_frame = tk.Frame(self, border=5, relief="ridge")
-        self.param_frame.grid(row=1, rowspan=3, column=0, sticky="news", pady=5, padx=5)
-        self.param_frame.columnconfigure(1, weight=1)
+        self.param_frame.grid(row=1, rowspan=2, column=0, sticky="news", pady=5, padx=5)
 
         self.frame_processes = tk.Frame(self, border=5, relief="ridge")
-        self.frame_processes.grid(row=0, rowspan=2, column=1, columnspan=2, sticky="nsew", pady=5, padx=5)
+        self.frame_processes.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
         self._process_building()
+
+        self.frame_log = tk.Frame(self, border=5, relief="ridge")
+        self.frame_log.grid(row=0, rowspan=3, column=2, sticky="nsew", pady=5, padx=5)
+        self._build_log()
 
         close_button = tk.Button(
             self,
@@ -92,7 +97,7 @@ class GUI_process(tk.Tk):
             font=FONT_BUTTON,
             command=lambda: self.destroy()
         )
-        close_button.grid(column=1, row=3, sticky="w", padx=5, pady=5)
+        close_button.grid(column=1, row=2, sticky="w", padx=5, pady=5)
 
         self.progress_label = tk.Label(
             self,
@@ -100,12 +105,13 @@ class GUI_process(tk.Tk):
             font=FONT_TITLE,
             fg="#6DB06E"
         )
-        self.progress_label.grid(column=2, row=3, sticky="w", padx=5, pady=5)
+        self.progress_label.grid(column=1, row=2, sticky="e", padx=5, pady=5)
 
     def _inputs_building(self):
         """
         Builds the input frame
         """
+        self.frame_inputs.columnconfigure(0, weight=1)
         frame_title = tk.Label(
             self.frame_inputs,
             text="Inputs",
@@ -126,23 +132,19 @@ class GUI_process(tk.Tk):
         self.file_list.grid(column=0, row=2, sticky="news")
         self.file_list.configure(exportselection=False)
 
-        self.do_batch = ttk.Checkbutton(
+        self.do_batch_var = tk.IntVar()
+        self.do_batch = tk.Checkbutton(
             self.frame_inputs,
-            text="Join files and graphs"
+            text="Join files and graphs",
+            font=FONT_TEXT,
+            variable=self.do_batch_var
         )
-        self.do_batch.grid(column=0, row=3, sticky="news")
+        self.do_batch.grid(column=0, row=3, sticky="we")
 
     def _process_building(self):
         """
         Builds the frame containing all available processes
         """
-        self.frame_processes.columnconfigure(0, weight=1)
-        self.frame_processes.columnconfigure(1, weight=1)
-        self.frame_processes.columnconfigure(2, weight=1)
-
-        self.frame_processes.rowconfigure(1, weight=1)
-        self.frame_processes.rowconfigure(2, weight=1)
-        self.frame_processes.rowconfigure(3, weight=1)
         frame_title = tk.Label(
             self.frame_processes,
             text="Process options",
@@ -169,6 +171,9 @@ class GUI_process(tk.Tk):
                 sticky="news"
             )
 
+            self.frame_processes.rowconfigure(current_row, weight=1)
+            self.frame_processes.columnconfigure(current_column, weight=1)
+
             if current_column >= 2:
                 current_column = 0
                 current_row += 1
@@ -185,6 +190,17 @@ class GUI_process(tk.Tk):
             Name of the process that will have his parameters
             displayed in the frame
         """
+        if self.selected_files is None:
+            self.after(
+                0,
+                self.print_log,
+                "You didn't specify any file to process.\nCouldn't build parameters properly."
+            )
+            return
+
+        self.param_frame.columnconfigure(0, weight=0)
+        self.param_frame.columnconfigure(1, weight=1)
+
         for widget in self.param_frame.winfo_children():
             widget.destroy()
 
@@ -193,14 +209,14 @@ class GUI_process(tk.Tk):
             text="Process parameters",
             font=FONT_TITLE,
         )
-        frame_title.grid(column=0, row=0, sticky="we", pady=(5, 20), padx=5)
+        frame_title.grid(column=0, columnspan=2, row=0, sticky="we", pady=(5, 20), padx=5)
 
         label_process = tk.Label(
             self.param_frame,
             text=f"Process : {process_name}",
             font=FONT_TEXT
         )
-        label_process.grid(column=0, row=1, sticky="w", pady=(5, 20), padx=5)
+        label_process.grid(column=0, columnspan=2, row=1, sticky="w", pady=(5, 20), padx=5)
 
         # We get the method and inspect it to get its parameters and default values
         method = self.process[process_name]
@@ -209,6 +225,7 @@ class GUI_process(tk.Tk):
 
         current_row = 2
         for param in param_list:
+            self.param_frame.rowconfigure(current_row, weight=1)
             if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name, param_value = param_str.split("=")
@@ -240,6 +257,26 @@ class GUI_process(tk.Tk):
         confirm_button.grid(column=0, columnspan=2, row=current_row,
                             pady=15, padx=15)
 
+    def _build_log(self):
+        self.frame_log.columnconfigure(0, weight=1)
+        self.frame_log.rowconfigure(1, weight=1)
+        # Label
+        title = tk.Label(
+            self.frame_log,
+            text="Log",
+            font=FONT_TITLE
+        )
+        title.grid(pady=10, padx=10, row=0, column=0, sticky="news")
+
+        # Log output area
+        self.log_text = tk.Text(
+            self.frame_log,
+            font=FONT_LOG,
+            width=20
+        )
+        self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
+        self.log_text.config(state=tk.NORMAL)
+
     def browse_files(self):
         """
         Method used to browse and select files
@@ -259,6 +296,11 @@ class GUI_process(tk.Tk):
         for file in self.selected_files:
             name = file.split("/")[-1]
             self.file_list.insert(tk.END, name)
+
+    def print_log(self, message):
+        """Function to print logs in the Tkinter Text widget."""
+        self.log_text.insert(tk.END, message + "\n\n")
+        self.log_text.see(tk.END)
 
     def _start_processing(self, process):
         """
@@ -292,8 +334,8 @@ class GUI_process(tk.Tk):
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
-        do_batch_state = self.do_batch.state()
-        if "selected" in do_batch_state:
+        do_batch_state = self.do_batch_var.get()
+        if do_batch_state == 1:
             do_batch_state = True
         else:
             do_batch_state = False
@@ -302,12 +344,17 @@ class GUI_process(tk.Tk):
         try:
             process(nxfiles, **param_dict)
         except Exception as exception:
-            print(exception)
-        nxfiles.nexus_close()
-        self.progress_label.configure(
-            text="No processing in progress",
-            fg="#6DB06E"
-        )
+            self.after(
+                0,
+                self.print_log,
+                str(exception)
+            )
+        finally:
+            nxfiles.nexus_close()
+            self.progress_label.configure(
+                text="No processing in progress",
+                fg="#6DB06E"
+            )
 
 
 if __name__ == "__main__":
