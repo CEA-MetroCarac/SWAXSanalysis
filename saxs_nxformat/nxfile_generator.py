@@ -528,8 +528,6 @@ class GUI_generator(tk.Tk):
                 line, = self.ax.loglog(param, dict_I[name], label=f"{name}")
                 self.line_dict[name] = line
                 self.list_plot.insert(tk.END, name)
-                self.canvas.draw()
-                self.update_plot()
 
             nx_file.nexus_close()
 

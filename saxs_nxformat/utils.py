@@ -37,7 +37,7 @@ def string_2_value(string: str, unit_type: str = None) -> str | int | float | No
         - `None` if the string is empty or equals "None".
         - A lowercase `str` otherwise.
     """
-    if unit_type and string == "":
+    if unit_type is not None and string == "":
         if unit_type == "NX_NUMBER":
             value = 0.0
         elif unit_type == "NX_CHAR":

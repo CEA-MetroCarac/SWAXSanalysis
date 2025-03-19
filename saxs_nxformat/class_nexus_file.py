@@ -126,6 +126,12 @@ def extract_smi_param(h5obj, input_data_group):
     incident_angle = extract_from_h5(h5obj, "ENTRY/SAMPLE/yaw")
     dict_parameters["incident angle"] = incident_angle
 
+    # Concerning the rotations of the detector
+    rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
+    rotation_2 = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/pitch")
+    rotation_3 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/roll")
+    dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
+
     # Concerning the detector
     # We use a regex that detects the keyword required in the detector's name
     detector_name = extract_from_h5(h5obj, "/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
@@ -143,17 +149,12 @@ def extract_smi_param(h5obj, input_data_group):
             detector_name.lower()
     ):
         dict_parameters["detector name"] = "Eiger500k_xeuss"
+        dict_parameters["detector rotation"] = [[0, 0, 0]]
 
     # Concerning the beamcenter
     beam_center_x = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
     beam_center_y = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y")
     dict_parameters["beam center"] = [beam_center_x, beam_center_y]
-
-    # Concerning the rotations of the detector
-    rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
-    rotation_2 = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/pitch")
-    rotation_3 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/roll")
-    dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
 
     # Concerning the sample-detector distance
     sample_detector_distance = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/SDD")
@@ -300,7 +301,6 @@ class NexusFile:
                 detector=dict_parameters["detector name"],
                 det_angles=dict_parameters["detector rotation"]
             )
-            print(np.max(dict_parameters["I raw data"]))
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
@@ -692,8 +692,6 @@ class NexusFile:
                 npt=pts,
                 radial_range=[r_min, r_max]
             )
-            print("q_r", smi_data.q_rad[-1], smi_data.q_rad[0])
-            print("i", smi_data.I_rad)
 
             if display:
                 self._display_data(
@@ -1061,12 +1059,11 @@ class NexusFile:
             beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
             beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
             time = extract_from_h5(self.nx_files[index], "ENTRY/COLLECTION/exposition_time")
-            print(beam_center_x, beam_center_y, roi_size_x, roi_size_y)
 
             I_ROI_data = np.sum(
                 raw_data[
-                beam_center_y - roi_size_y:beam_center_y + roi_size_y,
-                beam_center_x - roi_size_x:beam_center_x + roi_size_x
+                    beam_center_y - roi_size_y:beam_center_y + roi_size_y,
+                    beam_center_x - roi_size_x:beam_center_x + roi_size_x
                 ]
             )
             I_ROI_data = I_ROI_data / time
@@ -1087,8 +1084,6 @@ class NexusFile:
 
             transmission = I_ROI_data / I_ROI_db
             scaling_factor = I_ROI_data / (I_ROI_db * transmission * sample_thickness)
-
-            print(scaling_factor)
 
             abs_data = raw_data * scaling_factor
 
