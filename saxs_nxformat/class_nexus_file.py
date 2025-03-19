@@ -124,13 +124,7 @@ def extract_smi_param(h5obj, input_data_group):
 
     # Concerning the sample
     incident_angle = extract_from_h5(h5obj, "ENTRY/SAMPLE/yaw")
-    dict_parameters["incident angle"] = incident_angle
-
-    # Concerning the rotations of the detector
-    rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
-    rotation_2 = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/pitch")
-    rotation_3 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/roll")
-    dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
+    dict_parameters["incident angle"] = 0
 
     # Concerning the detector
     # We use a regex that detects the keyword required in the detector's name
@@ -142,6 +136,8 @@ def extract_smi_param(h5obj, input_data_group):
             detector_name.lower()
     ):
         dict_parameters["detector name"] = "Eiger1M_xeuss"
+        dict_parameters["detector rotation"] = [[0, 0, 0]]
+
     if re.search(
             "(?i)(?=.*" + "dectris" + ")" +
             "(?i)(?=.*" + "eiger2" + ")" +
@@ -149,7 +145,10 @@ def extract_smi_param(h5obj, input_data_group):
             detector_name.lower()
     ):
         dict_parameters["detector name"] = "Eiger500k_xeuss"
-        dict_parameters["detector rotation"] = [[0, 0, 0]]
+        rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
+        rotation_2 = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/pitch")
+        rotation_3 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/roll")
+        dict_parameters["detector rotation"] = [[rotation_1, rotation_2, rotation_3]]
 
     # Concerning the beamcenter
     beam_center_x = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x")
