@@ -300,6 +300,7 @@ class NexusFile:
                 detector=dict_parameters["detector name"],
                 det_angles=dict_parameters["detector rotation"]
             )
+            print(np.max(dict_parameters["I raw data"]))
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
@@ -454,7 +455,7 @@ class NexusFile:
         """
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
@@ -655,7 +656,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
@@ -691,6 +692,8 @@ class NexusFile:
                 npt=pts,
                 radial_range=[r_min, r_max]
             )
+            print("q_r", smi_data.q_rad[-1], smi_data.q_rad[0])
+            print("i", smi_data.I_rad)
 
             if display:
                 self._display_data(
@@ -770,7 +773,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
@@ -879,7 +882,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -971,7 +974,7 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = [extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")]
+            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -1033,6 +1036,7 @@ class NexusFile:
         TODO : complete the method and doc
         Parameters
         ----------
+        group_name
         save
         display
         sample_thickness
@@ -1061,8 +1065,8 @@ class NexusFile:
 
             I_ROI_data = np.sum(
                 raw_data[
-                    beam_center_y - roi_size_y:beam_center_y + roi_size_y,
-                    beam_center_x - roi_size_x:beam_center_x + roi_size_x
+                beam_center_y - roi_size_y:beam_center_y + roi_size_y,
+                beam_center_x - roi_size_x:beam_center_x + roi_size_x
                 ]
             )
             I_ROI_data = I_ROI_data / time
@@ -1075,14 +1079,16 @@ class NexusFile:
 
             I_ROI_db = np.sum(
                 raw_db[
-                    beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
-                    beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
+                beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
+                beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
                 ]
             )
             I_ROI_db = I_ROI_db / time_db
 
             transmission = I_ROI_data / I_ROI_db
             scaling_factor = I_ROI_data / (I_ROI_db * transmission * sample_thickness)
+
+            print(scaling_factor)
 
             abs_data = raw_data * scaling_factor
 
@@ -1244,6 +1250,7 @@ class NexusFile:
                     first_index, last_index = indices_high_var[0], indices_high_var[-1]
                 else:
                     first_index, last_index = 0, -1
+
                 self.ax.plot(
                     extracted_param_data[first_index:last_index],
                     extracted_value_data[first_index:last_index],

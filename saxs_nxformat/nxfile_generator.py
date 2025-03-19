@@ -2,6 +2,8 @@
 This module is meant to be executed by the user and automatically
 treats any .edf file found in the parent folder according to the
 settings file also present in that parent folder
+TODO : add a way to specify the path where the edf files are
+TODO : add a way to load a settings file specified by the user
 """
 import gc
 import json
@@ -72,7 +74,7 @@ def data_treatment(data, h5_file):
 
     logical_mask = np.logical_not(data_i >= 0)
 
-    output = {"R_data": data_r, "I_data": data_i, "mask": logical_mask}
+    output = {"R_data": data_r, "I_data": data_i, "mask": [logical_mask]}
 
     return output
 

@@ -139,7 +139,7 @@ class GUI_process(tk.Tk):
             font=FONT_TEXT,
             variable=self.do_batch_var
         )
-        self.do_batch.grid(column=0, row=3, sticky="we")
+        self.do_batch.grid(column=0, row=4, sticky="we")
 
     def _process_building(self):
         """
@@ -218,12 +218,24 @@ class GUI_process(tk.Tk):
         )
         label_process.grid(column=0, columnspan=2, row=1, sticky="w", pady=(5, 20), padx=5)
 
+        label_input_data = tk.Label(
+            self.param_frame,
+            font=FONT_TEXT,
+            text="input_data_group"
+        )
+        label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
+
+        self.input_data = ttk.Combobox(self.param_frame,
+                                       font=FONT_TEXT)
+        self.input_data["values"] = get_group_names(self.selected_files)
+        self.input_data.grid(column=1, row=2, pady=5, padx=5, sticky="we")
+
         # We get the method and inspect it to get its parameters and default values
         method = self.process[process_name]
         signature = inspect.signature(method)
         param_list = list(signature.parameters.items())
 
-        current_row = 2
+        current_row = 3
         for param in param_list:
             self.param_frame.rowconfigure(current_row, weight=1)
             if param[0] not in ["self"]:
@@ -238,11 +250,11 @@ class GUI_process(tk.Tk):
 
                 if param_name == "group_name":
                     entry_param = ttk.Combobox(self.param_frame,
-                                               font=("Arial", 12))
+                                               font=FONT_TEXT)
                     entry_param["values"] = get_group_names(self.selected_files)
                 else:
                     entry_param = tk.Entry(self.param_frame,
-                                           font=("Arial", 12))
+                                           font=FONT_TEXT)
                 entry_param.insert(0, str(param_value.strip("'")))
                 entry_param.grid(column=1, row=current_row, pady=5, padx=5, sticky="we")
                 entry_param.tag = f"{param[0]}"
@@ -340,8 +352,8 @@ class GUI_process(tk.Tk):
         else:
             do_batch_state = False
 
-        # TODO : put input_data_group in the parameter of the gui
-        nxfiles = NexusFile(self.to_process, do_batch_state)
+        print(self.input_data.get())
+        nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
             process(nxfiles, **param_dict)
         except Exception as exception:
