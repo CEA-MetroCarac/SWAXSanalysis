@@ -221,13 +221,14 @@ class GUI_process(tk.Tk):
         label_input_data = tk.Label(
             self.param_frame,
             font=FONT_TEXT,
-            text="input_data_group"
+            text="input data group"
         )
         label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
 
         self.input_data = ttk.Combobox(self.param_frame,
                                        font=FONT_TEXT)
         self.input_data["values"] = get_group_names(self.selected_files)
+        self.input_data.current(0)
         self.input_data.grid(column=1, row=2, pady=5, padx=5, sticky="we")
 
         # We get the method and inspect it to get its parameters and default values
@@ -243,7 +244,7 @@ class GUI_process(tk.Tk):
                 param_name, param_value = param_str.split("=")
                 label_param = tk.Label(
                     self.param_frame,
-                    text=param_name,
+                    text=param_name.replace("_", " "),
                     font=FONT_TEXT
                 )
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
@@ -252,6 +253,13 @@ class GUI_process(tk.Tk):
                     entry_param = ttk.Combobox(self.param_frame,
                                                font=FONT_TEXT)
                     entry_param["values"] = get_group_names(self.selected_files)
+                elif param_name == "group_names":
+                    entry_param = tk.Listbox(self.param_frame,
+                                             font=FONT_TEXT,
+                                             selectmode=tk.MULTIPLE,
+                                             exportselection=False)
+                    for group in get_group_names(self.selected_files):
+                        entry_param.insert(tk.END, group)
                 else:
                     entry_param = tk.Entry(self.param_frame,
                                            font=FONT_TEXT)
@@ -341,8 +349,12 @@ class GUI_process(tk.Tk):
         for widget in self.param_frame.winfo_children():
             if hasattr(widget, 'tag'):
                 tag = widget.tag
-                entry_value = str(widget.get())
-                value = string_2_value(entry_value)
+                if isinstance(widget, tk.Listbox):
+                    entry_value = [string_2_value(widget.get(idx)) for idx in widget.curselection()]
+                    value = entry_value
+                else:
+                    entry_value = str(widget.get())
+                    value = string_2_value(entry_value)
                 param_dict[tag] = value
 
         # We fill out the parameters for every file

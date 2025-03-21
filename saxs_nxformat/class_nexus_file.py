@@ -1134,8 +1134,44 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-    def process_prepare_for_fitting(self):
-        pass
+    def process_prepare_for_fitting(self, group_names=None):
+        for index, nxfile in enumerate(self.nx_files):
+            q_fit_list = []
+            i_fit_list = []
+            for group in group_names:
+                if f"ENTRY/{group}/I" not in nxfile:
+                    raise Exception(f"There is no I data in {group} of file {self.file_paths[index]}")
+
+                extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group}/I")
+
+                if len(np.shape(extracted_value_data)) != 1:
+                    raise Exception(f"I data in {group} of file {self.file_paths[index]} is not 1D")
+
+                i_fit_list = i_fit_list + list(extracted_value_data)
+
+
+                # We extract the parameter
+                if f"ENTRY/{group}/Q" not in nxfile:
+                    raise Exception(f"There is no Q data in {group} of file {self.file_paths[index]}")
+
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group}/Q")
+
+                if len(np.shape(extracted_param_data)) != 1:
+                    raise Exception(f"Q data in {group} of file {self.file_paths[index]} is not 1D")
+
+                q_fit_list = q_fit_list + list(extracted_param_data)
+
+            q_list = q_fit_list
+            i_list = i_fit_list
+            mask = self.list_smi_data[index].masks
+            save_data(nxfile, "Q", q_list, "DATA_FITSPY", i_list, mask)
+
+            create_process(self.nx_files[index],
+                           f"/ENTRY/PROCESS_FITSPY",
+                           "Fitting prep",
+                           "Concatenates all the intensity and scattering vector selected and saves\n"
+                           "them under a specific name for fitspy\n"
+                           )
 
     def process_delete_data(self, group_name="DATA_Q_SPACE"):
         for index, nxfile in enumerate(self.nx_files):
