@@ -31,6 +31,8 @@ CONF_PATH = DTC_PATH / "Configs"
 TREATED_PATH = DTC_PATH / "Treated Data"
 IPYNB_PATH = DTC_PATH / "Notebooks"
 
+QUEUE_PATH = ENV_PATH / "Treatment Queue"
+
 BASE_DIR = Path(__file__).parent
 ICON_PATH = BASE_DIR / "Images" / "nxformat_icon.ico"
 

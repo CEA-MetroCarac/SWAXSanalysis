@@ -20,7 +20,7 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 # We build the environment
-from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH
+from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from saxs_nxformat.create_config import Setting
 from saxs_nxformat.data_processing import GUI_process
@@ -65,6 +65,7 @@ def launcher_gui():
     CONF_PATH.mkdir(parents=True, exist_ok=True)
     TREATED_PATH.mkdir(parents=True, exist_ok=True)
     IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+    QUEUE_PATH.mkdir(parents=True, exist_ok=True)
 
     # We move the notebook, jupyter launcher and settings into the DTC
     shutil.copy(
@@ -145,12 +146,12 @@ def launcher_gui():
 
 
 if __name__ == "__main__":
-    # import cProfile, pstats
+    import cProfile, pstats
 
-    # profiler = cProfile.Profile()
-    # profiler.enable()
+    profiler = cProfile.Profile()
+    profiler.enable()
     launcher_gui()
-    # profiler.disable()
-    # stats = pstats.Stats(profiler).sort_stats('tottime')
-    # stats.print_stats()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('ncalls')
+    stats.print_stats()
 

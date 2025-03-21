@@ -1061,8 +1061,8 @@ class NexusFile:
 
             I_ROI_data = np.sum(
                 raw_data[
-                    beam_center_y - roi_size_y:beam_center_y + roi_size_y,
-                    beam_center_x - roi_size_x:beam_center_x + roi_size_x
+                beam_center_y - roi_size_y:beam_center_y + roi_size_y,
+                beam_center_x - roi_size_x:beam_center_x + roi_size_x
                 ]
             )
             I_ROI_data = I_ROI_data / time
@@ -1133,6 +1133,13 @@ class NexusFile:
                 ymin=ymin, ymax=ymax,
                 title=title, percentile=percentile
             )
+
+    def process_prepare_for_fitting(self):
+        pass
+
+    def process_delete_data(self, group_name="DATA_Q_SPACE"):
+        for index, nxfile in enumerate(self.nx_files):
+            delete_data(nxfile, group_name)
 
     def _display_data(
             self, index=None, nxfile=None,
@@ -1305,10 +1312,6 @@ class NexusFile:
                     plt.show()
             else:
                 plt.show()
-
-    def process_delete_data(self, group_name="DATA_Q_SPACE"):
-        for index, nxfile in enumerate(self.nx_files):
-            delete_data(nxfile, group_name)
 
     def nexus_close(self):
         """

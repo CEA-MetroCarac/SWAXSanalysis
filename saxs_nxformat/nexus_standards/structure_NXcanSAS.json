@@ -1533,7 +1533,7 @@
                         "possible value": [],
                         "EX_required": false,
                         "type": "NX_BOOLEAN",
-                        "docstring": "Flag determining whether this file will be processes\nto get the absolute intensity or not.\nThis value should be 1 for True and 0 for False",
+                        "docstring": "Flag determining whether this file will be processed\nto get the absolute intensity or not.\nThis value should be 1 for True and 0 for False",
                         "content": {
                             "@dbpath": {
                                 "element type": "attribute",

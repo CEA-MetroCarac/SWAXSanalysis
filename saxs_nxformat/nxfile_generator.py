@@ -30,7 +30,7 @@ from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
 
-from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT
+from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset
@@ -164,6 +164,8 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
         replace_h5_dataset(save_file, "ENTRY/DATA/Q", treated_data["R_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
+        # TODO : Add an if statement to check for a "do absolute" flag
+        # TODO : if there is load the calibration data into the file
     return hdf5_path
 
 
@@ -180,29 +182,41 @@ def search_setting_edf(recursively=False):
     settings_path : Path
         Path of the settings file.
     """
-    edf_name, settings_name = None, None
+    edf_name, settings_name, edf_original_path = None, None, None
 
-    # Recursively searching in treatment queue
-    # for filename in glob.iglob(QUEUE_PATH / "treatment queue" + '**/*.edf', recursive=True):
-    #     if filename.endswith(".edf"):
-    #         edf_name = filename
-    #     elif "settings_edf2nx" in filename.lower() and filename.endswith(".json"):
-    #         settings_name = filename
-
-    # Search in center only
+    # First, we try to get the settings file
     for file in os.listdir(DTC_PATH):
-        if ".edf" in file.lower():
-            edf_name = file
-        elif "settings_edf2nx" in file.lower():
+        if "settings_edf2nx" in file.lower():
             settings_name = file
+    if settings_name is None:
+        return None, None
+    else:
+        settings_path = Path(DTC_PATH / settings_name)
 
-    if edf_name is None or settings_name is None:
+    # Second, we build the list of all edf path in the DTC
+    treated_edf = []
+    for filepath in glob.iglob(str(TREATED_PATH / "**/*.edf"), recursive=True):
+        treated_edf.append(Path(filepath))
+
+    # Recursively searching in treatment queue for files to treat
+    if recursively:
+        for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
+            edf_name = Path(filepath).name
+            result = tree_structure_manager(edf_name, settings_name)
+            print(result[-1] / edf_name)
+            if result[-1] / edf_name not in treated_edf:
+                edf_original_path = filepath
+    else:
+        # Search in center only
+        for file in os.listdir(DTC_PATH):
+            if ".edf" in file.lower():
+                edf_name = file
+                edf_original_path = Path(DTC_PATH / edf_name)
+
+    if edf_name is None:
         return None, None
 
-    edf_path = DTC_PATH / edf_name
-    settings_path = DTC_PATH / settings_name
-
-    return edf_path, settings_path
+    return edf_original_path, settings_path
 
 
 def tree_structure_manager(file: str, settings: str):
@@ -470,7 +484,7 @@ class GUI_generator(tk.Tk):
                 )
                 break
 
-            file_path, settings_path = search_setting_edf()
+            file_path, settings_path = search_setting_edf(recursively=True)
             if file_path is None or settings_path is None:
                 self.after(
                     0,
@@ -496,7 +510,7 @@ class GUI_generator(tk.Tk):
             )
 
             new_file_path = generate_nexus(file_path, result[0], settings_path)
-            shutil.move(file_path, result[1] / file_path.name)
+            shutil.copy(file_path, result[1] / file_path.name)
 
             nx_file = NexusFile([new_file_path])
             self.after(
