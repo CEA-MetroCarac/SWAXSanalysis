@@ -1494,8 +1494,8 @@ class NexusFile:
         """
         Method used to close the loaded file correctly by repacking it and then closing it
         """
-        for index, file in enumerate(self.nx_files):
-            file.close()
+        for index, file_obj in enumerate(self.nx_files):
+            file_obj.close()
             repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
 
 

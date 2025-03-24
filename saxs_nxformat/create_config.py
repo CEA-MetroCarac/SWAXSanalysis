@@ -50,7 +50,7 @@ class GUI_setting(tk.Tk):
         The frame containing action buttons for navigation and saving.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.iconbitmap(ICON_PATH)
         self.focus_force()
@@ -81,7 +81,7 @@ class GUI_setting(tk.Tk):
 
         self._create_widgets_frame1()
 
-    def _create_widgets_frame1(self):
+    def _create_widgets_frame1(self) -> None:
         """
         This method adds a label, an entry field, and a browse button to the first frame.
         The entry field displays the absolute path of the reference file selected 
@@ -115,7 +115,11 @@ class GUI_setting(tk.Tk):
         )
         button_browse_data.grid(column=2, row=0, sticky="w")
 
-    def _create_widget_frame2_1(self, widget, string_var):
+    def _create_widget_frame2_1(
+            self,
+            widget: tk.Entry,
+            string_var: tk.StringVar
+    ) -> None:
         """
         This method creates a scrollable frame containing all the key, value pairs
         present in the .edf file header. It also creates a checkbox to indicate if
@@ -168,7 +172,10 @@ class GUI_setting(tk.Tk):
 
         self._create_widget_frame3_1()
 
-    def _create_widget_frame2_2(self, checked_label):
+    def _create_widget_frame2_2(
+            self,
+            checked_label: list[str]
+    ) -> None:
         """
         This method updates the scrollable frame to display all the
         NeXus parameters that are used for the format. Each NeXus
@@ -179,7 +186,7 @@ class GUI_setting(tk.Tk):
 
         Parameters
         ----------
-        checked_label : list
+        checked_label :
             The list of keys from the .edf file that are used as
             options in the comboboxes.
         """
@@ -286,7 +293,7 @@ class GUI_setting(tk.Tk):
 
         self.create_widget_frame3_2()
 
-    def _create_widget_frame3_1(self):
+    def _create_widget_frame3_1(self) -> None:
         """
         This method creates the next step and close button
         for the frame 2-1.
@@ -310,7 +317,7 @@ class GUI_setting(tk.Tk):
             command=lambda: self.destroy())
         button_close.pack(padx=8, pady=8, side="left")
 
-    def create_widget_frame3_2(self):
+    def create_widget_frame3_2(self) -> None:
         """
         This method creates the save and close button as well as
         the entry to enter a name for the settings file for the frame 2-2
@@ -346,7 +353,11 @@ class GUI_setting(tk.Tk):
         )
         button_close.pack(padx=8, pady=8, side="left")
 
-    def _browse_load_edf(self, widget, string_var):
+    def _browse_load_edf(
+            self,
+            widget: tk.Entry,
+            string_var: tk.StringVar
+    ) -> None:
         """
         This method is used to search and load an edf file into
         the application
@@ -381,7 +392,7 @@ class GUI_setting(tk.Tk):
                                     f"file:\n {str(error)}")
             return None
 
-    def _save_labels(self):
+    def _save_labels(self) -> None:
         """
         Method that saves the checked .edf keys from frame 2-1 and asks
         the user for confirmation.
@@ -406,7 +417,7 @@ class GUI_setting(tk.Tk):
             self._create_widget_frame2_2(checked_labels)
             self.create_widget_frame3_2()
 
-    def _save_settings(self):
+    def _save_settings(self) -> None:
         """
         Method that saves the settings in a json file that has the same structure
         as the input json file.
