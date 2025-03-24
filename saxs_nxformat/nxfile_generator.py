@@ -2,8 +2,6 @@
 This module is meant to be executed by the user and automatically
 treats any .edf file found in the parent folder according to the
 settings file also present in that parent folder
-TODO : add a way to specify the path where the edf files are
-TODO : add a way to load a settings file specified by the user
 """
 import gc
 import json

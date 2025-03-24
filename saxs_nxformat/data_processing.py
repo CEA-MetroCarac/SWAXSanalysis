@@ -1,6 +1,5 @@
 """
 This module is meant to help the user process their data
-TODO : Allow the user to make a sequence of process and execute it
 """
 import inspect
 import re
@@ -364,7 +363,11 @@ class GUI_process(tk.Tk):
         else:
             do_batch_state = False
 
-        print(self.input_data.get())
+        self.after(
+            0,
+            self.print_log,
+            "Starting process..."
+        )
         nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
             process(nxfiles, **param_dict)
@@ -381,6 +384,11 @@ class GUI_process(tk.Tk):
                 text="No processing in progress",
                 fg="#6DB06E"
             )
+        self.after(
+            0,
+            self.print_log,
+            "Process done"
+        )
 
 
 if __name__ == "__main__":

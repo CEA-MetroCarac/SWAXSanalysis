@@ -227,7 +227,6 @@ def delete_data(nx_file, group_name):
 
 class NexusFile:
     """
-    TODO : add process to fit peaks
     TODO : add process to build a mask
     A class that can load and treat data formated in the NXcanSAS standard
 
@@ -1030,27 +1029,61 @@ class NexusFile:
             sample_thickness=1e9,
     ):
         """
-        TODO : complete the method and doc
+        TODO : change the default parameters for None
+        This process convert the intensities in your file into absolute intensities.
+
         Parameters
         ----------
-        group_name
-        save
-        display
-        sample_thickness
-        db_path
-        roi_size_x
-        roi_size_y
+        group_name :
+            name fo the group where the data is going to be saved
 
-        Returns
-        -------
+        save :
+            Choose whether you want to save tha data or not
 
+        display :
+            Choose whether you want to display tha data or not
+
+        sample_thickness :
+        # TODO : by default get the thickness from the HDF5 directly
+            The thickness of the sample
+
+        db_path :
+        # TODO : delete this parameter and find a way to save the db data into the HDF5
+            path of the direct beam data
+
+        roi_size_x :
+        # TODO : by default get the thickness from the HDF5 directly
+            Horizontal size of the region of interest. By default gets the beam size of the HDF5
+
+        roi_size_y :
+        # TODO : by default get the thickness from the HDF5 directly
+            Vertical size of the region of interest. By default gets the beam size of the HDF5
         """
         if db_path is None:
             print("No direct beam data")
             return
 
+        initial_none_flags = {
+            "roi_size_x": roi_size_x is None,
+            "roi_size_y": roi_size_y is None,
+            "sample_thickness": sample_thickness is None,
+        }
+
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
+
+            defaults = {
+                "roi_size_x": extract_from_h5(self.nx_files[index], "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
+                "roi_size_y": extract_from_h5(self.nx_files[index], "ENTRY/INSTRUMENT/SOURCE/beam_size_y"),
+                "sample_thickness": extract_from_h5(self.nx_files[index], "ENTRY/SAMPLE/thickness"),
+            }
+
+            if initial_none_flags["roi_size_x"]:
+                roi_size_x = defaults["roi_size_x"]
+            if initial_none_flags["roi_size_y"]:
+                roi_size_y = defaults["roi_size_y"]
+            if initial_none_flags["sample_thickness"]:
+                sample_thickness = defaults["sample_thickness"]
 
             positions = self.dicts_parameters[index]["R raw data"][0]
 
@@ -1148,7 +1181,6 @@ class NexusFile:
                     raise Exception(f"I data in {group} of file {self.file_paths[index]} is not 1D")
 
                 i_fit_list = i_fit_list + list(extracted_value_data)
-
 
                 # We extract the parameter
                 if f"ENTRY/{group}/Q" not in nxfile:
