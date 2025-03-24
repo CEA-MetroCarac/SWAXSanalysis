@@ -3,6 +3,8 @@ This module is meant to help the user process their data
 """
 import inspect
 import re
+from typing import List, Any
+
 import h5py
 import tkinter as tk
 from tkinter import ttk, filedialog
@@ -13,7 +15,9 @@ from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value
 
 
-def get_group_names(file_list):
+def get_group_names(
+        file_list: list[Path] | list[stt]
+) -> list[Any]:
     groups = []
     for file_path in file_list:
         with h5py.File(file_path, "r") as file_object:
@@ -55,7 +59,7 @@ class GUI_process(tk.Tk):
         files that are to be processed
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.selected_files = None
         self.process = {}
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
@@ -106,7 +110,7 @@ class GUI_process(tk.Tk):
         )
         self.progress_label.grid(column=1, row=2, sticky="e", padx=5, pady=5)
 
-    def _inputs_building(self):
+    def _inputs_building(self) -> None:
         """
         Builds the input frame
         """
@@ -140,7 +144,7 @@ class GUI_process(tk.Tk):
         )
         self.do_batch.grid(column=0, row=4, sticky="we")
 
-    def _process_building(self):
+    def _process_building(self) -> None:
         """
         Builds the frame containing all available processes
         """
@@ -179,14 +183,17 @@ class GUI_process(tk.Tk):
             else:
                 current_column += 1
 
-    def _create_params(self, process_name):
+    def _create_params(
+            self,
+            process_name: str
+    ) -> None:
         """
         Builds the parameter frame according to the selected process
 
         Parameters
         ----------
         process_name :
-            Name of the process that will have his parameters
+            Name of the process that will have its parameters
             displayed in the frame
         """
         if self.selected_files is None:
@@ -278,7 +285,7 @@ class GUI_process(tk.Tk):
         confirm_button.grid(column=0, columnspan=2, row=current_row,
                             pady=15, padx=15)
 
-    def _build_log(self):
+    def _build_log(self) -> None:
         self.frame_log.columnconfigure(0, weight=1)
         self.frame_log.rowconfigure(1, weight=1)
         # Label
@@ -298,7 +305,7 @@ class GUI_process(tk.Tk):
         self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
         self.log_text.config(state=tk.NORMAL)
 
-    def browse_files(self):
+    def browse_files(self) -> None:
         """
         Method used to browse and select files
         """
@@ -318,19 +325,25 @@ class GUI_process(tk.Tk):
             name = file.split("/")[-1]
             self.file_list.insert(tk.END, name)
 
-    def print_log(self, message):
+    def print_log(
+            self,
+            message: str
+    ) -> None:
         """Function to print logs in the Tkinter Text widget."""
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
 
-    def _start_processing(self, process):
+    def _start_processing(
+            self,
+            process
+    ) -> None:
         """
         Starting the selected process with the parameters filled out
 
         Parameters
         ----------
         process :
-            name of the selected process
+            Callable method that needs to be applied
         """
         self.progress_label.configure(
             text="Processing in progress, please wait...",
