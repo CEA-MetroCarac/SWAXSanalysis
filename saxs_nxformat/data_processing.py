@@ -253,10 +253,12 @@ class GUI_process(tk.Tk):
                                                font=FONT_TEXT)
                     entry_param["values"] = get_group_names(self.selected_files)
                 elif param_name == "group_names":
-                    entry_param = tk.Listbox(self.param_frame,
-                                             font=FONT_TEXT,
-                                             selectmode=tk.MULTIPLE,
-                                             exportselection=False)
+                    entry_param = tk.Listbox(
+                        self.param_frame,
+                        font=FONT_TEXT,
+                        selectmode=tk.MULTIPLE,
+                        exportselection=False
+                    )
                     for group in get_group_names(self.selected_files):
                         entry_param.insert(tk.END, group)
                 else:

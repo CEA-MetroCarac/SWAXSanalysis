@@ -7,6 +7,8 @@ import os
 import shutil
 import re
 import inspect
+from typing import Dict, Any
+
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,16 +19,19 @@ from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_v
 from smi_analysis import SMI_beamline
 
 
-def repack_hdf5(input_file, output_file):
+def repack_hdf5(
+        input_file: str | Path,
+        output_file: str | Path
+) -> None:
     """
     Repack an HDF5 file to reduce its size by copying its content to a new file.
 
     Parameters
     ----------
-    input_file : str
+    input_file :
         Path to the input HDF5 file.
 
-    output_file : str
+    output_file :
         Path to the output (repacked) HDF5 file.
     """
     with h5py.File(input_file, 'r') as src, h5py.File(output_file, 'w') as dest:
@@ -35,7 +40,12 @@ def repack_hdf5(input_file, output_file):
     shutil.move(output_file, input_file)
 
 
-def create_process(hdf5_file, group_h5path, process_name, process_desc):
+def create_process(
+        hdf5_file: h5py.File,
+        group_h5path: str,
+        process_name: str,
+        process_desc: str
+) -> None:
     """
     Function used to create a new group in the hdf5 file that will contain pertinent information
     concerning the process that was applied.
@@ -68,7 +78,12 @@ def create_process(hdf5_file, group_h5path, process_name, process_desc):
     group.create_dataset("description", data=process_desc)
 
 
-def extract_from_h5(nx_file, h5path, data_type="dataset", attribute_name=None):
+def extract_from_h5(
+        nx_file: h5py.File,
+        h5path: str,
+        data_type: str = "dataset",
+        attribute_name: str | None = None
+) -> Any:
     """
     Method used to extract a dataset or attribute from the .h5 file
 
@@ -107,7 +122,10 @@ def extract_from_h5(nx_file, h5path, data_type="dataset", attribute_name=None):
         return None
 
 
-def extract_smi_param(h5obj, input_data_group):
+def extract_smi_param(
+        h5obj: h5py.File,
+        input_data_group: str
+) -> dict:
     dict_parameters = {
         "beam stop": [[0, 0]]
     }
@@ -162,7 +180,14 @@ def extract_smi_param(h5obj, input_data_group):
     return dict_parameters
 
 
-def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset, mask):
+def save_data(
+        nx_file: h5py.File,
+        parameter_symbol: str,
+        parameter: np.ndarray,
+        dataset_name: str,
+        dataset: np.ndarray,
+        mask: np.ndarray
+) -> None:
     """
     Method used to save a dataset in the h5 file
 
@@ -206,7 +231,10 @@ def save_data(nx_file, parameter_symbol, parameter, dataset_name, dataset, mask)
                        mask)
 
 
-def delete_data(nx_file, group_name):
+def delete_data(
+        nx_file: h5py.File,
+        group_name: str
+) -> None:
     """
     Method used to properly delete data from the h5 file
 
@@ -248,7 +276,12 @@ class NexusFile:
         list of array of intensities
     """
 
-    def __init__(self, h5_paths, do_batch=False, input_data_group="DATA"):
+    def __init__(
+            self,
+            h5_paths: list[str] | list[Path],
+            do_batch: bool = False,
+            input_data_group: str = "DATA"
+    ) -> None:
         """
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
@@ -263,13 +296,17 @@ class NexusFile:
             displayed a single figure or not
         """
         if isinstance(h5_paths, list):
+            for path in h5_paths:
+                if not isinstance(path, str) and not isinstance(path, Path):
+                    raise TypeError(
+                        f"Your list of path contains something other than a string or Path :"
+                        f"{path} is not a string or a Path object"
+                    )
             self.file_paths = h5_paths
-        elif isinstance(h5_paths, str):
-            self.file_paths = [h5_paths]
         else:
             raise TypeError(
                 f"You tried to pass the path of the file(s) you want to open "
-                f"as something other than a string or a list of string"
+                f"as something other than a list."
             )
 
         self.init_plot = True
@@ -307,7 +344,10 @@ class NexusFile:
             self.intensities_data.append(dict_parameters["I raw data"])
             self.list_smi_data.append(smi_data)
 
-    def show_method(self, method_name=None):
+    def show_method(
+            self,
+            method_name: str | None = None
+    ) -> str:
         return_string = ""
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
             if method_name is None or method_name == name:
@@ -325,30 +365,35 @@ class NexusFile:
                              f"to get more information concerning this particular method"
         return return_string
 
-    def get_file(self):
+    def get_file(self) -> list[h5py.File]:
         """
         Getter of the actual h5 files
         """
         return self.nx_files
 
-    def add_file(self, h5_paths):
+    def add_file(
+            self,
+            h5_paths: list[str] | list[Path]
+    ) -> None:
 
         if isinstance(h5_paths, list):
             for path in h5_paths:
-                self.file_paths.append(path)
-        elif isinstance(h5_paths, str):
-            self.file_paths.append(h5_paths)
-            h5_paths = [h5_paths]
+                if not isinstance(path, str) and not isinstance(path, Path):
+                    raise TypeError(
+                        f"Your list of path contains something other than a string or Path :"
+                        f"{path} is not a string or a Path object"
+                    )
+            self.file_paths = h5_paths
         else:
             raise TypeError(
                 f"You tried to pass the path of the file(s) you want to open "
-                f"as something other than a string or a list of string"
+                f"as something other than a list."
             )
 
         for index, file_path in enumerate(h5_paths):
             nx_file = h5py.File(file_path, "r+")
 
-            dict_parameters, intensity_data = extract_smi_param(nx_file)
+            dict_parameters, intensity_data = extract_smi_param(nx_file, self.input_data_group)
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
@@ -369,7 +414,10 @@ class NexusFile:
             self.intensities_data.append(intensity_data)
             self.list_smi_data.append(smi_data)
 
-    def get_raw_data(self, group_name="DATA_Q_SPACE"):
+    def get_raw_data(
+            self,
+            group_name: str = "DATA_Q_SPACE"
+    ) -> tuple[dict[str, np.ndarray | None], dict[str, np.ndarray]]:
         """
         Get raw data of the group name. The parameter and intensity are returned as python dict :
             - key : file name
@@ -406,7 +454,10 @@ class NexusFile:
 
         return extracted_param_data, extracted_value_data
 
-    def get_process_desc(self, group_name="PROCESS_Q_SPACE"):
+    def get_process_desc(
+            self,
+            group_name: str = "PROCESS_Q_SPACE"
+    ) -> dict[str, Any]:
         """
         Getter of a process' description
 
@@ -430,8 +481,12 @@ class NexusFile:
         return extracted_description
 
     def process_q_space(
-            self, display=False, save=False, group_name="DATA_Q_SPACE", percentile=99
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_Q_SPACE",
+            percentile: float | int = 99
+    ) -> None:
         """
         Method used to put the data in Q space (Fourier space). This will save an array
         containing the intensity values and another array containing the vector Q associated
@@ -488,11 +543,18 @@ class NexusFile:
                                )
 
     def process_caking(
-            self, display=False, save=False, group_name="DATA_CAKED",
-            azi_min=None, azi_max=None, pts_azi=None,
-            radial_min=None, radial_max=None, pts_rad=None,
-            percentile=99
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_CAKED",
+            azi_min: None | float | int = None,
+            azi_max: None | float | int = None,
+            pts_azi: None | int = None,
+            radial_min: None | float | int = None,
+            radial_max: None | float | int = None,
+            pts_rad: None | int = None,
+            percentile: float | int = 99
+    ) -> None:
         """
         Method used to cake the data. This will display the data in the (q_r, chi) coordinate system.
 
@@ -603,11 +665,16 @@ class NexusFile:
                                )
 
     def process_radial_average(
-            self, display=False, save=False, group_name="DATA_RAD_AVG",
-            r_min=None, r_max=None,
-            angle_min=None, angle_max=None,
-            pts=None
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_RAD_AVG",
+            r_min: None | float | int = None,
+            r_max: None | float | int = None,
+            angle_min: None | float | int = None,
+            angle_max: None | float | int = None,
+            pts: None | int = None
+    ) -> None:
         """
         Method used to perform radial averaging of data in Fourier space. This will reduce the signal to
         one dimension : intensity versus distance from the center
@@ -720,10 +787,17 @@ class NexusFile:
                                )
 
     def process_azimuthal_average(
-            self, display=False, save=False, group_name="DATA_AZI_AVG",
-            r_min=None, r_max=None, npt_rad=None,
-            angle_min=None, angle_max=None, npt_azi=None
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_AZI_AVG",
+            r_min: None | float | int = None,
+            r_max: None | float | int = None,
+            npt_rad: None | int = None,
+            angle_min: None | float | int = None,
+            angle_max: None | float | int = None,
+            npt_azi: None | int = None
+    ) -> None:
         """
         Method used to do the radial average of the data in fourier space
 
@@ -837,10 +911,15 @@ class NexusFile:
                                )
 
     def process_horizontal_integration(
-            self, display=False, save=False, group_name="DATA_HOR_INT",
-            qx_min=None, qx_max=None,
-            qy_min=None, qy_max=None
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_HOR_INT",
+            qx_min: None | float | int = None,
+            qx_max: None | float | int = None,
+            qy_min: None | float | int = None,
+            qy_max: None | float | int = None
+    ) -> None:
         """
         Method used to perform horizontal integration of the data in Fourier space.
 
@@ -930,10 +1009,15 @@ class NexusFile:
                                )
 
     def process_vertical_integration(
-            self, display=False, save=False, group_name="DATA_HOR_INT",
-            qx_min=None, qx_max=None,
-            qy_min=None, qy_max=None
-    ):
+            self,
+            display: bool = False,
+            save: bool = False,
+            group_name: str = "DATA_VER_INT",
+            qx_min: None | float | int = None,
+            qx_max: None | float | int = None,
+            qy_min: None | float | int = None,
+            qy_max: None | float | int = None
+    ) -> None:
         """
         Method used to do the vertical integration of the data in fourier space.
 
@@ -1023,9 +1107,13 @@ class NexusFile:
                                )
 
     def process_absolute_intensity(
-            self, db_path=None, group_name="DATA_ABS",
-            display=False, save=False,
-            roi_size_x=30, roi_size_y=30,
+            self,
+            db_path=None,
+            group_name="DATA_ABS",
+            display=False,
+            save=False,
+            roi_size_x=30,
+            roi_size_y=30,
             sample_thickness=1e9,
     ):
         """
@@ -1148,13 +1236,19 @@ class NexusFile:
                                )
 
     def process_display(
-            self, group_name="DATA_Q_SPACE",
-            scale_x="log", scale_y="log",
-            label_x="", label_y="", title="",
-            xmin=None, xmax=None,
-            ymin=None, ymax=None,
-            percentile=99
-    ):
+            self,
+            group_name: str = "DATA_Q_SPACE",
+            scale_x: str = "log",
+            scale_y: str = "log",
+            label_x: str = "",
+            label_y: str = "",
+            title: str = "",
+            xmin: None | float | int = None,
+            xmax: None | float | int = None,
+            ymin: None | float | int = None,
+            ymax: None | float | int = None,
+            percentile: int | float = 99
+    ) -> None:
         self.init_plot = True
         for index, nxfile in enumerate(self.nx_files):
             self._display_data(
@@ -1167,7 +1261,10 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-    def process_prepare_for_fitting(self, group_names=None):
+    def process_prepare_for_fitting(
+            self,
+            group_names: None | list[str] = None
+    ) -> None:
         for index, nxfile in enumerate(self.nx_files):
             q_fit_list = []
             i_fit_list = []
@@ -1205,19 +1302,31 @@ class NexusFile:
                            "them under a specific name for fitspy\n"
                            )
 
-    def process_delete_data(self, group_name="DATA_Q_SPACE"):
+    def process_delete_data(
+            self,
+            group_name: str = "DATA_Q_SPACE"
+    ) -> None:
         for index, nxfile in enumerate(self.nx_files):
             delete_data(nxfile, group_name)
 
     def _display_data(
-            self, index=None, nxfile=None,
-            group_name=None,
-            extracted_param_data=None, extracted_value_data=None,
-            scale_x="log", scale_y="log",
-            label_x="", label_y="", title="",
-            xmin=None, xmax=None,
-            ymin=None, ymax=None,
-            percentile=99, optimize_range=False
+            self,
+            index: None | int = None,
+            nxfile: None | h5py.File = None,
+            group_name: None | str = None,
+            extracted_param_data: None | np.ndarray = None,
+            extracted_value_data: None | np.ndarray = None,
+            scale_x: str = "log",
+            scale_y: str = "log",
+            label_x: str = "",
+            label_y: str = "",
+            title: str = "",
+            xmin: None | float | int = None,
+            xmax: None | float | int = None,
+            ymin: None | float | int = None,
+            ymax: None | float | int = None,
+            percentile: int | float = 99,
+            optimize_range: bool = False
     ):
         """
         Displays the data contained in the DATA_... group
