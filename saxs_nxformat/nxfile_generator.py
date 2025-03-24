@@ -16,6 +16,8 @@ import time
 import tkinter as tk
 import tkinter.messagebox
 import tracemalloc
+from typing import Dict, List, Tuple
+
 import matplotlib.pyplot as plt
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +29,7 @@ import numpy as np
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
                                                NavigationToolbar2Tk)
+from numpy import ndarray
 
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
@@ -34,7 +37,10 @@ from saxs_nxformat.class_nexus_file import NexusFile
 from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset
 
 
-def data_treatment(data, h5_file):
+def data_treatment(
+        data: np.ndarray,
+        h5_file: h5py.File
+) -> dict[str, np.ndarray | list[Any]]:
     """
     This function is used to treat data such that it can be put in
     the hf5 file.
@@ -77,7 +83,11 @@ def data_treatment(data, h5_file):
     return output
 
 
-def generate_nexus(edf_path, hdf5_path, settings_path):
+def generate_nexus(
+        edf_path: str | Path,
+        hdf5_path: str | Path,
+        settings_path: str | Path
+) -> str:
     """
     The main function. it creates the hdf5 file and fills all it's content
     automatically using a settings file.
@@ -167,7 +177,9 @@ def generate_nexus(edf_path, hdf5_path, settings_path):
     return hdf5_path
 
 
-def search_setting_edf(recursively=False):
+def search_setting_edf(
+        recursively: bool = False
+) -> tuple[None, None] | tuple[None | str | Path, Path]:
     """
     This function searches an edf file and a settings file
     in the parent folder.
@@ -217,7 +229,10 @@ def search_setting_edf(recursively=False):
     return edf_original_path, settings_path
 
 
-def tree_structure_manager(file: str, settings: str):
+def tree_structure_manager(
+        file: str,
+        settings: str
+) -> str | tuple[Any, Any]:
     """
     Creates a structured folder hierarchy based on the EDF file name and settings file.
 
@@ -278,7 +293,7 @@ def tree_structure_manager(file: str, settings: str):
 
 class GUI_generator(tk.Tk):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.activate_thread = False
         self.line_dict = {}
         self.selected_processes = {}
@@ -303,7 +318,7 @@ class GUI_generator(tk.Tk):
         self.log_panel.rowconfigure(1, weight=1)
         self._build_log_frame()
 
-    def _build_control_frame(self):
+    def _build_control_frame(self) -> None:
         # Label
         title = tk.Label(
             self.control_panel,
@@ -393,7 +408,7 @@ class GUI_generator(tk.Tk):
         )
         close_button.grid(pady=10, padx=10, row=7, column=0)
 
-    def _build_plot_frame(self):
+    def _build_plot_frame(self) -> None:
         self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 4), dpi=100, layout="constrained")
         self.ax.set_xlabel("$q_r (A^{-1})$")
         self.ax.set_ylabel("Intensity (A.U.)")
@@ -410,7 +425,7 @@ class GUI_generator(tk.Tk):
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
-    def _build_log_frame(self):
+    def _build_log_frame(self) -> None:
         # Label
         title = tk.Label(
             self.log_panel,
@@ -429,12 +444,18 @@ class GUI_generator(tk.Tk):
         self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
         self.log_text.config(state=tk.NORMAL)
 
-    def print_log(self, message):
+    def print_log(
+            self,
+            message: str
+    ) -> None:
         """Function to print logs in the Tkinter Text widget."""
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
 
-    def toggle_lines(self, event):
+    def toggle_lines(
+            self,
+            event
+    ) -> None:
         selected_items = {self.list_plot.get(i) for i in self.list_plot.curselection()}
 
         for line_name, line in self.line_dict.items():
@@ -444,20 +465,23 @@ class GUI_generator(tk.Tk):
 
         self.canvas.draw()
 
-    def build_process_list(self, event=None):
+    def build_process_list(
+            self,
+            event=None
+    ) -> None:
         self.selected_processes = {}
         for index in self.process_list.curselection():
             selected_item = self.process_list.get(index)
             self.selected_processes[selected_item] = self.process[selected_item]
 
-    def update_plot(self):
+    def update_plot(self) -> None:
         visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
         labels = [name for name, line in self.line_dict.items() if line.get_visible()]
         if self.ax.get_legend():
             self.ax.get_legend().remove()
         self.ax.legend(visible_lines, labels)
 
-    def auto_generate(self):
+    def auto_generate(self) -> None:
         """
         This is a thread that runs continuously and tries to export edf files found in the parent folder
         into h5 files using the settings file found in the same folder.
@@ -558,7 +582,7 @@ class GUI_generator(tk.Tk):
             "The program is done sleeping! you can start it again."
         )
 
-    def start_thread(self):
+    def start_thread(self) -> None:
         """Start the auto_generate function in a separate thread."""
         if not self.selected_processes:
             self.after(
@@ -576,7 +600,7 @@ class GUI_generator(tk.Tk):
             "Auto-generation started!"
         )
 
-    def stop_thread_func(self):
+    def stop_thread_func(self) -> None:
         """Stop the auto_generate function."""
         self.activate_thread = False
         self.after(
@@ -585,7 +609,7 @@ class GUI_generator(tk.Tk):
             "Auto-generation stopped. The program is still sleeping!"
         )
 
-    def close(self):
+    def close(self) -> None:
         plt.close("all")
         self.destroy()
 
