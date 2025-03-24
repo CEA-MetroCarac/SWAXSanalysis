@@ -4,12 +4,17 @@ Package-wide functions and classes
 import re
 import tkinter as tk
 from tkinter import ttk
+from typing import Any
 
+import h5py
 import numpy as np
 from saxs_nxformat import DICT_UNIT
 
 
-def string_2_value(string: str, unit_type: str = None) -> str | int | float | None:
+def string_2_value(
+        string: str,
+        unit_type: str = None
+) -> str | int | float | None:
     """
     Convert a string to a specific data type based on its format.
 
@@ -73,7 +78,12 @@ def string_2_value(string: str, unit_type: str = None) -> str | int | float | No
     return value
 
 
-def convert(number, unit_start, unit_end, testing=False):
+def convert(
+        number: float | int,
+        unit_start: str,
+        unit_end: str,
+        testing: bool = False
+) -> None | str | float | int | Any:
     """
     Converts a value that is expressed in the unitStart into a value expressed in the unitEnd
 
@@ -106,8 +116,8 @@ def convert(number, unit_start, unit_end, testing=False):
 
     if unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and not testing:
         tk.messagebox.showerror("Error",
-                                     f"The value {number} {unit_start} could not be converted to "
-                                     f"{unit_end} :\n")
+                                f"The value {number} {unit_start} could not be converted to "
+                                f"{unit_end} :\n")
     elif unit_type1 is None or unit_type2 is None or unit_type1 != unit_type2 and testing:
         return "fail"
 
@@ -137,7 +147,12 @@ def convert(number, unit_start, unit_end, testing=False):
     return number
 
 
-def replace_h5_dataset(hdf5_file, dataset_h5path, new_dataset, new_dataset_h5path=None):
+def replace_h5_dataset(
+        hdf5_file: h5py.File,
+        dataset_h5path: str | Path,
+        new_dataset: str | Path,
+        new_dataset_h5path: None | str | Path = None
+) -> None:
     """
     Function used to replace a dataset that's already been created
     in a hdf5 file
@@ -177,12 +192,19 @@ def replace_h5_dataset(hdf5_file, dataset_h5path, new_dataset, new_dataset_h5pat
     for attr_name, attr_value in attributes.items():
         new_dataset.attrs[attr_name] = attr_value
 
-def detect_variation(array, variation_threshold):
+
+def detect_variation(
+        array: np.ndarray,
+        variation_threshold: float | int
+) -> None:
     """
     return the indices where we go from a value under low to a value aboce high
 
     Parameters
     ----------
+    variation_threshold :
+        Threshold at whoch the change is detected
+
     array :
         The array where the variation have to be detected
 
