@@ -15,20 +15,20 @@ import tkinter as tk
 # Adds the package to the python path
 # The version used is not the local one but the one installed in metro-carac !!!
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-myappid = 'CEA.nxformat.launcher'
+myappid: str = 'CEA.nxformat.launcher'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 # We build the environment
 from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
-from saxs_nxformat.create_config import Setting
+from saxs_nxformat.create_config import GUI_setting
 from saxs_nxformat.data_processing import GUI_process
 from saxs_nxformat.nxfile_generator import GUI_generator
 
 
 # Launch commands
-def launch_app(old_root, selection):
+def launch_app(old_root: tk.Tk, selection: str) -> None:
     """
     Launches the selected application and then closes the old one
 
@@ -45,18 +45,18 @@ def launch_app(old_root, selection):
     old_root.destroy()
 
     if selection == "settings":
-        app = Setting()
+        app: GUI_setting = GUI_setting()
         app.mainloop()
     elif selection == "convert":
-        app = GUI_generator()
+        app: GUI_generator = GUI_generator()
         app.mainloop()
     elif selection == "process":
-        app = GUI_process()
+        app: GUI_process = GUI_process()
         app.mainloop()
 
 
 # GUI
-def launcher_gui():
+def launcher_gui() -> None:
     """
     Function allowing the nxformat.exe to launch this GUI
     """
@@ -88,18 +88,18 @@ def launcher_gui():
         CONF_PATH
     )
 
-    root = tk.Tk()
+    root: tk.Tk = tk.Tk()
     root.title("Launcher")
     root.iconbitmap(ICON_PATH)
 
-    prompt = tk.Label(
+    prompt: tk.Label = tk.Label(
         root,
         font=FONT_TITLE,
         text="What would you like to do ?"
     )
     prompt.grid(row=0, column=0, columnspan=3, pady=5, padx=5, sticky="we")
 
-    button_config = tk.Button(
+    button_config: tk.Button = tk.Button(
         root,
         font=FONT_BUTTON,
         text="Create config",
@@ -110,7 +110,7 @@ def launcher_gui():
     )
     button_config.grid(row=1, column=0, sticky="news", pady=5, padx=5)
 
-    button_convert = tk.Button(
+    button_convert: tk.Button = tk.Button(
         root,
         font=FONT_BUTTON,
         text="Convert to NeXus",
@@ -121,7 +121,7 @@ def launcher_gui():
     )
     button_convert.grid(row=1, column=1, sticky="news", pady=5, padx=5)
 
-    button_process = tk.Button(
+    button_process: tk.Button = tk.Button(
         root,
         font=FONT_BUTTON,
         text="Process data",
@@ -132,7 +132,7 @@ def launcher_gui():
     )
     button_process.grid(row=1, column=2, sticky="news", pady=5, padx=5)
 
-    button_close = tk.Button(
+    button_close: tk.Button = tk.Button(
         root,
         font=FONT_BUTTON,
         text="Close",

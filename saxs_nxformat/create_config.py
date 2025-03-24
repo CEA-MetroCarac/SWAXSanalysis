@@ -22,7 +22,7 @@ from saxs_nxformat.utils import VerticalScrolledFrame
 ######################
 
 
-class Setting(tk.Tk):
+class GUI_setting(tk.Tk):
     """
     A GUI application for creating the configuration files.
 
