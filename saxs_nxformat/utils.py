@@ -1,6 +1,7 @@
 """
 Package-wide functions and classes
 """
+import pathlib
 import re
 import tkinter as tk
 from tkinter import ttk
@@ -149,9 +150,9 @@ def convert(
 
 def replace_h5_dataset(
         hdf5_file: h5py.File,
-        dataset_h5path: str | Path,
-        new_dataset: str | Path,
-        new_dataset_h5path: None | str | Path = None
+        dataset_h5path: str | pathlib.Path,
+        new_dataset: str | pathlib.Path,
+        new_dataset_h5path: None | str | pathlib.Path = None,
 ) -> None:
     """
     Function used to replace a dataset that's already been created
@@ -193,6 +194,28 @@ def replace_h5_dataset(
         new_dataset.attrs[attr_name] = attr_value
 
 
+def delete_data(
+        nx_file: h5py.File,
+        group_name: str
+) -> None:
+    """
+    Method used to properly delete data from the h5 file
+
+    Parameters
+    ----------
+    nx_file :
+        file object
+
+    group_name :
+        Name of the data group to delete
+    """
+    group_name = group_name.upper()
+    if group_name in nx_file["/ENTRY"]:
+        del nx_file[f"/ENTRY/{group_name}"]
+    else:
+        print("This group does not exists")
+
+
 def detect_variation(
         array: np.ndarray,
         variation_threshold: float | int
@@ -220,6 +243,18 @@ def detect_variation(
     """
     diff_array = np.diff(array)
     return np.where(diff_array > variation_threshold)[0] + 1
+
+
+def mobile_mean(
+        data: np.ndarray,
+        nbr_neighbour: int = 5
+) -> np.ndarray:
+    if nbr_neighbour % 2 == 0:
+        raise ValueError("nbr_neighbour doit être impair pour un lissage symétrique.")
+
+    kernel = np.ones(nbr_neighbour) / nbr_neighbour
+    smoothed_data = np.convolve(data, kernel, mode='valid')
+    return smoothed_data
 
 
 class VerticalScrolledFrame(ttk.Frame):

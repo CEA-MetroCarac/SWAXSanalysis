@@ -6,6 +6,7 @@ import re
 from typing import List, Any
 
 import h5py
+import pathlib
 import tkinter as tk
 from tkinter import ttk, filedialog
 
@@ -16,7 +17,7 @@ from saxs_nxformat.utils import string_2_value
 
 
 def get_group_names(
-        file_list: list[Path] | list[stt]
+        file_list: list[pathlib.Path] | list[str]
 ) -> list[Any]:
     groups = []
     for file_path in file_list:
@@ -247,7 +248,9 @@ class GUI_process(tk.Tk):
             self.param_frame.rowconfigure(current_row, weight=1)
             if param[0] not in ["self"]:
                 param_str = str(param[1])
-                param_name, param_value = param_str.split("=")
+                param_name_type, param_value = param_str.split("=")
+                param_name, param_type = param_name_type.split(":")
+                print(param_name, param_value)
                 label_param = tk.Label(
                     self.param_frame,
                     text=param_name.replace("_", " "),
@@ -271,7 +274,7 @@ class GUI_process(tk.Tk):
                 else:
                     entry_param = tk.Entry(self.param_frame,
                                            font=FONT_TEXT)
-                entry_param.insert(0, str(param_value.strip("'")))
+                entry_param.insert(0, str(param_value.strip(" ").strip("'")))
                 entry_param.grid(column=1, row=current_row, pady=5, padx=5, sticky="we")
                 entry_param.tag = f"{param[0]}"
                 current_row += 1
@@ -381,7 +384,7 @@ class GUI_process(tk.Tk):
         self.after(
             0,
             self.print_log,
-            "Starting process..."
+            f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
         )
         nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
@@ -392,7 +395,6 @@ class GUI_process(tk.Tk):
                 self.print_log,
                 str(exception)
             )
-            raise exception
         finally:
             nxfiles.nexus_close()
             self.progress_label.configure(

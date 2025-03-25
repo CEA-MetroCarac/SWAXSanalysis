@@ -18,7 +18,6 @@ import tkinter.messagebox
 import tracemalloc
 from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt
 from datetime import datetime
 from pathlib import Path
 
@@ -26,21 +25,16 @@ import fabio
 import h5py
 import numpy as np
 
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg,
-                                               NavigationToolbar2Tk)
-from numpy import ndarray
-
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
-from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset
+from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset, delete_data
 
 
 def data_treatment(
         data: np.ndarray,
         h5_file: h5py.File
-) -> dict[str, np.ndarray | list[Any]]:
+) -> dict[str, np.ndarray | list[any]]:
     """
     This function is used to treat data such that it can be put in
     the hf5 file.
@@ -72,13 +66,13 @@ def data_treatment(
     y_list = y_list * y_pixel_size
 
     x_grid, y_grid = np.meshgrid(x_list, y_list)
+    r_grid = np.stack((x_grid, y_grid), axis=-1)
 
-    data_r = np.stack((x_grid, y_grid), axis=-1)
     data_i = data
 
     logical_mask = np.logical_not(data_i >= 0)
 
-    output = {"R_data": data_r, "I_data": data_i, "mask": [logical_mask]}
+    output = {"R_data": r_grid, "I_data": data_i, "mask": [logical_mask]}
 
     return output
 
@@ -172,6 +166,12 @@ def generate_nexus(
         replace_h5_dataset(save_file, "ENTRY/DATA/Q", treated_data["R_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
         replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
+        del save_file["ENTRY/DATA"].attrs["I_axes"]
+        save_file["ENTRY/DATA"].attrs["I_axes"] = "Q, Q"
+        del save_file["ENTRY/DATA"].attrs["Q_indices"]
+        save_file["ENTRY/DATA"].attrs["Q_indices"] = [0, 1]
+        del save_file["ENTRY/DATA"].attrs["mask_indices"]
+        save_file["ENTRY/DATA"].attrs["mask_indices"] = [0, 1]
         # TODO : Add an if statement to check for a "do absolute" flag
         # TODO : if there is load the calibration data into the file
     return hdf5_path
@@ -213,7 +213,6 @@ def search_setting_edf(
         for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
             edf_name = Path(filepath).name
             result = tree_structure_manager(edf_name, settings_name)
-            print(result[-1] / edf_name)
             if result[-1] / edf_name not in treated_edf:
                 edf_original_path = filepath
     else:
@@ -223,16 +222,16 @@ def search_setting_edf(
                 edf_name = file
                 edf_original_path = Path(DTC_PATH / edf_name)
 
-    if edf_name is None:
+    if edf_original_path is None:
         return None, None
 
-    return edf_original_path, settings_path
+    return Path(edf_original_path), Path(settings_path)
 
 
 def tree_structure_manager(
         file: str,
         settings: str
-) -> str | tuple[Any, Any]:
+) -> str | tuple[any, any]:
     """
     Creates a structured folder hierarchy based on the EDF file name and settings file.
 
@@ -309,12 +308,8 @@ class GUI_generator(tk.Tk):
         self.columnconfigure(0, weight=1)
         self._build_control_frame()
 
-        self.plot_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
-        self.plot_panel.grid(column=1, row=0, padx=5, pady=5, sticky="news")
-        self._build_plot_frame()
-
         self.log_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
-        self.log_panel.grid(column=2, row=0, padx=5, pady=5, sticky="news")
+        self.log_panel.grid(column=1, row=0, padx=5, pady=5, sticky="news")
         self.log_panel.rowconfigure(1, weight=1)
         self._build_log_frame()
 
@@ -350,23 +345,6 @@ class GUI_generator(tk.Tk):
             font=FONT_BUTTON
         )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
-
-        plot_list_label = tk.Label(
-            self.control_panel,
-            text="Select plots to show",
-            font=FONT_TEXT,
-            padx=10, pady=10)
-        plot_list_label.grid(column=0, row=3, sticky="w", padx=5)
-
-        self.list_plot = tk.Listbox(
-            self.control_panel,
-            selectmode=tk.MULTIPLE,
-            width=80,
-            font=FONT_TEXT
-        )
-        self.list_plot.grid(padx=10, pady=10, row=4, column=0)
-        self.list_plot.configure(exportselection=False)
-        self.list_plot.bind("<<ListboxSelect>>", self.toggle_lines)
 
         self.process_list_label = tk.Label(
             self.control_panel,
@@ -408,23 +386,6 @@ class GUI_generator(tk.Tk):
         )
         close_button.grid(pady=10, padx=10, row=7, column=0)
 
-    def _build_plot_frame(self) -> None:
-        self.fig, self.ax = plt.subplots(1, 1, figsize=(5, 4), dpi=100, layout="constrained")
-        self.ax.set_xlabel("$q_r (A^{-1})$")
-        self.ax.set_ylabel("Intensity (A.U.)")
-        self.ax.grid()
-        self.ax.set_xscale("log")
-        self.ax.set_yscale("log")
-
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_panel)
-        self.canvas.draw()
-
-        toolbar = NavigationToolbar2Tk(self.canvas, self.plot_panel, pack_toolbar=False)
-        toolbar.update()
-
-        toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-
     def _build_log_frame(self) -> None:
         # Label
         title = tk.Label(
@@ -452,19 +413,6 @@ class GUI_generator(tk.Tk):
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
 
-    def toggle_lines(
-            self,
-            event
-    ) -> None:
-        selected_items = {self.list_plot.get(i) for i in self.list_plot.curselection()}
-
-        for line_name, line in self.line_dict.items():
-            line.set_visible(line_name in selected_items)
-
-        self.update_plot()
-
-        self.canvas.draw()
-
     def build_process_list(
             self,
             event=None
@@ -473,13 +421,6 @@ class GUI_generator(tk.Tk):
         for index in self.process_list.curselection():
             selected_item = self.process_list.get(index)
             self.selected_processes[selected_item] = self.process[selected_item]
-
-    def update_plot(self) -> None:
-        visible_lines = [line for line in self.line_dict.values() if line.get_visible()]
-        labels = [name for name, line in self.line_dict.items() if line.get_visible()]
-        if self.ax.get_legend():
-            self.ax.get_legend().remove()
-        self.ax.legend(visible_lines, labels)
 
     def auto_generate(self) -> None:
         """
@@ -559,12 +500,6 @@ class GUI_generator(tk.Tk):
                     f"{process_name} done."
                 )
 
-            dict_Q, dict_I = nx_file.get_raw_data("DATA_RAD_AVG")
-            for index, (name, param) in enumerate(dict_Q.items()):
-                line, = self.ax.loglog(param, dict_I[name], label=f"{name}")
-                self.line_dict[name] = line
-                self.list_plot.insert(tk.END, name)
-
             nx_file.nexus_close()
 
             del nx_file
@@ -610,7 +545,6 @@ class GUI_generator(tk.Tk):
         )
 
     def close(self) -> None:
-        plt.close("all")
         self.destroy()
 
 

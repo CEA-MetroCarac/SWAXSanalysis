@@ -84,7 +84,7 @@ def launcher_gui() -> None:
     )
 
     shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202503101406.json",
+        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202503250953.json",
         CONF_PATH
     )
 

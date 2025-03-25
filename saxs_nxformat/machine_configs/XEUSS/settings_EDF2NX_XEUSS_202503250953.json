@@ -4,7 +4,7 @@
         "value": null,
         "possible value": null,
         "EX_required": true,
-        "type": "NXentry",
+        "type": "NXgroup",
         "docstring": "Entry point of the NeXus format",
         "content": {
             "@default": {
@@ -27,6 +27,17 @@
                 "EX_required": true,
                 "type": "NX_CHAR",
                 "docstring": "Official canSAS group",
+                "content": null
+            },
+            "@NX_class": {
+                "element type": "attribute",
+                "value": "NXentry",
+                "possible value": [
+                    "NXentry"
+                ],
+                "EX_required": true,
+                "type": "NX_CHAR",
+                "docstring": "Official NeXus group",
                 "content": null
             },
             "@version": {
@@ -53,7 +64,7 @@
             },
             "/title": {
                 "element type": "dataset",
-                "value": "",
+                "value": "title",
                 "possible value": [],
                 "type": "NX_CHAR",
                 "EX_required": true,
@@ -62,7 +73,7 @@
             },
             "/run": {
                 "element type": "dataset",
-                "value": "",
+                "value": "Date",
                 "possible value": [],
                 "type": "NX_CHAR",
                 "EX_required": true,
@@ -83,9 +94,9 @@
                 "element type": "group",
                 "value": null,
                 "possible value": [],
-                "type": "NXdata",
+                "type": "NXgroup",
                 "EX_required": true,
-                "docstring": "Group containing the data for I and Q,\n there can be multiple but they have to have different names",
+                "docstring": "Group containing the data for I and Q,\nthere can be multiple but they have to have different names",
                 "content": {
                     "@canSAS_class": {
                         "element type": "attribute",
@@ -96,6 +107,17 @@
                         "EX_required": true,
                         "type": "NX_CHAR",
                         "docstring": "official canSAS group",
+                        "content": null
+                    },
+                    "@NX_class": {
+                        "element type": "attribute",
+                        "value": "NXdata",
+                        "possible value": [
+                            "NXdata"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official NeXus group",
                         "content": null
                     },
                     "@signal": {
@@ -451,7 +473,7 @@
                 "element type": "group",
                 "value": null,
                 "possible value": [],
-                "type": "NXinstrument",
+                "type": "NXgroup",
                 "EX_required": true,
                 "docstring": "Group containing relevant information concerning the instrument",
                 "content": {
@@ -466,11 +488,22 @@
                         "docstring": "Official canSAS group",
                         "content": null
                     },
+                    "@NX_class": {
+                        "element type": "attribute",
+                        "value": "NXinstrument",
+                        "possible value": [
+                            "NXinstrument"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official NeXus group",
+                        "content": null
+                    },
                     "/APERTURE": {
                         "element type": "group",
                         "value": null,
                         "possible value": [],
-                        "type": "NXaperture",
+                        "type": "NXgroup",
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the aperture of instrument",
                         "content": {
@@ -483,6 +516,17 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Official canSAS group",
+                                "content": null
+                            },
+                            "@NX_class": {
+                                "element type": "attribute",
+                                "value": "NXaperture",
+                                "possible value": [
+                                    "NXaperture"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official NeXus group",
                                 "content": null
                             },
                             "/shape": {
@@ -564,7 +608,7 @@
                         "element type": "group",
                         "value": null,
                         "possible value": [],
-                        "type": "NXcollimator",
+                        "type": "NXgroup",
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the collimator of instrument",
                         "content": {
@@ -577,6 +621,17 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Official canSAS group",
+                                "content": null
+                            },
+                            "@NX_class": {
+                                "element type": "attribute",
+                                "value": "NXcollimator",
+                                "possible value": [
+                                    "NXcollimator"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official NeXus group",
                                 "content": null
                             },
                             "/length": {
@@ -645,7 +700,7 @@
                         "element type": "group",
                         "value": null,
                         "possible value": [],
-                        "type": "NXdetector",
+                        "type": "NXgroup",
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the detector of instrument",
                         "content": {
@@ -658,6 +713,17 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Official canSAS group",
+                                "content": null
+                            },
+                            "@NX_class": {
+                                "element type": "attribute",
+                                "value": "NXdetector",
+                                "possible value": [
+                                    "NXdetector"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official NeXus group",
                                 "content": null
                             },
                             "/name": {
@@ -1002,7 +1068,7 @@
                         "element type": "group",
                         "value": null,
                         "possible value": [],
-                        "type": "NXsource",
+                        "type": "NXgroup",
                         "EX_required": false,
                         "docstring": "Group containing relevant information concerning the source used.",
                         "content": {
@@ -1015,6 +1081,17 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Official canSAS group",
+                                "content": null
+                            },
+                            "@NX_class": {
+                                "element type": "attribute",
+                                "value": "NXsource",
+                                "possible value": [
+                                    "NXsource"
+                                ],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "Official NeXus group",
                                 "content": null
                             },
                             "/type": {
@@ -1060,7 +1137,7 @@
                             },
                             "/beam_shape": {
                                 "element type": "attribute",
-                                "value": "Circular",
+                                "value": "ellipsoid",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
@@ -1189,7 +1266,7 @@
                             },
                             "/beam_size_x": {
                                 "element type": "dataset",
-                                "value": "30",
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1219,7 +1296,7 @@
                             },
                             "/beam_size_y": {
                                 "element type": "dataset",
-                                "value": "30",
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1255,7 +1332,7 @@
                 "element type": "group",
                 "value": null,
                 "possible value": [],
-                "type": "NXsample",
+                "type": "NXgroup",
                 "EX_required": true,
                 "docstring": "Group containing information concerning the Sample used",
                 "content": {
@@ -1268,6 +1345,17 @@
                         "EX_required": true,
                         "type": "NX_CHAR",
                         "docstring": "official canSAS group",
+                        "content": null
+                    },
+                    "@NX_class": {
+                        "element type": "attribute",
+                        "value": "NXsample",
+                        "possible value": [
+                            "NXsample"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official NeXus group",
                         "content": null
                     },
                     "name": {
@@ -1499,7 +1587,7 @@
                 "element type": "group",
                 "value": null,
                 "possible value": [],
-                "type": "NXprocess",
+                "type": "NXgroup",
                 "EX_required": true,
                 "docstring": "Group containing information concerning the Sample used",
                 "content": {
@@ -1512,6 +1600,17 @@
                         "EX_required": true,
                         "type": "NX_CHAR",
                         "docstring": "official canSAS group",
+                        "content": null
+                    },
+                    "@NX_class": {
+                        "element type": "attribute",
+                        "value": "NXprocess",
+                        "possible value": [
+                            "NXprocess"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official NeXus group",
                         "content": null
                     },
                     "/name": {
@@ -1549,7 +1648,7 @@
                 "element type": "group",
                 "value": null,
                 "possible value": [],
-                "type": "NXcollection",
+                "type": "NXgroup",
                 "EX_required": false,
                 "docstring": "Free form description of anything not covered by other elements.",
                 "content": {
@@ -1564,9 +1663,20 @@
                         "docstring": "official canSAS group",
                         "content": null
                     },
+                    "@NX_class": {
+                        "element type": "attribute",
+                        "value": "NXcollection",
+                        "possible value": [
+                            "NXcollection"
+                        ],
+                        "EX_required": true,
+                        "type": "NX_CHAR",
+                        "docstring": "Official NeXus group",
+                        "content": null
+                    },
                     "/experiment_type": {
                         "element type": "dataset",
-                        "value": "",
+                        "value": "exp_type",
                         "possible value": [
                             "SAXS",
                             "WAXS",
@@ -1594,7 +1704,7 @@
                         "element type": "dataset",
                         "value": "ExposureTime",
                         "possible value": [],
-                        "EX_required": true,
+                        "EX_required": false,
                         "type": "NX_NUMBER",
                         "docstring": "Exposition time of the sample",
                         "content": {
@@ -1614,6 +1724,42 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Unit of the exposition time (will be converted to s)"
+                            }
+                        }
+                    },
+                    "/username": {
+                        "element type": "dataset",
+                        "value": "Username",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_CHAR",
+                        "docstring": "Name of the person who setup the experiment.",
+                        "content": null
+                    },
+                    "/sample_fixture": {
+                        "element type": "dataset",
+                        "value": "SampleEnvPN",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_CHAR",
+                        "docstring": "Type of fixture used to mount the sample.",
+                        "content": null
+                    },
+                    "/do_absolute_intensity": {
+                        "element type": "dataset",
+                        "value": "Absolute_measurment",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_BOOLEAN",
+                        "docstring": "Flag determining whether this file will be processed\nto get the absolute intensity or not.\nThis value should be 1 for True and 0 for False",
+                        "content": {
+                            "@dbpath": {
+                                "element type": "attribute",
+                                "value": "",
+                                "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
                             }
                         }
                     }

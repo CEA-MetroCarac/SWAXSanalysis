@@ -15,7 +15,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
-from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value
+from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value, delete_data, mobile_mean
 from smi_analysis import SMI_beamline
 
 
@@ -226,31 +226,17 @@ def save_data(
                        parameter, f"{dataset_path}/{parameter_symbol}")
     replace_h5_dataset(nx_file, f"{dataset_path}/I",
                        dataset)
-
     replace_h5_dataset(nx_file, f"{dataset_path}/mask",
                        mask)
 
-
-def delete_data(
-        nx_file: h5py.File,
-        group_name: str
-) -> None:
-    """
-    Method used to properly delete data from the h5 file
-
-    Parameters
-    ----------
-    nx_file :
-        file object
-
-    group_name :
-        Name of the data group to delete
-    """
-    group_name = group_name.upper()
-    if group_name in nx_file["/ENTRY"]:
-        del nx_file[f"/ENTRY/{group_name}"]
-    else:
-        print("This group does not exists")
+    dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
+    if dim == 1:
+        del nx_file[f"{dataset_path}"].attrs["I_axes"]
+        nx_file[f"{dataset_path}"].attrs["I_axes"] = "Q"
+        del nx_file[f"{dataset_path}"].attrs["Q_indices"]
+        nx_file[f"{dataset_path}"].attrs["Q_indices"] = [0]
+        del nx_file[f"{dataset_path}"].attrs["mask_indices"]
+        nx_file[f"{dataset_path}"].attrs["mask_indices"] = [0]
 
 
 class NexusFile:
@@ -1261,13 +1247,13 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-    def process_prepare_for_fitting(
+    def process_concatenation(
             self,
             group_names: None | list[str] = None
     ) -> None:
         for index, nxfile in enumerate(self.nx_files):
-            q_fit_list = []
-            i_fit_list = []
+            q_list = []
+            i_list = []
             for group in group_names:
                 if f"ENTRY/{group}/I" not in nxfile:
                     raise Exception(f"There is no I data in {group} of file {self.file_paths[index]}")
@@ -1277,7 +1263,7 @@ class NexusFile:
                 if len(np.shape(extracted_value_data)) != 1:
                     raise Exception(f"I data in {group} of file {self.file_paths[index]} is not 1D")
 
-                i_fit_list = i_fit_list + list(extracted_value_data)
+                i_list = i_list + list(extracted_value_data)
 
                 # We extract the parameter
                 if f"ENTRY/{group}/Q" not in nxfile:
@@ -1288,18 +1274,15 @@ class NexusFile:
                 if len(np.shape(extracted_param_data)) != 1:
                     raise Exception(f"Q data in {group} of file {self.file_paths[index]} is not 1D")
 
-                q_fit_list = q_fit_list + list(extracted_param_data)
+                q_list = q_list + list(extracted_param_data)
 
-            q_list = q_fit_list
-            i_list = i_fit_list
             mask = self.list_smi_data[index].masks
-            save_data(nxfile, "Q", q_list, "DATA_FITSPY", i_list, mask)
+            save_data(nxfile, "Q", q_list, "DATA_CONCAT", i_list, mask)
 
             create_process(self.nx_files[index],
-                           f"/ENTRY/PROCESS_FITSPY",
-                           "Fitting prep",
-                           "Concatenates all the intensity and scattering vector selected and saves\n"
-                           "them under a specific name for fitspy\n"
+                           f"/ENTRY/PROCESS_CONCAT",
+                           "Data concatenation",
+                           "Concatenates all the intensity and scattering vector selected"
                            )
 
     def process_delete_data(
