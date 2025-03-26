@@ -708,6 +708,13 @@ class NexusFile:
 
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
+
+            true_count = np.sum(smi_data.masks)
+            total_count = np.size(smi_data.masks)
+
+            percentage_true = (true_count / total_count) * 100
+            print(f"There are {percentage_true:.2f}% of all values masked")
+
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:

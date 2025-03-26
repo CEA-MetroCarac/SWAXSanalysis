@@ -70,7 +70,7 @@ def data_treatment(
 
     data_i = data
 
-    logical_mask = np.logical_not(data_i >= 0)
+    logical_mask = np.logical_not(data_i > -1)
 
     output = {"R_data": r_grid, "I_data": data_i, "mask": [logical_mask]}
 
@@ -472,35 +472,51 @@ class GUI_generator(tk.Tk):
                 f"Converting : {file_path.name}, please wait"
             )
 
-            new_file_path = generate_nexus(file_path, result[0], settings_path)
-            shutil.copy(file_path, result[1] / file_path.name)
+            try:
+                new_file_path = generate_nexus(file_path, result[0], settings_path)
+            except Exception as exception:
+                self.after(
+                    0,
+                    self.print_log,
+                    str(exception)
+                )
+                continue
+            finally:
+                shutil.copy(file_path, result[1] / file_path.name)
 
             nx_file = NexusFile([new_file_path])
-            self.after(
-                0,
-                self.print_log,
-                f"Doing q space..."
-            )
-            nx_file.process_q_space(save=True)
-            self.after(
-                0,
-                self.print_log,
-                f"q space done."
-            )
-            for process_name, process in self.selected_processes.items():
+            try:
                 self.after(
                     0,
                     self.print_log,
-                    f"Doing {process_name}..."
+                    f"Doing q space..."
                 )
-                process(nx_file, save=True)
+                nx_file.process_q_space(save=True)
                 self.after(
                     0,
                     self.print_log,
-                    f"{process_name} done."
+                    f"q space done."
                 )
-
-            nx_file.nexus_close()
+                for process_name, process in self.selected_processes.items():
+                    self.after(
+                        0,
+                        self.print_log,
+                        f"Doing {process_name}..."
+                    )
+                    process(nx_file, save=True)
+                    self.after(
+                        0,
+                        self.print_log,
+                        f"{process_name} done."
+                    )
+            except Exception as exception:
+                self.after(
+                    0,
+                    self.print_log,
+                    str(exception)
+                )
+            finally:
+                nx_file.nexus_close()
 
             del nx_file
             gc.collect()
