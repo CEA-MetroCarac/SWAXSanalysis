@@ -29,7 +29,7 @@ import numpy as np
 from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
-from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset, delete_data
+from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset, delete_data, save_data
 
 
 def data_treatment(
@@ -68,6 +68,8 @@ def data_treatment(
 
     x_grid, y_grid = np.meshgrid(x_list, y_list)
     r_grid = np.stack((x_grid, y_grid), axis=-1)
+
+    r_grid = np.moveaxis(r_grid, (0, 1, 2), (1, 2, 0))
 
     data_i = np.array(data, dtype=np.float32)
 
@@ -169,61 +171,19 @@ def generate_nexus(
 
     # We save the data
     with h5py.File(hdf5_path, "w") as save_file:
+
         # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
 
-        replace_h5_dataset(
+        save_data(
             save_file,
-            "ENTRY/DATA/Q",
+            "Q",
             treated_data["R_data"],
-            treated_data["R_data"].dtype
-        )
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/Qdev",
-            np.zeros(np.shape(treated_data["R_data"])),
-            np.zeros(np.shape(treated_data["R_data"])).dtype
-        )
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/dQw",
-            np.zeros(np.shape(treated_data["R_data"])),
-            np.zeros(np.shape(treated_data["R_data"])).dtype
-        )
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/dQl",
-            np.zeros(np.shape(treated_data["R_data"])),
-            np.zeros(np.shape(treated_data["R_data"])).dtype
-        )
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/Qmean",
-            np.array([0]),
-            np.array([0]).dtype
-        )
-
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/I",
+            "DATA",
             treated_data["I_data"],
-            treated_data["I_data"].dtype
-        )
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/Idev",
-            np.zeros(np.shape(treated_data["I_data"])),
-            np.zeros(np.shape(treated_data["I_data"])).dtype
-        )
-
-        # Concerning the mask
-        replace_h5_dataset(
-            save_file,
-            "ENTRY/DATA/mask",
             treated_data["mask"],
-            treated_data["mask"].dtype
         )
 
         del save_file["ENTRY/DATA"].attrs["I_axes"]

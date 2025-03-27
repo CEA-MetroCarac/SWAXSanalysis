@@ -15,7 +15,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
-from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value, delete_data, mobile_mean
+from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value, delete_data, mobile_mean, save_data
 from smi_analysis import SMI_beamline
 
 
@@ -178,116 +178,6 @@ def extract_smi_param(
     dict_parameters["distance"] = sample_detector_distance * 1e3
 
     return dict_parameters
-
-
-def save_data(
-        nx_file: h5py.File,
-        parameter_symbol: str,
-        parameter: np.ndarray,
-        dataset_name: str,
-        dataset: np.ndarray,
-        mask: np.ndarray
-) -> None:
-    """
-    Method used to save a dataset in the h5 file
-
-    Parameters
-    ----------
-    mask :
-        mask used for data treatment
-
-    nx_file :
-        file object
-
-    parameter_symbol :
-        Symbol of the parameter. will be the name of its dataset
-
-    parameter :
-        Contains the parameter data
-
-    dataset_name :
-        Name of the group containing all the data
-
-    dataset :
-        Contains the data
-    """
-    # We create the dataset h5path and if it exists we delete what was previously there
-    dataset_name = dataset_name.upper()
-    dataset_path = f"/ENTRY/{dataset_name}"
-    if dataset_path in nx_file:
-        del nx_file[dataset_path]
-
-    # we copy the raw data and set the copied data to the name selected
-    # That way we also copy the attributes
-    nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], dataset_name)
-
-    # we replace the raw data with the new data
-    # TODO : propagate uncertainties
-    # Concerning Q
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Q",
-        parameter,
-        parameter.dtype,
-        f"{dataset_path}/{parameter_symbol}"
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Qdev",
-        np.zeros(np.shape(parameter)),
-        np.zeros(np.shape(parameter)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQl",
-        np.zeros(np.shape(parameter)),
-        np.zeros(np.shape(parameter)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQw",
-        np.zeros(np.shape(parameter)),
-        np.zeros(np.shape(parameter)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Qmean",
-        np.array([0]),
-        np.array([0]).dtype
-    )
-    # Concerning I
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/I",
-        dataset,
-        dataset.dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Idev",
-        np.zeros(np.shape(dataset)),
-        np.zeros(np.shape(dataset)).dtype
-    )
-
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/mask",
-        mask,
-        mask.dtype
-    )
-
-    dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
-    if dim == 1:
-        del nx_file[f"{dataset_path}/mask"]
-
-        del nx_file[f"{dataset_path}"].attrs["I_axes"]
-        nx_file[f"{dataset_path}"].attrs["I_axes"] = "Q"
-
-        del nx_file[f"{dataset_path}"].attrs["Q_indices"]
-        nx_file[f"{dataset_path}"].attrs["Q_indices"] = [0]
-
-        del nx_file[f"{dataset_path}"].attrs["mask_indices"]
-        nx_file[f"{dataset_path}"].attrs["mask_indices"] = [0]
 
 
 class NexusFile:
@@ -552,10 +442,13 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
-            qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[1])
-            qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[0])
+            qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[2])
+            qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[1])
             qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
+
             mesh_q = np.stack((qx_grid, qy_grid), axis=-1)
+
+            mesh_q = np.moveaxis(mesh_q, (0, 1, 2), (1, 2, 0))
 
             if display:
                 self._display_data(
@@ -675,7 +568,10 @@ class NexusFile:
             q_list = smi_data.q_cake
             chi_list = smi_data.chi_cake
             q_grid, chi_grid = np.meshgrid(q_list, chi_list)
+
             mesh_cake = np.stack((q_grid, chi_grid), axis=-1)
+
+            mesh_cake = np.moveaxis(mesh_cake, (0, 1, 2), (1, 2, 0))
 
             if display:
                 self._display_data(
@@ -1522,8 +1418,8 @@ class NexusFile:
             current_ax.set_title(title)
 
             cplot = current_ax.pcolormesh(
-                extracted_param_data[..., 0],
-                extracted_param_data[..., 1],
+                extracted_param_data[0, ...],
+                extracted_param_data[1, ...],
                 extracted_value_data,
                 vmin=0,
                 vmax=np.percentile(
