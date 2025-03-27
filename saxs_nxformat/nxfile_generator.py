@@ -2,6 +2,7 @@
 This module is meant to be executed by the user and automatically
 treats any .edf file found in the parent folder according to the
 settings file also present in that parent folder
+TODO : force rad_avg just like q_space
 """
 import gc
 import json
@@ -56,8 +57,8 @@ def data_treatment(
     beam_center_y = h5_file["/ENTRY/INSTRUMENT/DETECTOR/beam_center_y"][()]
 
     dim = np.shape(data)
-    x_list = np.linspace(0 - beam_center_x, dim[1] - beam_center_x, dim[1])
-    y_list = np.linspace(0 - beam_center_y, dim[0] - beam_center_y, dim[0])
+    x_list = np.linspace(0 - beam_center_x, dim[1] - beam_center_x, dim[1], dtype=np.float32)
+    y_list = np.linspace(0 - beam_center_y, dim[0] - beam_center_y, dim[0], dtype=np.float32)
 
     x_pixel_size = h5_file["/ENTRY/INSTRUMENT/DETECTOR/x_pixel_size"][()]
     y_pixel_size = h5_file["/ENTRY/INSTRUMENT/DETECTOR/y_pixel_size"][()]
@@ -68,9 +69,9 @@ def data_treatment(
     x_grid, y_grid = np.meshgrid(x_list, y_list)
     r_grid = np.stack((x_grid, y_grid), axis=-1)
 
-    data_i = data
+    data_i = np.array(data, dtype=np.float32)
 
-    logical_mask = np.logical_not(data_i > -1)
+    logical_mask = np.logical_not(data_i > -1).astype(np.uint8)
 
     output = {"R_data": r_grid, "I_data": data_i, "mask": [logical_mask]}
 
@@ -138,13 +139,9 @@ def generate_nexus(
                     attribute_value = edf_header.get(value["value"], value["value"])
                 else:
                     attribute_value = value["value"][1]
-                attribute_value = string_2_value(str(attribute_value), value["type"])
+                if clean_key != "version":
+                    attribute_value = string_2_value(str(attribute_value), value["type"])
                 parent_element.attrs[clean_key] = attribute_value
-
-            if current_element:
-                current_element.attrs["EX_required"] = value["EX_required"]
-                current_element.attrs["type"] = value["type"]
-                current_element.attrs["docstring"] = value["docstring"]
 
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
@@ -164,8 +161,18 @@ def generate_nexus(
 
         treated_data = data_treatment(edf_data, save_file)
         replace_h5_dataset(save_file, "ENTRY/DATA/Q", treated_data["R_data"])
+        # TODO : put real uncertainties here
+        replace_h5_dataset(save_file, "ENTRY/DATA/Qdev", np.zeros(np.shape(treated_data["R_data"])))
+        replace_h5_dataset(save_file, "ENTRY/DATA/dQw", np.zeros(np.shape(treated_data["R_data"])))
+        replace_h5_dataset(save_file, "ENTRY/DATA/dQl", np.zeros(np.shape(treated_data["R_data"])))
+        replace_h5_dataset(save_file, "ENTRY/DATA/Qmean", np.array([0]))
+
         replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
+        # TODO : put real uncertainties here
+        replace_h5_dataset(save_file, "ENTRY/DATA/Idev", np.zeros(np.shape(treated_data["I_data"])))
+
         replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
+
         del save_file["ENTRY/DATA"].attrs["I_axes"]
         save_file["ENTRY/DATA"].attrs["I_axes"] = "Q, Q"
         del save_file["ENTRY/DATA"].attrs["Q_indices"]
@@ -480,7 +487,7 @@ class GUI_generator(tk.Tk):
                     self.print_log,
                     str(exception)
                 )
-                continue
+                raise exception
             finally:
                 shutil.copy(file_path, result[1] / file_path.name)
 
@@ -515,6 +522,7 @@ class GUI_generator(tk.Tk):
                     self.print_log,
                     str(exception)
                 )
+                raise exception
             finally:
                 nx_file.nexus_close()
 
@@ -565,5 +573,12 @@ class GUI_generator(tk.Tk):
 
 
 if __name__ == "__main__":
+    import cProfile, pstats
+
+    profiler = cProfile.Profile()
+    profiler.enable()
     app = GUI_generator()
     app.mainloop()
+    profiler.disable()
+    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats.print_stats()

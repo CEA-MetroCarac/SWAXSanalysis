@@ -9,9 +9,9 @@
         "content": {
             "@default": {
                 "element type": "attribute",
-                "value": "DATA",
+                "value": "DATA_RAD_AVG",
                 "possible value": [
-                    "DATA"
+                    "DATA_RAD_AVG"
                 ],
                 "EX_required": true,
                 "type": "NX_CHAR",
@@ -222,9 +222,7 @@
                             "@resolutions": {
                                 "element type": "attribute",
                                 "value": "dQl, dQw",
-                                "possible value": [
-                                    "dQl, dQw"
-                                ],
+                                "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
                                 "docstring": "Names(s) of the resolutions dataset.\nString with this format : \"name1, name2\"",

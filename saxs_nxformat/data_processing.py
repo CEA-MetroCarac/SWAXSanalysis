@@ -4,6 +4,7 @@ This module is meant to help the user process their data
 import inspect
 import re
 from typing import List, Any
+import cProfile, pstats
 
 import h5py
 import pathlib
@@ -386,6 +387,10 @@ class GUI_process(tk.Tk):
             self.print_log,
             f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
         )
+        #############################
+        profiler = cProfile.Profile()
+        profiler.enable()
+        #############################
         nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
             process(nxfiles, **param_dict)
@@ -406,7 +411,11 @@ class GUI_process(tk.Tk):
             self.print_log,
             "Process done"
         )
-
+        ####################################################
+        profiler.disable()
+        stats = pstats.Stats(profiler).sort_stats('cumtime')
+        stats.print_stats()
+        ####################################################
 
 if __name__ == "__main__":
     app = GUI_process()

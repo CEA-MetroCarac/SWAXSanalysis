@@ -1,5 +1,11 @@
 """
 TODO : Add global variable for colormap, .ico path and other parameters, font, fontsize...
+TODO : Faire en sorte d'exploiter le format NXcanSAS. Reconnaitre les groupe via leurs classes...
+TODO : voir pourquoi ça marche pas avec SASview
+TODO : regarder le code de kyllian pour la fusion
+TODO : faire des unité tests
+
+TODO: dans la structure NXcanSAS choixir entre Qdev ou dQw/dQl
 """
 import os
 import sys

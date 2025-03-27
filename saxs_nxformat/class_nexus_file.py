@@ -221,13 +221,55 @@ def save_data(
     # That way we also copy the attributes
     nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], dataset_name)
 
+    print("shape para", np.shape(parameter))
+    print("shape data", np.shape(dataset))
+
     # we replace the raw data with the new data
-    replace_h5_dataset(nx_file, f"{dataset_path}/Q",
-                       parameter, f"{dataset_path}/{parameter_symbol}")
-    replace_h5_dataset(nx_file, f"{dataset_path}/I",
-                       dataset)
-    replace_h5_dataset(nx_file, f"{dataset_path}/mask",
-                       mask)
+    # TODO : propagate uncertainties
+    # Concerning Q
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/Q",
+        parameter.astype(np.float32),
+        f"{dataset_path}/{parameter_symbol}"
+    )
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/Qdev",
+        np.zeros(np.shape(parameter)).astype(np.float32)
+    )
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/dQl",
+        np.zeros(np.shape(parameter)).astype(np.float32)
+    )
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/dQw",
+        np.zeros(np.shape(parameter)).astype(np.float32)
+    )
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/Qmean",
+        np.array([0]).astype(np.float32)
+    )
+    # Concerning I
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/I",
+        dataset.astype(np.float32)
+    )
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/Idev",
+        np.zeros(np.shape(dataset)).astype(np.float32)
+    )
+
+    replace_h5_dataset(
+        nx_file,
+        f"{dataset_path}/mask",
+        mask.astype(np.uint8)
+    )
 
     dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
     if dim == 1:
@@ -494,7 +536,10 @@ class NexusFile:
         """
         self.init_plot = True
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
+            smi_data.masks = extract_from_h5(
+                self.nx_files[index],
+                f"/ENTRY/{self.input_data_group}/mask"
+            ).astype(bool)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
@@ -707,13 +752,10 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
-
-            true_count = np.sum(smi_data.masks)
-            total_count = np.size(smi_data.masks)
-
-            percentage_true = (true_count / total_count) * 100
-            print(f"There are {percentage_true:.2f}% of all values masked")
+            smi_data.masks = extract_from_h5(
+                self.nx_files[index],
+                f"/ENTRY/{self.input_data_group}/mask"
+            ).astype(bool)
 
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
@@ -836,7 +878,10 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
+            smi_data.masks = extract_from_h5(
+                self.nx_files[index],
+                f"/ENTRY/{self.input_data_group}/mask"
+            ).astype(bool)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
@@ -950,7 +995,10 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
+            smi_data.masks = extract_from_h5(
+                self.nx_files[index],
+                f"/ENTRY/{self.input_data_group}/mask"
+            ).astype(bool)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -1047,7 +1095,10 @@ class NexusFile:
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.masks = extract_from_h5(self.nx_files[index], f"/ENTRY/{self.input_data_group}/mask")
+            smi_data.masks = extract_from_h5(
+                self.nx_files[index],
+                f"/ENTRY/{self.input_data_group}/mask"
+            ).astype(bool)
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -1490,7 +1541,6 @@ class NexusFile:
 
 
 if __name__ == "__main__":
-    import cProfile, pstats
 
     profiler = cProfile.Profile()
     profiler.enable()
@@ -1509,5 +1559,5 @@ if __name__ == "__main__":
     nx_files.nexus_close()
 
     profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')
+    stats = pstats.Stats(profiler).sort_stats('tottime')
     stats.print_stats()

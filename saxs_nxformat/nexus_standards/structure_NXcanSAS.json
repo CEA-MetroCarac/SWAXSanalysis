@@ -11,7 +11,7 @@
                 "element type": "attribute",
                 "value": null,
                 "possible value": [
-                    "DATA"
+                    "DATA_RAD_AVG"
                 ],
                 "EX_required": true,
                 "type": "NX_CHAR",
