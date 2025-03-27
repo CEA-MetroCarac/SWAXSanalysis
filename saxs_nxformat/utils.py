@@ -152,6 +152,7 @@ def replace_h5_dataset(
         hdf5_file: h5py.File,
         dataset_h5path: str | pathlib.Path,
         new_dataset: str | pathlib.Path,
+        new_dataset_type,
         new_dataset_h5path: None | str | pathlib.Path = None,
 ) -> None:
     """
@@ -169,8 +170,11 @@ def replace_h5_dataset(
     new_dataset :
         new value for the dataset
 
+    new_dataset_type :
+        type of the new dataset
+
     new_dataset_h5path :
-        default is None. Change to change the name of the dataset as ou replace it
+        default is None. Change to change the name of the dataset as you replace it
     """
     # We get the old dataset and it's attributes and then delete it
     old_dataset = hdf5_file[dataset_h5path]
@@ -179,15 +183,21 @@ def replace_h5_dataset(
 
     # We create the new dataset with the new data provided
     if new_dataset_h5path:
-        new_dataset = hdf5_file.create_dataset(new_dataset_h5path,
-                                               data=new_dataset,
-                                               compression="gzip",
-                                               compression_opts=9)
+        new_dataset = hdf5_file.create_dataset(
+            new_dataset_h5path,
+            data=new_dataset,
+            dtype=new_dataset_type,
+            compression="gzip",
+            compression_opts=9
+        )
     else:
-        new_dataset = hdf5_file.create_dataset(dataset_h5path,
-                                               data=new_dataset,
-                                               compression="gzip",
-                                               compression_opts=9)
+        new_dataset = hdf5_file.create_dataset(
+            dataset_h5path,
+            data=new_dataset,
+            dtype=new_dataset_type,
+            compression="gzip",
+            compression_opts=9
+        )
 
     # We add the attributes to the new dataset so that we do not lose them
     for attr_name, attr_value in attributes.items():

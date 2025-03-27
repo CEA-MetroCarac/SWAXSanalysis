@@ -71,9 +71,9 @@ def data_treatment(
 
     data_i = np.array(data, dtype=np.float32)
 
-    logical_mask = np.logical_not(data_i > -1).astype(np.uint8)
+    logical_mask = np.logical_not(data_i > -1)
 
-    output = {"R_data": r_grid, "I_data": data_i, "mask": [logical_mask]}
+    output = {"R_data": np.array(r_grid), "I_data": np.array(data_i), "mask": np.array([logical_mask])}
 
     return output
 
@@ -105,6 +105,8 @@ def generate_nexus(
     edf_data = edf_file.data
 
     def fill_hdf5(file, dict_content, parent_element=None):
+        utf8_dtype = h5py.string_dtype(encoding="utf-8")
+
         for key, value in dict_content.items():
             clean_key = key.strip("/").strip("@")
 
@@ -129,8 +131,18 @@ def generate_nexus(
                         dataset_value = convert(dataset_value,
                                                 unit_attribute["value"][0],
                                                 unit_attribute["value"][1])
-                current_element = parent_element.create_dataset(clean_key,
-                                                                data=dataset_value)
+                if isinstance(dataset_value, str):
+                    dtype = utf8_dtype
+                    current_element = parent_element.create_dataset(
+                        clean_key,
+                        dtype=dtype,
+                        data=dataset_value
+                    )
+                else:
+                    current_element = parent_element.create_dataset(
+                        clean_key,
+                        data=dataset_value
+                    )
                 if content:
                     fill_hdf5(file, content, current_element)
 
@@ -155,26 +167,67 @@ def generate_nexus(
     split_edf_name = edf_name.removesuffix(".edf").split("_")
     hdf5_path = os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5")
 
-    # We save
+    # We save the data
     with h5py.File(hdf5_path, "w") as save_file:
+        # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
-        replace_h5_dataset(save_file, "ENTRY/DATA/Q", treated_data["R_data"])
-        # TODO : put real uncertainties here
-        replace_h5_dataset(save_file, "ENTRY/DATA/Qdev", np.zeros(np.shape(treated_data["R_data"])))
-        replace_h5_dataset(save_file, "ENTRY/DATA/dQw", np.zeros(np.shape(treated_data["R_data"])))
-        replace_h5_dataset(save_file, "ENTRY/DATA/dQl", np.zeros(np.shape(treated_data["R_data"])))
-        replace_h5_dataset(save_file, "ENTRY/DATA/Qmean", np.array([0]))
 
-        replace_h5_dataset(save_file, "ENTRY/DATA/I", treated_data["I_data"])
-        # TODO : put real uncertainties here
-        replace_h5_dataset(save_file, "ENTRY/DATA/Idev", np.zeros(np.shape(treated_data["I_data"])))
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/Q",
+            treated_data["R_data"],
+            treated_data["R_data"].dtype
+        )
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/Qdev",
+            np.zeros(np.shape(treated_data["R_data"])),
+            np.zeros(np.shape(treated_data["R_data"])).dtype
+        )
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/dQw",
+            np.zeros(np.shape(treated_data["R_data"])),
+            np.zeros(np.shape(treated_data["R_data"])).dtype
+        )
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/dQl",
+            np.zeros(np.shape(treated_data["R_data"])),
+            np.zeros(np.shape(treated_data["R_data"])).dtype
+        )
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/Qmean",
+            np.array([0]),
+            np.array([0]).dtype
+        )
 
-        replace_h5_dataset(save_file, "ENTRY/DATA/mask", treated_data["mask"])
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/I",
+            treated_data["I_data"],
+            treated_data["I_data"].dtype
+        )
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/Idev",
+            np.zeros(np.shape(treated_data["I_data"])),
+            np.zeros(np.shape(treated_data["I_data"])).dtype
+        )
+
+        # Concerning the mask
+        replace_h5_dataset(
+            save_file,
+            "ENTRY/DATA/mask",
+            treated_data["mask"],
+            treated_data["mask"].dtype
+        )
 
         del save_file["ENTRY/DATA"].attrs["I_axes"]
-        save_file["ENTRY/DATA"].attrs["I_axes"] = "Q, Q"
+        save_file["ENTRY/DATA"].attrs["I_axes"] = ["Q", "Q"]
         del save_file["ENTRY/DATA"].attrs["Q_indices"]
         save_file["ENTRY/DATA"].attrs["Q_indices"] = [0, 1]
         del save_file["ENTRY/DATA"].attrs["mask_indices"]

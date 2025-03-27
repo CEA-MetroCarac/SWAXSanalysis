@@ -221,62 +221,71 @@ def save_data(
     # That way we also copy the attributes
     nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], dataset_name)
 
-    print("shape para", np.shape(parameter))
-    print("shape data", np.shape(dataset))
-
     # we replace the raw data with the new data
     # TODO : propagate uncertainties
     # Concerning Q
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Q",
-        parameter.astype(np.float32),
+        parameter,
+        parameter.dtype,
         f"{dataset_path}/{parameter_symbol}"
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Qdev",
-        np.zeros(np.shape(parameter)).astype(np.float32)
+        np.zeros(np.shape(parameter)),
+        np.zeros(np.shape(parameter)).dtype
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/dQl",
-        np.zeros(np.shape(parameter)).astype(np.float32)
+        np.zeros(np.shape(parameter)),
+        np.zeros(np.shape(parameter)).dtype
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/dQw",
-        np.zeros(np.shape(parameter)).astype(np.float32)
+        np.zeros(np.shape(parameter)),
+        np.zeros(np.shape(parameter)).dtype
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Qmean",
-        np.array([0]).astype(np.float32)
+        np.array([0]),
+        np.array([0]).dtype
     )
     # Concerning I
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/I",
-        dataset.astype(np.float32)
+        dataset,
+        dataset.dtype
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Idev",
-        np.zeros(np.shape(dataset)).astype(np.float32)
+        np.zeros(np.shape(dataset)),
+        np.zeros(np.shape(dataset)).dtype
     )
 
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/mask",
-        mask.astype(np.uint8)
+        mask,
+        mask.dtype
     )
 
     dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
     if dim == 1:
+        del nx_file[f"{dataset_path}/mask"]
+
         del nx_file[f"{dataset_path}"].attrs["I_axes"]
         nx_file[f"{dataset_path}"].attrs["I_axes"] = "Q"
+
         del nx_file[f"{dataset_path}"].attrs["Q_indices"]
         nx_file[f"{dataset_path}"].attrs["Q_indices"] = [0]
+
         del nx_file[f"{dataset_path}"].attrs["mask_indices"]
         nx_file[f"{dataset_path}"].attrs["mask_indices"] = [0]
 
@@ -539,7 +548,7 @@ class NexusFile:
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
-            ).astype(bool)
+            )
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
@@ -755,7 +764,7 @@ class NexusFile:
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
-            ).astype(bool)
+            )
 
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
@@ -881,7 +890,7 @@ class NexusFile:
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
-            ).astype(bool)
+            )
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
@@ -998,7 +1007,7 @@ class NexusFile:
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
-            ).astype(bool)
+            )
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
@@ -1098,7 +1107,7 @@ class NexusFile:
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
-            ).astype(bool)
+            )
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
