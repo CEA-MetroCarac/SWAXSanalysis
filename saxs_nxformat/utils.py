@@ -148,6 +148,50 @@ def convert(
     return number
 
 
+def extract_from_h5(
+        nx_file: h5py.File,
+        h5path: str,
+        data_type: str = "dataset",
+        attribute_name: str | None = None
+) -> Any:
+    """
+    Method used to extract a dataset or attribute from the .h5 file
+
+    Parameters
+    ----------
+    nx_file :
+        file object
+
+    h5path :
+        h5 path of the dataset
+
+    data_type :
+        type of the value extracted (attribute or dataset)
+
+    attribute_name :
+        if it's an attribute, give its name
+
+    Returns
+    -------
+    Either the attribute or dataset selected
+
+    """
+    # We get the dataset and its attributes
+    dataset = nx_file[h5path]
+    attributes = dataset.attrs
+
+    # We detect if the dataset is a scalar, an array or an attribute
+    if data_type == "dataset" and np.shape(dataset) == ():
+        return dataset[()]
+    elif data_type == "dataset" and np.shape(dataset) != ():
+        return dataset[:]
+    elif data_type == "attribute" and attribute_name in attributes.keys():
+        return attributes[attribute_name]
+    else:
+        print(f"error while extracting from {h5path}")
+        return None
+
+
 def replace_h5_dataset(
         hdf5_file: h5py.File,
         dataset_h5path: str | pathlib.Path,
@@ -182,7 +226,11 @@ def replace_h5_dataset(
         attributes = dict(old_dataset.attrs)
         del hdf5_file[dataset_h5path]
     else:
-        attributes = {"units": "1/nm"}
+        if dataset_h5path.endswith("/Q"):
+            unit_q = extract_from_h5(hdf5_file, "ENTRY/DATA_Q_SPACE/Q", "attribute", "units")
+            attributes = {"units": unit_q}
+        else:
+            attributes = {}
 
     # We create the new dataset with the new data provided
     if new_dataset_h5path:

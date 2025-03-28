@@ -15,7 +15,7 @@ import numpy as np
 from pathlib import Path
 
 from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
-from saxs_nxformat.utils import replace_h5_dataset, detect_variation, string_2_value, delete_data, mobile_mean, save_data
+from saxs_nxformat.utils import *
 from smi_analysis import SMI_beamline
 
 
@@ -78,48 +78,7 @@ def create_process(
     group.create_dataset("description", data=process_desc)
 
 
-def extract_from_h5(
-        nx_file: h5py.File,
-        h5path: str,
-        data_type: str = "dataset",
-        attribute_name: str | None = None
-) -> Any:
-    """
-    Method used to extract a dataset or attribute from the .h5 file
 
-    Parameters
-    ----------
-    nx_file :
-        file object
-
-    h5path :
-        h5 path of the dataset
-
-    data_type :
-        type of the value extracted (attribute or dataset)
-
-    attribute_name :
-        if it's an attribute, give its name
-
-    Returns
-    -------
-    Either the attribute or dataset selected
-
-    """
-    # We get the dataset and its attributes
-    dataset = nx_file[h5path]
-    attributes = dataset.attrs
-
-    # We detect if the dataset is a scalar, an array or an attribute
-    if data_type == "dataset" and np.shape(dataset) == ():
-        return dataset[()]
-    elif data_type == "dataset" and np.shape(dataset) != ():
-        return dataset[:]
-    elif data_type == "attribute" and attribute_name in attributes.keys():
-        return attributes[attribute_name]
-    else:
-        print(f"error while extracting from {h5path}")
-        return None
 
 
 def extract_smi_param(
