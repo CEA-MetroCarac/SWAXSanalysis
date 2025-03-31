@@ -2,6 +2,9 @@
 The main feature of this module is the NexusFile class which is used
 to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
+TODO : Ajouter un moyen de construire des donnée 2D profil radial
+TODO : en fonction d'un parametre commun à tout les fichiers.
+TODO : (détecter le paramètre qui change au sein d'un groupe de fichier ?)
 """
 import os
 import shutil
@@ -78,9 +81,6 @@ def create_process(
     group.create_dataset("description", data=process_desc)
 
 
-
-
-
 def extract_smi_param(
         h5obj: h5py.File,
         input_data_group: str
@@ -141,7 +141,6 @@ def extract_smi_param(
 
 class NexusFile:
     """
-    TODO : add process to build a mask
     A class that can load and treat data formated in the NXcanSAS standard
 
     Attributes
@@ -169,6 +168,8 @@ class NexusFile:
             input_data_group: str = "DATA"
     ) -> None:
         """
+        TODO : ne pas forcément faire le stitching
+        TODo : créer un process stitching et s'en servir quand on en a besoin
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
 
@@ -202,12 +203,16 @@ class NexusFile:
         self.input_data_group = input_data_group
 
         self.nx_files = []
-        self.dicts_parameters = []
-        self.list_smi_data = []
-        self.intensities_data = []
 
         for index, file_path in enumerate(self.file_paths):
             nx_file = h5py.File(file_path, "r+")
+            self.nx_files.append(nx_file)
+
+    def _stitching(self):
+        for index, file_path in enumerate(self.file_paths):
+            self.dicts_parameters = []
+            self.list_smi_data = []
+            self.intensities_data = []
 
             dict_parameters = extract_smi_param(nx_file, self.input_data_group)
 
@@ -225,7 +230,6 @@ class NexusFile:
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
-            self.nx_files.append(nx_file)
             self.dicts_parameters.append(dict_parameters)
             self.intensities_data.append(dict_parameters["I raw data"])
             self.list_smi_data.append(smi_data)
@@ -393,6 +397,10 @@ class NexusFile:
             Name of the group that will contain the data
         """
         self.init_plot = True
+
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
+
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.masks = extract_from_h5(
                 self.nx_files[index],
@@ -483,6 +491,9 @@ class NexusFile:
             Minimum of the azimuthal angle range
         """
         self.init_plot = True
+
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
 
         initial_none_flags = {
             "azi_min": azi_min is None,
@@ -606,6 +617,9 @@ class NexusFile:
             optimize_range = False
 
         self.init_plot = True
+
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
 
         initial_none_flags = {
             "r_min": r_min is None,
@@ -732,6 +746,9 @@ class NexusFile:
 
         self.init_plot = True
 
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
+
         initial_none_flags = {
             "r_min": r_min is None,
             "r_max": r_max is None,
@@ -851,6 +868,9 @@ class NexusFile:
         """
         self.init_plot = True
 
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
+
         initial_none_flags = {
             "qx_min": qx_min is None,
             "qx_max": qx_max is None,
@@ -950,6 +970,9 @@ class NexusFile:
             Name of the group that will contain the data
         """
         self.init_plot = True
+
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
 
         initial_none_flags = {
             "qx_min": qx_min is None,
@@ -1066,12 +1089,12 @@ class NexusFile:
         }
 
         self.init_plot = True
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, nx_file in enumerate(self.nx_files):
 
             defaults = {
-                "roi_size_x": extract_from_h5(self.nx_files[index], "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
-                "roi_size_y": extract_from_h5(self.nx_files[index], "ENTRY/INSTRUMENT/SOURCE/beam_size_y"),
-                "sample_thickness": extract_from_h5(self.nx_files[index], "ENTRY/SAMPLE/thickness"),
+                "roi_size_x": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
+                "roi_size_y": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_y"),
+                "sample_thickness": extract_from_h5(nx_file, "ENTRY/SAMPLE/thickness"),
             }
 
             if initial_none_flags["roi_size_x"]:
@@ -1086,7 +1109,7 @@ class NexusFile:
             raw_data = self.dicts_parameters[index]["I raw data"][0]
             beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
             beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
-            time = extract_from_h5(self.nx_files[index], "ENTRY/COLLECTION/exposition_time")
+            time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
 
             I_ROI_data = np.sum(
                 raw_data[
@@ -1117,7 +1140,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, nx_file,
                     group_name=group_name,
                     extracted_param_data=positions, extracted_value_data=abs_data,
                     scale_x="log", scale_y="log",
@@ -1129,10 +1152,10 @@ class NexusFile:
             if save:
                 q_list = positions
                 i_list = abs_data
-                mask = smi_data.masks
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
+                mask = self.list_smi_data[index].masks
+                save_data(nx_file, "Q", q_list, group_name, i_list, mask)
 
-                create_process(self.nx_files[index],
+                create_process(nx_file,
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Absolute Intensity",
                                "This process computes the absolute intensity of the data based on "
@@ -1169,7 +1192,7 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
-    def process_concatenation(
+    def process_concatenate(
             self,
             group_names: None | list[str] = None
     ) -> None:
@@ -1197,6 +1220,11 @@ class NexusFile:
                     raise Exception(f"Q data in {group} of file {self.file_paths[index]} is not 1D")
 
                 q_list = q_list + list(extracted_param_data)
+
+            q_list = np.array(q_list)
+            i_list = np.array(i_list)
+            print(q_list)
+            print(i_list)
 
             mask = self.list_smi_data[index].masks
             save_data(nxfile, "Q", q_list, "DATA_CONCAT", i_list, mask)
@@ -1234,6 +1262,7 @@ class NexusFile:
             optimize_range: bool = False
     ):
         """
+        # TODO : change legend to only display the first part of the file name + img N°
         Displays the data contained in the DATA_... group
 
         Parameters
@@ -1283,8 +1312,7 @@ class NexusFile:
 
         # We extract the data
         if value_not_inserted and group_name_inserted:
-            if f"ENTRY/{group_name}" in nxfile:
-                extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+            extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
 
         # We extract the parameter
         if param_not_inserted and group_name_inserted:
@@ -1328,6 +1356,7 @@ class NexusFile:
 
             file_path = Path(self.file_paths[index])
             if optimize_range:
+                # TODO : revoir la fonction high var
                 indices_high_var = detect_variation(extracted_value_data, 1e5)
                 if len(indices_high_var):
                     first_index, last_index = indices_high_var[0], indices_high_var[-1]
@@ -1353,6 +1382,7 @@ class NexusFile:
                     self.ax.legend()
                     plt.show()
             else:
+                self.ax.legend()
                 plt.show()
 
         # If the intensity value is a 2D array we imshow it

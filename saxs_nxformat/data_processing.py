@@ -251,7 +251,6 @@ class GUI_process(tk.Tk):
                 param_str = str(param[1])
                 param_name_type, param_value = param_str.split("=")
                 param_name, param_type = param_name_type.split(":")
-                print(param_name, param_value)
                 label_param = tk.Label(
                     self.param_frame,
                     text=param_name.replace("_", " "),
@@ -373,6 +372,15 @@ class GUI_process(tk.Tk):
                 else:
                     entry_value = str(widget.get())
                     value = string_2_value(entry_value)
+
+                if tag == "group_name":
+                    err = False
+                    err_str = f"The group {value} is not present in the following files :\n"
+                    for path in self.to_process:
+                        with h5py.File(path, "r") as h5_obj:
+                            if value not in h5_obj:
+                                err = True
+
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
@@ -387,10 +395,10 @@ class GUI_process(tk.Tk):
             self.print_log,
             f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
         )
-        #############################
-        profiler = cProfile.Profile()
-        profiler.enable()
-        #############################
+        # #############################
+        # profiler = cProfile.Profile()
+        # profiler.enable()
+        # #############################
         nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
             process(nxfiles, **param_dict)
@@ -400,6 +408,7 @@ class GUI_process(tk.Tk):
                 self.print_log,
                 str(exception)
             )
+            raise exception
         finally:
             nxfiles.nexus_close()
             self.progress_label.configure(
@@ -411,11 +420,11 @@ class GUI_process(tk.Tk):
             self.print_log,
             "Process done"
         )
-        ####################################################
-        profiler.disable()
-        stats = pstats.Stats(profiler).sort_stats('cumtime')
-        stats.print_stats()
-        ####################################################
+        # ####################################################
+        # profiler.disable()
+        # stats = pstats.Stats(profiler).sort_stats('cumtime')
+        # stats.print_stats()
+        # ####################################################
 
 if __name__ == "__main__":
     app = GUI_process()

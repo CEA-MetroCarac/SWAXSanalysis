@@ -176,9 +176,12 @@ def extract_from_h5(
     Either the attribute or dataset selected
 
     """
-    # We get the dataset and its attributes
-    dataset = nx_file[h5path]
-    attributes = dataset.attrs
+    # IF the path is correct We get the dataset and its attributes
+    if h5path in nx_file:
+        dataset = nx_file[h5path]
+        attributes = dataset.attrs
+    else:
+        raise Exception(f"{h5path} is not in the file")
 
     # We detect if the dataset is a scalar, an array or an attribute
     if data_type == "dataset" and np.shape(dataset) == ():
@@ -349,7 +352,7 @@ def save_data(
         nx_file,
         f"{dataset_path}/mask",
         mask,
-        mask.dtype
+        bool
     )
 
     dim = len(np.shape(nx_file[f"{dataset_path}/I"]))

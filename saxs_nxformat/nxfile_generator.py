@@ -171,7 +171,6 @@ def generate_nexus(
 
     # We save the data
     with h5py.File(hdf5_path, "w") as save_file:
-
         # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
 
