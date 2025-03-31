@@ -200,6 +200,10 @@ class NexusFile:
         self.do_batch = do_batch
         self.input_data_group = input_data_group
 
+        self.dicts_parameters = []
+        self.list_smi_data = []
+        self.intensities_data = []
+
         self.nx_files = []
 
         for index, file_path in enumerate(self.file_paths):
@@ -207,11 +211,10 @@ class NexusFile:
             self.nx_files.append(nx_file)
 
     def _stitching(self):
-        for index, file_path in enumerate(self.file_paths):
-            self.dicts_parameters = []
-            self.list_smi_data = []
-            self.intensities_data = []
-
+        self.dicts_parameters = []
+        self.list_smi_data = []
+        self.intensities_data = []
+        for index, nx_file in enumerate(self.nx_files):
             dict_parameters = extract_smi_param(nx_file, self.input_data_group)
 
             # We input the info in the SMI package
@@ -668,6 +671,7 @@ class NexusFile:
                 npt=pts,
                 radial_range=[r_min, r_max]
             )
+            print("avg done")
 
             if display:
                 self._display_data(

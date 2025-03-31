@@ -333,6 +333,8 @@ class GUI_generator(tk.Tk):
         self._build_log_frame()
 
     def _build_control_frame(self) -> None:
+        self.control_panel.columnconfigure(0, weight=1)
+
         # Label
         title = tk.Label(
             self.control_panel,
@@ -406,6 +408,9 @@ class GUI_generator(tk.Tk):
         close_button.grid(pady=10, padx=10, row=7, column=0)
 
     def _build_log_frame(self) -> None:
+        self.log_panel.columnconfigure(0, weight=1)
+        self.log_panel.rowconfigure(1, weight=1)
+
         # Label
         title = tk.Label(
             self.log_panel,

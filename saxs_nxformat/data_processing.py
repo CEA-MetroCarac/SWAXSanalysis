@@ -1,5 +1,6 @@
 """
 This module is meant to help the user process their data
+TODO : faire passer les processus dans input et mettre le display au milieu
 """
 import inspect
 import re
@@ -132,6 +133,7 @@ class GUI_process(tk.Tk):
         Builds the input frame
         """
         self.frame_inputs.columnconfigure(0, weight=1)
+        self.frame_inputs.columnconfigure(1, weight=1)
         frame_title = tk.Label(
             self.frame_inputs,
             text="Inputs",
@@ -160,6 +162,7 @@ class GUI_process(tk.Tk):
             padx=20,
             pady=5)
         select_all_button.grid(column=0, row=3)
+
         unselect_all_button = tk.Button(
             self.frame_inputs,
             text="Unselect all",
@@ -176,7 +179,7 @@ class GUI_process(tk.Tk):
             font=FONT_TEXT,
             variable=self.do_batch_var
         )
-        self.do_batch.grid(column=0, row=4, sticky="we")
+        self.do_batch.grid(column=0, row=4, sticky="we", columnspan=2)
 
     def _process_building(self) -> None:
         """
