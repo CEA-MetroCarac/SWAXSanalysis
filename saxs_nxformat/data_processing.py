@@ -14,20 +14,35 @@ from tkinter import ttk, filedialog
 from saxs_nxformat import DESKTOP_PATH, ICON_PATH
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from saxs_nxformat.class_nexus_file import NexusFile
-from saxs_nxformat.utils import string_2_value
+from saxs_nxformat.utils import string_2_value, extract_from_h5
 
 
 def get_group_names(
         file_list: list[pathlib.Path] | list[str]
 ) -> list[Any]:
+    group_count = {}
     groups = []
     for file_path in file_list:
         with h5py.File(file_path, "r") as file_object:
             parent_group = file_object["/ENTRY"]
 
             for name in parent_group.keys():
-                if isinstance(parent_group[name], h5py.Group) and "DATA" in name and name not in groups:
-                    groups.append(name)
+                nx_class = str(extract_from_h5(
+                    file_object,
+                    f"/ENTRY/{name}",
+                    "attribute",
+                    "NX_class"
+                ))
+
+                if nx_class == "NXdata" and name not in groups:
+                    if name in group_count.keys():
+                        group_count[name] += 1
+                    else:
+                        group_count[name] = 1
+    print(len(file_list))
+    for group, count in group_count.items():
+        if count == len(file_list):
+            groups.append(group)
 
     return groups
 

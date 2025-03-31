@@ -191,7 +191,6 @@ def extract_from_h5(
     elif data_type == "attribute" and attribute_name in attributes.keys():
         return attributes[attribute_name]
     else:
-        print(f"error while extracting from {h5path}")
         return None
 
 
