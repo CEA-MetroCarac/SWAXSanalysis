@@ -1252,6 +1252,7 @@ class NexusFile:
             label_x: str = "",
             label_y: str = "",
             title: str = "",
+            legend: bool = False,
             xmin: None | float | int = None,
             xmax: None | float | int = None,
             ymin: None | float | int = None,
@@ -1260,7 +1261,6 @@ class NexusFile:
             optimize_range: bool = False
     ):
         """
-        # TODO : change legend to only display the first part of the file name + img N°
         Displays the data contained in the DATA_... group
 
         Parameters
@@ -1354,7 +1354,7 @@ class NexusFile:
 
             file_path = Path(self.file_paths[index])
             split_file_name = file_path.name.split("_")
-            label = file_path.name.removesuffix(split_file_name[-1])
+            label = file_path.name.removesuffix(split_file_name[-1]+"_")
 
             first_index, last_index = 0, -1
             if optimize_range:
@@ -1372,10 +1372,12 @@ class NexusFile:
 
             if self.do_batch:
                 if index == len(self.nx_files) - 1:
-                    self.ax.legend()
+                    if legend:
+                        self.ax.legend()
                     plt.show()
             else:
-                self.ax.legend()
+                if legend:
+                    self.ax.legend()
                 plt.show()
 
         # If the intensity value is a 2D array we imshow it
