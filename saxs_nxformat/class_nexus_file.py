@@ -168,8 +168,6 @@ class NexusFile:
             input_data_group: str = "DATA"
     ) -> None:
         """
-        TODO : ne pas forcément faire le stitching
-        TODo : créer un process stitching et s'en servir quand on en a besoin
         The init of this class consists of extracting every releavant parameters
         from the h5 file and using it to open the data and stitch it using the SMI_package
 
@@ -1355,27 +1353,22 @@ class NexusFile:
             plot_color = PLT_CMAP_OBJ(index / len(self.nx_files))
 
             file_path = Path(self.file_paths[index])
+            split_file_name = file_path.name.split("_")
+            label = file_path.name.removesuffix(split_file_name[-1])
+
+            first_index, last_index = 0, -1
             if optimize_range:
                 # TODO : revoir la fonction high var
                 indices_high_var = detect_variation(extracted_value_data, 1e5)
                 if len(indices_high_var):
                     first_index, last_index = indices_high_var[0], indices_high_var[-1]
-                else:
-                    first_index, last_index = 0, -1
 
-                self.ax.plot(
-                    extracted_param_data[first_index:last_index],
-                    extracted_value_data[first_index:last_index],
-                    label=f"{file_path.name}",
-                    color=plot_color
-                )
-            else:
-                self.ax.plot(
-                    extracted_param_data,
-                    extracted_value_data,
-                    label=f"{file_path.name}",
-                    color=plot_color
-                )
+            self.ax.plot(
+                extracted_param_data[first_index:last_index],
+                extracted_value_data[first_index:last_index],
+                label=f"{label}",
+                color=plot_color
+            )
 
             if self.do_batch:
                 if index == len(self.nx_files) - 1:

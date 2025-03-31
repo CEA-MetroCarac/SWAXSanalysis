@@ -122,20 +122,37 @@ class GUI_process(tk.Tk):
             text="Inputs",
             font=FONT_TITLE,
             padx=10, pady=10)
-        frame_title.grid(column=0, row=0, sticky="w", pady=(15, 20), padx=5)
+        frame_title.grid(column=0, row=0, sticky="w", pady=(15, 20), padx=5, columnspan=2)
 
         browse_button = tk.Button(
             self.frame_inputs,
-            text="Select files",
+            text="Upload files",
             font=FONT_BUTTON,
             command=self.browse_files,
             padx=20,
             pady=5)
-        browse_button.grid(column=0, row=1)
+        browse_button.grid(column=0, row=1, columnspan=2)
 
         self.file_list = tk.Listbox(self.frame_inputs, selectmode=tk.MULTIPLE)
-        self.file_list.grid(column=0, row=2, sticky="news")
+        self.file_list.grid(column=0, row=2, sticky="news", columnspan=2)
         self.file_list.configure(exportselection=False)
+
+        select_all_button = tk.Button(
+            self.frame_inputs,
+            text="Select all",
+            font=FONT_BUTTON,
+            command=lambda: self.file_list.selection_set(0, "end"),
+            padx=20,
+            pady=5)
+        select_all_button.grid(column=0, row=3)
+        unselect_all_button = tk.Button(
+            self.frame_inputs,
+            text="Unselect all",
+            font=FONT_BUTTON,
+            command=lambda: self.file_list.selection_clear(0, "end"),
+            padx=20,
+            pady=5)
+        unselect_all_button.grid(column=1, row=3)
 
         self.do_batch_var = tk.IntVar()
         self.do_batch = tk.Checkbutton(

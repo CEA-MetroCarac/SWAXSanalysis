@@ -181,7 +181,7 @@ def extract_from_h5(
         dataset = nx_file[h5path]
         attributes = dataset.attrs
     else:
-        raise Exception(f"{h5path} is not in the file")
+        raise Exception(f"{h5path} is not in the file {nx_file}")
 
     # We detect if the dataset is a scalar, an array or an attribute
     if data_type == "dataset" and np.shape(dataset) == ():
