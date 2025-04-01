@@ -457,7 +457,7 @@ class GUI_process(tk.Tk):
         )
         # ####################################################
         # profiler.disable()
-        # stats = pstats.Stats(profiler).sort_stats('cumtime')
+        # stats = pstats.Stats(profiler).sort_stats('tottime')
         # stats.print_stats()
         # ####################################################
 

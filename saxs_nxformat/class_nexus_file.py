@@ -671,7 +671,6 @@ class NexusFile:
                 npt=pts,
                 radial_range=[r_min, r_max]
             )
-            print("avg done")
 
             if display:
                 self._display_data(
@@ -1041,13 +1040,13 @@ class NexusFile:
 
     def process_absolute_intensity(
             self,
-            db_path=None,
-            group_name="DATA_ABS",
-            display=False,
-            save=False,
-            roi_size_x=30,
-            roi_size_y=30,
-            sample_thickness=1e9,
+            db_path: Path | str = None,
+            group_name: str = "DATA_ABS",
+            display: bool = False,
+            save: bool = False,
+            roi_size_x: int = 30,
+            roi_size_y: int = 30,
+            sample_thickness: float = 1e-9,
     ):
         """
         TODO : change the default parameters for None
@@ -1083,6 +1082,9 @@ class NexusFile:
         if db_path is None:
             print("No direct beam data")
             return
+
+        if len(self.file_paths) != len(self.list_smi_data):
+            self._stitching()
 
         initial_none_flags = {
             "roi_size_x": roi_size_x is None,
@@ -1136,7 +1138,8 @@ class NexusFile:
             I_ROI_db = I_ROI_db / time_db
 
             transmission = I_ROI_data / I_ROI_db
-            scaling_factor = I_ROI_data / (I_ROI_db * transmission * sample_thickness)
+            scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1/sample_thickness))
+            scaling_factor = scaling_factor * 1e-9
 
             abs_data = raw_data * scaling_factor
 
@@ -1147,7 +1150,7 @@ class NexusFile:
                     extracted_param_data=positions, extracted_value_data=abs_data,
                     scale_x="log", scale_y="log",
                     label_x="$q_{hor} (A^{-1})$",
-                    label_y="$q_{ver} (A^{-1})$",
+                    label_y="$Intensity (m^{-1})$",
                     title=f"Absolute intensity of the data"
                 )
 
@@ -1358,7 +1361,7 @@ class NexusFile:
 
             file_path = Path(self.file_paths[index])
             split_file_name = file_path.name.split("_")
-            label = file_path.name.removesuffix(split_file_name[-1]+"_")
+            label = file_path.name.removesuffix(split_file_name[-1] + "_")
 
             first_index, last_index = 0, -1
             if optimize_range:
