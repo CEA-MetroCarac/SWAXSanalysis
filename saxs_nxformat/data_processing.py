@@ -40,7 +40,7 @@ def get_group_names(
                         group_count[name] += 1
                     else:
                         group_count[name] = 1
-    print(len(file_list))
+
     for group, count in group_count.items():
         if count == len(file_list):
             groups.append(group)

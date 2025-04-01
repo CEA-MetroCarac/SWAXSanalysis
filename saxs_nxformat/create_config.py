@@ -12,6 +12,7 @@ from pathlib import Path
 from tkinter import ttk, filedialog
 
 import fabio
+from fabio.fabioimage import FabioImage
 from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
 from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from saxs_nxformat.utils import VerticalScrolledFrame
@@ -357,7 +358,7 @@ class GUI_setting(tk.Tk):
             self,
             widget: tk.Entry,
             string_var: tk.StringVar
-    ) -> None:
+    ) -> FabioImage | None:
         """
         This method is used to search and load an edf file into
         the application

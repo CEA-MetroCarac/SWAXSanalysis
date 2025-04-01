@@ -3,8 +3,6 @@ TODO : Add global variable for colormap, .ico path and other parameters, font, f
 TODO : Faire en sorte d'exploiter le format NXcanSAS. Reconnaitre les groupe valides via leurs classes...
 TODO : regarder le code de kyllian pour la fusion
 TODO : faire des unité tests
-
-TODO : Aller voir en profondeur pk le temps est si long
 """
 import os
 import sys

@@ -454,7 +454,7 @@ class VerticalScrolledFrame(ttk.Frame):
         Additional keyword arguments to pass to the ttk.Frame initializer.
     """
 
-    def __init__(self, parent, *args, **kw):
+    def __init__(self, parent, width=200, height=500, *args, **kw):
         """
         Initialize the VerticalScrolledFrame.
 
@@ -473,7 +473,7 @@ class VerticalScrolledFrame(ttk.Frame):
         vscrollbar = ttk.Scrollbar(self, orient=tk.VERTICAL)
         vscrollbar.pack(fill=tk.Y, side=tk.RIGHT, expand=tk.FALSE)
         self.canvas = tk.Canvas(self, bd=0, highlightthickness=0,
-                                width=200, height=500,
+                                width=width, height=height,
                                 yscrollcommand=vscrollbar.set)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=tk.TRUE)
         vscrollbar.config(command=self.canvas.yview)
