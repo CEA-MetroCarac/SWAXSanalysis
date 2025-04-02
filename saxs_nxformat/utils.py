@@ -9,7 +9,7 @@ from typing import Any
 
 import h5py
 import numpy as np
-from saxs_nxformat import DICT_UNIT
+from . import DICT_UNIT
 
 
 def string_2_value(
@@ -397,7 +397,7 @@ def delete_data(
 def detect_variation(
         array: np.ndarray,
         variation_threshold: float | int
-) -> None:
+) -> np.ndarray:
     """
     return the indices where we go from a value under low to a value aboce high
 

@@ -12,10 +12,10 @@ import pathlib
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from saxs_nxformat import DESKTOP_PATH, ICON_PATH
-from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
-from saxs_nxformat.class_nexus_file import NexusFile
-from saxs_nxformat.utils import string_2_value, extract_from_h5
+from . import DESKTOP_PATH, ICON_PATH
+from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
+from .class_nexus_file import NexusFile
+from .utils import string_2_value, extract_from_h5
 
 
 def get_group_names(

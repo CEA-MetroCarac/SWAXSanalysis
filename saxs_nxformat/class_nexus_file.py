@@ -17,8 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-from saxs_nxformat import PLT_CMAP, PLT_CMAP_OBJ
-from saxs_nxformat.utils import *
+from . import PLT_CMAP, PLT_CMAP_OBJ
+from .utils import *
 from smi_analysis import SMI_beamline
 
 
@@ -210,12 +210,15 @@ class NexusFile:
             nx_file = h5py.File(file_path, "r+")
             self.nx_files.append(nx_file)
 
+            dict_parameters = extract_smi_param(nx_file, self.input_data_group)
+            self.dicts_parameters.append(dict_parameters)
+
     def _stitching(self):
         self.dicts_parameters = []
         self.list_smi_data = []
         self.intensities_data = []
         for index, nx_file in enumerate(self.nx_files):
-            dict_parameters = extract_smi_param(nx_file, self.input_data_group)
+            dict_parameters = self.dicts_parameters[index]
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
@@ -231,7 +234,6 @@ class NexusFile:
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
-            self.dicts_parameters.append(dict_parameters)
             self.intensities_data.append(dict_parameters["I raw data"])
             self.list_smi_data.append(smi_data)
 
@@ -344,6 +346,15 @@ class NexusFile:
                 extracted_param_data[file_name] = None
 
         return extracted_param_data, extracted_value_data
+
+    def get_parameters(self):
+        param_dict = {}
+        for index, nxfile in enumerate(self.nx_files):
+            file_path = Path(self.file_paths[index])
+            file_name = file_path.name
+
+            param_dict[file_name] = self.dicts_parameters[index]
+        return param_dict
 
     def get_process_desc(
             self,
@@ -1072,11 +1083,11 @@ class NexusFile:
             path of the direct beam data
 
         roi_size_x :
-        # TODO : by default get the thickness from the HDF5 directly
+        # TODO : by default get the x size from the HDF5 directly
             Horizontal size of the region of interest. By default gets the beam size of the HDF5
 
         roi_size_y :
-        # TODO : by default get the thickness from the HDF5 directly
+        # TODO : by default get the y size from the HDF5 directly
             Vertical size of the region of interest. By default gets the beam size of the HDF5
         """
         if db_path is None:

@@ -26,10 +26,10 @@ import fabio
 import h5py
 import numpy as np
 
-from saxs_nxformat import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
-from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
-from saxs_nxformat.class_nexus_file import NexusFile
-from saxs_nxformat.utils import string_2_value, convert, replace_h5_dataset, delete_data, save_data
+from . import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
+from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
+from .class_nexus_file import NexusFile
+from .utils import string_2_value, convert, replace_h5_dataset, delete_data, save_data
 
 
 def data_treatment(

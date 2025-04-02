@@ -12,19 +12,16 @@ import shutil
 import ctypes
 import tkinter as tk
 
-# Adds the package to the python path
-# The version used is not the local one but the one installed in metro-carac !!!
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 myappid: str = 'CEA.nxformat.launcher'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 # We build the environment
-from saxs_nxformat import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH, QUEUE_PATH
-from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
-from saxs_nxformat.create_config import GUI_setting
-from saxs_nxformat.data_processing import GUI_process
-from saxs_nxformat.nxfile_generator import GUI_generator
+from . import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH, QUEUE_PATH
+from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
+from .create_config import GUI_setting
+from .data_processing import GUI_process
+from .nxfile_generator import GUI_generator
 
 
 # Launch commands

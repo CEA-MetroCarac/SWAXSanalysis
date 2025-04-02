@@ -13,9 +13,9 @@ from tkinter import ttk, filedialog
 
 import fabio
 from fabio.fabioimage import FabioImage
-from saxs_nxformat import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
-from saxs_nxformat import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
-from saxs_nxformat.utils import VerticalScrolledFrame
+from . import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
+from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
+from .utils import VerticalScrolledFrame
 
 
 ######################
