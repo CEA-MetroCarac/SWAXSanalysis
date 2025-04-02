@@ -214,7 +214,6 @@ class NexusFile:
             self.dicts_parameters.append(dict_parameters)
 
     def _stitching(self):
-        self.dicts_parameters = []
         self.list_smi_data = []
         self.intensities_data = []
         for index, nx_file in enumerate(self.nx_files):
