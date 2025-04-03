@@ -17,8 +17,7 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 
 # We build the environment
-from . import DTC_PATH, CONF_PATH, TREATED_PATH, ICON_PATH, BASE_DIR, IPYNB_PATH, QUEUE_PATH
-from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
+from . import *
 from .create_config import GUI_setting
 from .data_processing import GUI_process
 from .nxfile_generator import GUI_generator

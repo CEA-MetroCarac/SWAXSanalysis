@@ -53,3 +53,14 @@ FONT_TEXT: tuple    = ("Microsoft Sans Serif", 10)
 FONT_NOTE: tuple    = ("Microsoft Sans Serif", 8)
 FONT_BUTTON: tuple  = ("Microsoft Sans Serif", 12)
 FONT_LOG: tuple     = ("Lucida Console", 10)
+
+# Colors for the GUI
+RED: str         = "#B80000"
+ORANGE: str      = "#F1420B"
+DARK_RED: str    = "#680000"
+GREEN: str       = "#7ABC32"
+LIGHT_GREEN: str = "#A5D86E"
+BLUE_GRAY: str   = "#89BD9E"
+
+DARK: str       = "#212D32"
+LIGHT: str      = "#EBEBEB"
