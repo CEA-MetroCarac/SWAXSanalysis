@@ -58,7 +58,7 @@ def string_2_value(
     elif re.search("(^none$)|(^defaul?t$)|(^$)", string.lower()):
         value = None
 
-    elif re.search("(^-?\\d*[.,]\\d*$)|(^-?\\d?[.,]?\\d*e[+-]\\d*$)", string.lower()):
+    elif re.search("(^-?\\d*[.,]?\\d*$)|([+-]?\\d+(\\.\\d*)?e[+-]?\\d+$)", string.lower()):
         value = float(string)
 
     elif re.search("^-?\\d+$", string):
