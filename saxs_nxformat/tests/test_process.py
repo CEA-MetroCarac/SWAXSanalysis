@@ -121,6 +121,30 @@ try:
         assert len(np.shape(value_dict[key])) == 1
         assert math.isclose(np.nansum(value), 2709.5554514750647, rel_tol=1e-7)
 
+    ##########################
+    ### Absolute intensity ###
+    ##########################
+    nx_obj.process_absolute_intensity(
+        save=True,
+        db_path="./files/dummySample_img1.h5",
+        roi_size_x=35,
+        roi_size_y=35,
+        sample_thickness=0.15e-3
+    )
+    nx_obj.process_display(group_name="DATA_ABS")
+    assert "ENTRY/DATA_ABS/" in file_obj
+    # Testing the existence and dimension of data
+    param_dict, value_dict = nx_obj.get_raw_data("DATA_ABS")
+    for key, value in param_dict.items():
+        assert isinstance(value, np.ndarray)
+        assert len(np.shape(value)) == 3
+
+    # Testing the numerical value of the data via sum
+    for key, value in value_dict.items():
+        assert isinstance(value, np.ndarray)
+        assert len(np.shape(value_dict[key])) == 2
+        assert math.isclose(np.nansum(value), 6.476545e-08, rel_tol=1e-7)
+
     ###################
     ### Delete Data ###
     ###################
