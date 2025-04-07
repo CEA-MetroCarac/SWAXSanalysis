@@ -35,27 +35,28 @@ data2 = gauss(np.sqrt(mesh_circle), 225, 10, 15) * mask2
 
 original_data = data1 + data2
 
-h5_path = generate_nexus("files/dummy_test_0_0.edf", "./files/", "./files/settings_EDF2NX_XEUSS_202503250953.json")
-with h5py.File(h5_path) as h5_obj:
-    param_dict = extract_smi_param(h5_obj, "DATA")
+def test_conversion():
+    h5_path = generate_nexus("files/dummy_test_0_0.edf", "./files/", "./files/settings_EDF2NX_XEUSS_202503250953.json")
+    with h5py.File(h5_path) as h5_obj:
+        param_dict = extract_smi_param(h5_obj, "DATA")
 
-h5_path = Path(h5_path)
-h5_name = h5_path.name
-split_name = h5_name.split("_")
+    h5_path = Path(h5_path)
+    h5_name = h5_path.name
+    split_name = h5_name.split("_")
 
-try:
-    # Testing the name of the file
-    assert split_name[0] + "_" + split_name[1] == "dummySample_img0"
+    try:
+        # Testing the name of the file
+        assert split_name[0] + "_" + split_name[1] == "dummySample_img0"
 
-    # Testing the data
-    sum_original = np.sum(original_data)
-    sum_processes = np.sum(param_dict["I raw data"])
-    assert math.isclose(sum_original, sum_processes, rel_tol=1e-7)
+        # Testing the data
+        sum_original = np.sum(original_data)
+        sum_processes = np.sum(param_dict["I raw data"])
+        assert math.isclose(sum_original, sum_processes, rel_tol=1e-7)
 
-    # Testing the extracted parameters
-    for key, value in original_param_dict.items():
-        assert param_dict[key] == value
-except Exception as error:
-    raise error
-finally:
-    os.remove(h5_path)
+        # Testing the extracted parameters
+        for key, value in original_param_dict.items():
+            assert param_dict[key] == value
+    except Exception as error:
+        raise error
+    finally:
+        os.remove(h5_path)

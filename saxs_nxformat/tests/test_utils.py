@@ -5,7 +5,7 @@ Testing module to test the utils functions
 """
 This file tests the viability of some of the utilitary function of the package
 """
-import pathlib
+from pathlib import Path
 import re
 import random
 import math
@@ -65,6 +65,7 @@ def test_str2value():
         "",
         "1e4",
         "1.56e4",
+        "26.397e-3",
         "TruE",
         "FAlsE",
         "368",
@@ -77,6 +78,7 @@ def test_str2value():
         None,
         10000,
         15600,
+        0.026397,
         True,
         False,
         368,
@@ -84,6 +86,13 @@ def test_str2value():
         "DumMY sTRiNG"
     ]
     for index, test in enumerate(test_values):
-        print(string_2_value(test), predicted_values[index], type(string_2_value(test)))
-        dummy = string_2_value(test)
         assert string_2_value(test) == predicted_values[index]
+
+
+def test_extract():
+    file_path = Path("./files/dummySample_img0.h5")
+    with h5py.File(file_path) as h5_obj:
+        wav = extract_from_h5(h5_obj, "ENTRY/INSTRUMENT/SOURCE/incident_wavelength")
+        assert math.isclose(wav, 0.2, rel_tol=1e-5)
+        wav_unit = extract_from_h5(h5_obj, "ENTRY/INSTRUMENT/SOURCE/incident_wavelength", "attribute", "units")
+        assert wav_unit == "nm"
