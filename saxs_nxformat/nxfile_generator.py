@@ -95,7 +95,7 @@ def generate_nexus(
         Path of the original file
 
     hdf5_path :
-        Path where the new file is supposed to go
+        Path of the directory where the new file is supposed to go
 
     settings_path :
         Path of the settings file

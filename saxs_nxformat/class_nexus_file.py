@@ -265,46 +265,29 @@ class NexusFile:
 
     def add_file(
             self,
-            h5_paths: list[str] | list[Path]
+            new_h5_paths: list[str] | list[Path]
     ) -> None:
 
-        if isinstance(h5_paths, list):
-            for path in h5_paths:
+        if isinstance(new_h5_paths, list):
+            for path in new_h5_paths:
                 if not isinstance(path, str) and not isinstance(path, Path):
                     raise TypeError(
                         f"Your list of path contains something other than a string or Path :"
                         f"{path} is not a string or a Path object"
                     )
-            self.file_paths = h5_paths
+            self.file_paths = self.file_paths + new_h5_paths
         else:
             raise TypeError(
                 f"You tried to pass the path of the file(s) you want to open "
                 f"as something other than a list."
             )
 
-        for index, file_path in enumerate(h5_paths):
+        for index, file_path in enumerate(new_h5_paths):
             nx_file = h5py.File(file_path, "r+")
-
-            dict_parameters, intensity_data = extract_smi_param(nx_file, self.input_data_group)
-
-            # We input the info in the SMI package
-            smi_data = SMI_beamline.SMI_geometry(
-                geometry="Transmission",
-                sdd=dict_parameters["distance"],
-                wav=dict_parameters["wavelength"],
-                alphai=dict_parameters["incident angle"],
-                center=dict_parameters["beam center"],
-                bs_pos=dict_parameters["beam stop"],
-                detector=dict_parameters["detector name"],
-                det_angles=dict_parameters["detector rotation"]
-            )
-            smi_data.open_data_db(dict_parameters["I raw data"])
-            smi_data.stitching_data()
-
             self.nx_files.append(nx_file)
+
+            dict_parameters = extract_smi_param(nx_file, self.input_data_group)
             self.dicts_parameters.append(dict_parameters)
-            self.intensities_data.append(intensity_data)
-            self.list_smi_data.append(smi_data)
 
     def get_raw_data(
             self,
@@ -691,7 +674,7 @@ class NexusFile:
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
                           f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]",
-                    optimize_range=optimize_range
+                    optimize_range=False
                 )
 
             if save:
@@ -1207,6 +1190,8 @@ class NexusFile:
                 title=title, percentile=percentile
             )
 
+    """
+    Retired but could still be usefull
     def process_concatenate(
             self,
             group_names: None | list[str] = None
@@ -1249,6 +1234,7 @@ class NexusFile:
                            "Data concatenation",
                            "Concatenates all the intensity and scattering vector selected"
                            )
+    """
 
     def process_delete_data(
             self,
