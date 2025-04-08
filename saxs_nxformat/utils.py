@@ -197,7 +197,7 @@ def extract_from_h5(
 def replace_h5_dataset(
         hdf5_file: h5py.File,
         dataset_h5path: str | pathlib.Path,
-        new_dataset: int | float | np.ndarray,
+        new_dataset: str | int | float | np.ndarray,
         new_dataset_type,
         new_dataset_h5path: None | str | pathlib.Path = None,
 ) -> None:
@@ -220,7 +220,7 @@ def replace_h5_dataset(
         type of the new dataset
 
     new_dataset_h5path :
-        default is None. Change to change the name of the dataset as you replace it
+        default is None. Change to change the path of the dataset as you replace it
     """
     # We get the old dataset and it's attributes and then delete it
     if dataset_h5path in hdf5_file:
@@ -259,117 +259,64 @@ def replace_h5_dataset(
 
 def save_data(
         nx_file: h5py.File,
-        parameter_symbol: str,
-        parameter_data: np.ndarray,
-        group_name: str,
+        new_group_name: str,
+        param_data: np.ndarray,
         value_data: np.ndarray,
         mask: np.ndarray
 ) -> None:
     """
-    Method used to save a dataset in the h5 file
+    Method used to save data in an h5 file.
+    Only the basic components of a dataset are saved, additional saving may be required
 
     Parameters
     ----------
-    mask :
-        mask used for data treatment
-
-    nx_file :
-        file object
-
-    parameter_symbol :
-        Symbol of the parameter. will be the name of its dataset
-
-    parameter_data :
-        Contains the parameter data
-
-    group_name :
-        Name of the group containing all the data
-
-    value_data :
-        Contains the data
     """
     # We create the dataset h5path and if it exists we delete what was previously there
-    group_name = group_name.upper()
-    dataset_path = f"/ENTRY/{group_name}"
-    if dataset_path in nx_file and group_name != "DATA":
-        del nx_file[dataset_path]
+    new_group_name = new_group_name.upper()
+    dataset_path = f"/ENTRY/{new_group_name}"
+    if new_group_name == "DATA":
 
-    # we copy the raw data and set the copied data to the name selected
-    # That way we also copy the attributes
-    if group_name != "DATA":
-        nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], group_name)
+        del nx_file[f"{dataset_path}/Q"]
+        nx_file.create_dataset(
+            "Q",
+            shape=np.shape(param_data),
+            dtype=param_data.dtype,
+            data=param_data
+        )
 
-    # we replace the raw data with the new data
-    # TODO : propagate uncertainties
-    # Concerning Q
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Q",
-        parameter_data,
-        parameter_data.dtype,
-        f"{dataset_path}/{parameter_symbol}"
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Qdev",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQl",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQw",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Qmean",
-        np.array([0]),
-        np.array([0]).dtype
-    )
-    # Concerning I
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/I",
-        value_data,
-        value_data.dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/Idev",
-        np.zeros(np.shape(value_data)),
-        np.zeros(np.shape(value_data)).dtype
-    )
-
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/mask",
-        mask,
-        bool
-    )
-
-    dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
-    if dim == 1:
-        del nx_file[f"{dataset_path}/mask"]
-
-        del nx_file[f"{dataset_path}"].attrs["I_axes"]
-        nx_file[f"{dataset_path}"].attrs["I_axes"] = "Q"
-
-        del nx_file[f"{dataset_path}"].attrs["Q_indices"]
-        nx_file[f"{dataset_path}"].attrs["Q_indices"] = [0]
-
-        del nx_file[f"{dataset_path}"].attrs["mask_indices"]
-        nx_file[f"{dataset_path}"].attrs["mask_indices"] = [0]
-    elif dim == 2:
         del nx_file[f"{dataset_path}/Qdev"]
-        del nx_file[f"{dataset_path}/dQl"]
-        del nx_file[f"{dataset_path}/dQw"]
+        q_err = np.zeros(np.shape(value_data))
+        nx_file.create_dataset(
+            "Qdev",
+            shape=np.shape(q_err),
+            dtype=q_err.dtype,
+            data=q_err
+        )
+
+        del nx_file[f"{dataset_path}/I"]
+        nx_file.create_dataset(
+            "I",
+            shape=np.shape(value_data),
+            dtype=value_data.dtype,
+            data=value_data
+        )
+
+        del nx_file[f"{dataset_path}/Idev"]
+        i_err = np.zeros(np.shape(value_data))
+        nx_file.create_dataset(
+            "Idev",
+            shape=np.shape(i_err),
+            dtype=i_err.dtype,
+            data=i_err
+        )
+
+        del nx_file[f"{dataset_path}/mask"]
+        nx_file.create_dataset(
+            "mask",
+            shape=np.shape(mask),
+            dtype=mask.dtype,
+            data=mask
+        )
 
 
 def delete_data(
