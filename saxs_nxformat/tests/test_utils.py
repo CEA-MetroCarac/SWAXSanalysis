@@ -18,7 +18,6 @@ import numpy as np
 from saxs_nxformat.utils import *
 from saxs_nxformat import DICT_UNIT
 
-file_path = Path("./files/dummySample_img0.h5")
 
 def test_convert():
     input_value = random.random() * 10
@@ -91,6 +90,7 @@ def test_str2value():
 
 
 def test_extract():
+    file_path = Path("./files/dummySample_img0.h5")
     with h5py.File(file_path) as h5_obj:
         wav = extract_from_h5(h5_obj, "ENTRY/INSTRUMENT/SOURCE/incident_wavelength")
         assert math.isclose(wav, 0.2, rel_tol=1e-5)
