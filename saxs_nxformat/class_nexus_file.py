@@ -426,7 +426,7 @@ class NexusFile:
             if save:
                 mask = smi_data.masks
 
-                save_data(self.nx_files[index], "Q", mesh_q, group_name, smi_data.img_st, mask)
+                save_data(self.nx_files[index], group_name, "Q", mesh_q, smi_data.img_st, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -552,7 +552,7 @@ class NexusFile:
             if save:
                 mask = smi_data.masks
 
-                save_data(self.nx_files[index], "Q", mesh_cake, group_name, smi_data.cake, mask)
+                save_data(self.nx_files[index], group_name, "Q", mesh_cake, smi_data.cake, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -681,7 +681,7 @@ class NexusFile:
                 q_list = smi_data.q_rad
                 i_list = smi_data.I_rad
                 mask = smi_data.masks
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
+                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -812,7 +812,7 @@ class NexusFile:
                 chi_list = np.deg2rad(smi_data.chi_azi)
                 i_list = smi_data.I_azi
                 mask = smi_data.masks
-                save_data(self.nx_files[index], "Chi", chi_list, group_name, i_list, mask)
+                save_data(self.nx_files[index], group_name, "Chi", chi_list, i_list, mask)
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                                "Azimuthal averaging",
@@ -915,7 +915,7 @@ class NexusFile:
                 q_list = smi_data.q_hor
                 i_list = smi_data.I_hor
                 mask = smi_data.masks
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
+                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -1019,7 +1019,7 @@ class NexusFile:
                 q_list = smi_data.q_ver
                 i_list = smi_data.I_ver
                 mask = smi_data.masks
-                save_data(self.nx_files[index], "Q", q_list, group_name, i_list, mask)
+                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
                 create_process(self.nx_files[index],
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -1151,7 +1151,7 @@ class NexusFile:
                 q_list = positions
                 i_list = abs_data
                 mask = self.list_smi_data[index].masks
-                save_data(nx_file, "Q", q_list, group_name, i_list, mask)
+                save_data(nx_file, group_name, "Q", q_list, i_list, mask)
 
                 create_process(nx_file,
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",

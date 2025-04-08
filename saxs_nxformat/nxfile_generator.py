@@ -29,7 +29,7 @@ import numpy as np
 from . import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
 from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from .class_nexus_file import NexusFile
-from .utils import string_2_value, convert, replace_h5_dataset, delete_data, save_data
+from .utils import string_2_value, convert, delete_data, save_data
 
 
 def data_treatment(
@@ -176,14 +176,7 @@ def generate_nexus(
 
         treated_data = data_treatment(edf_data, save_file)
 
-        save_data(
-            save_file,
-            "Q",
-            treated_data["R_data"],
-            "DATA",
-            treated_data["I_data"],
-            treated_data["mask"],
-        )
+        save_data(save_file, "DATA", "Q", treated_data["R_data"], treated_data["I_data"], treated_data["mask"])
 
         del save_file["ENTRY/DATA"].attrs["I_axes"]
         save_file["ENTRY/DATA"].attrs["I_axes"] = ["Q", "Q"]

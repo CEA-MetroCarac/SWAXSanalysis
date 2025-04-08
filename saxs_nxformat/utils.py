@@ -196,22 +196,21 @@ def extract_from_h5(
 
 def replace_h5_dataset(
         hdf5_file: h5py.File,
-        dataset_h5path: str | pathlib.Path,
+        old_h5path: str,
         new_dataset: int | float | np.ndarray,
-        new_dataset_type,
-        new_dataset_h5path: None | str | pathlib.Path = None,
+        new_dataset_h5path: None | str = None
 ) -> None:
     """
     Function used to replace a dataset that's already been created
-    in a hdf5 file
+    in a hdf5 file without changing the attributes
 
     Parameters
     ----------
     hdf5_file :
         File containing the dataset
 
-    dataset_h5path :
-        Path of the dataset in the hdf5 file
+    old_h5path :
+        Path of the dataset to replace in the hdf5 file
 
     new_dataset :
         new value for the dataset
@@ -223,31 +222,25 @@ def replace_h5_dataset(
         default is None. Change to change the name of the dataset as you replace it
     """
     # We get the old dataset and it's attributes and then delete it
-    if dataset_h5path in hdf5_file:
-        old_dataset = hdf5_file[dataset_h5path]
+    if old_h5path in hdf5_file:
+        old_dataset = hdf5_file[old_h5path]
         attributes = dict(old_dataset.attrs)
-        del hdf5_file[dataset_h5path]
+        del hdf5_file[old_h5path]
     else:
-        if dataset_h5path.endswith("/Q"):
-            unit_q = extract_from_h5(hdf5_file, "ENTRY/DATA_Q_SPACE/Q", "attribute", "units")
-            attributes = {"units": unit_q}
-        else:
-            attributes = {}
+        attributes = {}
 
     # We create the new dataset with the new data provided
     if new_dataset_h5path:
         new_dataset = hdf5_file.create_dataset(
             new_dataset_h5path,
             data=new_dataset,
-            dtype=new_dataset_type,
             compression="gzip",
             compression_opts=9
         )
     else:
         new_dataset = hdf5_file.create_dataset(
-            dataset_h5path,
+            old_h5path,
             data=new_dataset,
-            dtype=new_dataset_type,
             compression="gzip",
             compression_opts=9
         )
@@ -259,9 +252,9 @@ def replace_h5_dataset(
 
 def save_data(
         nx_file: h5py.File,
+        new_group_name: str,
         parameter_symbol: str,
         parameter_data: np.ndarray,
-        group_name: str,
         value_data: np.ndarray,
         mask: np.ndarray
 ) -> None:
@@ -282,22 +275,18 @@ def save_data(
     parameter_data :
         Contains the parameter data
 
-    group_name :
+    new_group_name :
         Name of the group containing all the data
 
     value_data :
         Contains the data
     """
     # We create the dataset h5path and if it exists we delete what was previously there
-    group_name = group_name.upper()
-    dataset_path = f"/ENTRY/{group_name}"
-    if dataset_path in nx_file and group_name != "DATA":
+    new_group_name = new_group_name.upper()
+    dataset_path = f"/ENTRY/{new_group_name}"
+    if dataset_path in nx_file and new_group_name != "DATA":
         del nx_file[dataset_path]
-
-    # we copy the raw data and set the copied data to the name selected
-    # That way we also copy the attributes
-    if group_name != "DATA":
-        nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], group_name)
+        nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], new_group_name)
 
     # we replace the raw data with the new data
     # TODO : propagate uncertainties
@@ -306,31 +295,17 @@ def save_data(
         nx_file,
         f"{dataset_path}/Q",
         parameter_data,
-        parameter_data.dtype,
         f"{dataset_path}/{parameter_symbol}"
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Qdev",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQl",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
-    )
-    replace_h5_dataset(
-        nx_file,
-        f"{dataset_path}/dQw",
-        np.zeros(np.shape(parameter_data)),
-        np.zeros(np.shape(parameter_data)).dtype
+        np.zeros(np.shape(parameter_data))
     )
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Qmean",
-        np.array([0]),
+        np.mean(parameter_data),
         np.array([0]).dtype
     )
     # Concerning I
@@ -343,15 +318,13 @@ def save_data(
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/Idev",
-        np.zeros(np.shape(value_data)),
-        np.zeros(np.shape(value_data)).dtype
+        np.zeros(np.shape(value_data))
     )
-
+    # Concerning the mask
     replace_h5_dataset(
         nx_file,
         f"{dataset_path}/mask",
-        mask,
-        bool
+        mask
     )
 
     dim = len(np.shape(nx_file[f"{dataset_path}/I"]))
@@ -359,7 +332,7 @@ def save_data(
         del nx_file[f"{dataset_path}/mask"]
 
         del nx_file[f"{dataset_path}"].attrs["I_axes"]
-        nx_file[f"{dataset_path}"].attrs["I_axes"] = "Q"
+        nx_file[f"{dataset_path}"].attrs["I_axes"] = ["Q"]
 
         del nx_file[f"{dataset_path}"].attrs["Q_indices"]
         nx_file[f"{dataset_path}"].attrs["Q_indices"] = [0]
@@ -368,8 +341,6 @@ def save_data(
         nx_file[f"{dataset_path}"].attrs["mask_indices"] = [0]
     elif dim == 2:
         del nx_file[f"{dataset_path}/Qdev"]
-        del nx_file[f"{dataset_path}/dQl"]
-        del nx_file[f"{dataset_path}/dQw"]
 
 
 def delete_data(

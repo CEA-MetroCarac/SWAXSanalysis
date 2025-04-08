@@ -215,33 +215,6 @@
                                 "type": "NX_CHAR",
                                 "docstring": "Name of the Q uncertainties dataset",
                                 "content": null
-                            },
-                            "@resolutions": {
-                                "element type": "attribute",
-                                "value": null,
-                                "possible value": [
-                                    "dQl, dQw"
-                                ],
-                                "EX_required": false,
-                                "type": "NX_CHAR",
-                                "docstring": "Names(s) of the resolutions dataset.\nString with this format : \"name1, name2\"",
-                                "content": null
-                            },
-                            "@resolutions_description": {
-                                "element type": "attribute",
-                                "value": null,
-                                "possible value": [
-                                    "Gaussian",
-                                    "Lorentzian",
-                                    "Square",
-                                    "Triangular",
-                                    "Sawtooth-outward",
-                                    "Sawtooth-inward"
-                                ],
-                                "EX_required": false,
-                                "type": "NX_CHAR",
-                                "docstring": "Form of the resolution",
-                                "content": null
                             }
                         }
                     },
@@ -270,64 +243,6 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Unit of Qdev (will be converted to 1/nm).",
-                                "content": null
-                            }
-                        }
-                    },
-                    "/dQl": {
-                        "element type": "dataset",
-                        "value": null,
-                        "possible value": [
-                            "Autofilled"
-                        ],
-                        "EX_required": false,
-                        "type": "NX_NUMBER",
-                        "docstring": "Array of Q's horizontal resolution'",
-                        "content": {
-                            "@units": {
-                                "element type": "attribute",
-                                "value": null,
-                                "possible value": [
-                                    [
-                                        "arbitrary",
-                                        "1/m",
-                                        "1/nm",
-                                        "1/angstrom"
-                                    ],
-                                    "1/nm"
-                                ],
-                                "EX_required": true,
-                                "type": "NX_CHAR",
-                                "docstring": "Unit of dQl (will be converted to 1/nm).",
-                                "content": null
-                            }
-                        }
-                    },
-                    "/dQw": {
-                        "element type": "dataset",
-                        "value": null,
-                        "possible value": [
-                            "Autofilled"
-                        ],
-                        "EX_required": false,
-                        "type": "NX_NUMBER",
-                        "docstring": "Array of Q's vertical resolution'",
-                        "content": {
-                            "@units": {
-                                "element type": "attribute",
-                                "value": null,
-                                "possible value": [
-                                    [
-                                        "arbitrary",
-                                        "1/m",
-                                        "1/nm",
-                                        "1/angstrom"
-                                    ],
-                                    "1/nm"
-                                ],
-                                "EX_required": true,
-                                "type": "NX_CHAR",
-                                "docstring": "Unit of dQw (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
