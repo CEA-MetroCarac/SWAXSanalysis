@@ -73,7 +73,7 @@
             },
             "/run": {
                 "element type": "dataset",
-                "value": "Date",
+                "value": "",
                 "possible value": [],
                 "type": "NX_CHAR",
                 "EX_required": true,
@@ -137,7 +137,7 @@
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_CHAR",
-                        "docstring": "Will specify which dimension correpsond to each parameters\nString with this format : \"parameter1, parameter2, ..., parameterN\"",
+                        "docstring": "Will specify which dimension correspond to each parameters\nString with this format : \"parameter1, parameter2, ..., parameterN\"",
                         "content": null
                     },
                     "@Q_indices": {
@@ -146,7 +146,7 @@
                         "possible value": [],
                         "EX_required": true,
                         "type": "NX_INT",
-                        "docstring": "Will specify the index (0_based) of the parameter in @I_axesused to plot the I data.\nString with this format : \"index1, index2\"",
+                        "docstring": "Will specify the index (0_based) of the parameter in @I_axes used to plot the I data.\nString with this format : \"index1, index2\"",
                         "content": null
                     },
                     "@mask": {
@@ -218,31 +218,6 @@
                                 "type": "NX_CHAR",
                                 "docstring": "Name of the Q uncertainties dataset",
                                 "content": null
-                            },
-                            "@resolutions": {
-                                "element type": "attribute",
-                                "value": "dQl, dQw",
-                                "possible value": [],
-                                "EX_required": false,
-                                "type": "NX_CHAR",
-                                "docstring": "Names(s) of the resolutions dataset.\nString with this format : \"name1, name2\"",
-                                "content": null
-                            },
-                            "@resolutions_description": {
-                                "element type": "attribute",
-                                "value": "Gaussian",
-                                "possible value": [
-                                    "Gaussian",
-                                    "Lorentzian",
-                                    "Square",
-                                    "Triangular",
-                                    "Sawtooth-outward",
-                                    "Sawtooth-inward"
-                                ],
-                                "EX_required": false,
-                                "type": "NX_CHAR",
-                                "docstring": "Form of the resolution",
-                                "content": null
                             }
                         }
                     },
@@ -274,70 +249,6 @@
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "Unit of Qdev (will be converted to 1/nm).",
-                                "content": null
-                            }
-                        }
-                    },
-                    "/dQl": {
-                        "element type": "dataset",
-                        "value": "Autofilled",
-                        "possible value": [
-                            "Autofilled"
-                        ],
-                        "EX_required": false,
-                        "type": "NX_NUMBER",
-                        "docstring": "Array of Q's horizontal resolution'",
-                        "content": {
-                            "@units": {
-                                "element type": "attribute",
-                                "value": [
-                                    "arbitrary",
-                                    "1/nm"
-                                ],
-                                "possible value": [
-                                    [
-                                        "arbitrary",
-                                        "1/m",
-                                        "1/nm",
-                                        "1/angstrom"
-                                    ],
-                                    "1/nm"
-                                ],
-                                "EX_required": true,
-                                "type": "NX_CHAR",
-                                "docstring": "Unit of dQl (will be converted to 1/nm).",
-                                "content": null
-                            }
-                        }
-                    },
-                    "/dQw": {
-                        "element type": "dataset",
-                        "value": "Autofilled",
-                        "possible value": [
-                            "Autofilled"
-                        ],
-                        "EX_required": false,
-                        "type": "NX_NUMBER",
-                        "docstring": "Array of Q's vertical resolution'",
-                        "content": {
-                            "@units": {
-                                "element type": "attribute",
-                                "value": [
-                                    "arbitrary",
-                                    "1/nm"
-                                ],
-                                "possible value": [
-                                    [
-                                        "arbitrary",
-                                        "1/m",
-                                        "1/nm",
-                                        "1/angstrom"
-                                    ],
-                                    "1/nm"
-                                ],
-                                "EX_required": true,
-                                "type": "NX_CHAR",
-                                "docstring": "Unit of dQw (will be converted to 1/nm).",
                                 "content": null
                             }
                         }
@@ -1094,7 +1005,7 @@
                             },
                             "/type": {
                                 "element type": "dataset",
-                                "value": "Fixed Tube X-ray",
+                                "value": "Hollow cathod lamp",
                                 "possible value": [
                                     "Spallation Neutron Source",
                                     "Pulsed Reactor Neutron Source",
@@ -1135,7 +1046,7 @@
                             },
                             "/beam_shape": {
                                 "element type": "attribute",
-                                "value": "ellipsoid",
+                                "value": "",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_CHAR",
@@ -1264,7 +1175,7 @@
                             },
                             "/beam_size_x": {
                                 "element type": "dataset",
-                                "value": "",
+                                "value": "30",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1294,7 +1205,7 @@
                             },
                             "/beam_size_y": {
                                 "element type": "dataset",
-                                "value": "",
+                                "value": "30",
                                 "possible value": [],
                                 "EX_required": false,
                                 "type": "NX_NUMBER",
@@ -1624,7 +1535,7 @@
                     },
                     "/date": {
                         "element type": "dataset",
-                        "value": "",
+                        "value": "Date",
                         "possible value": [],
                         "EX_required": false,
                         "type": "NX_DATE_TIME",

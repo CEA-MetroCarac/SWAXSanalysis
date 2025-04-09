@@ -12,6 +12,7 @@ import shutil
 import ctypes
 import tkinter as tk
 
+# To manage icon of the app
 myappid: str = 'CEA.nxformat.launcher'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
@@ -80,7 +81,7 @@ def launcher_gui() -> None:
     )
 
     shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202503250953.json",
+        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
         CONF_PATH
     )
 
