@@ -1034,7 +1034,7 @@ class NexusFile:
 
     def process_absolute_intensity(
             self,
-            db_path: Path | str = None,
+            db_path: Path | str = "",
             group_name: str = "DATA_ABS",
             display: bool = False,
             save: bool = False,
@@ -1043,7 +1043,6 @@ class NexusFile:
             sample_thickness: float = 1e-9,
     ):
         """
-        TODO : change the default parameters for None
         This process convert the intensities in your file into absolute intensities.
 
         Parameters
@@ -1058,19 +1057,15 @@ class NexusFile:
             Choose whether you want to display tha data or not
 
         sample_thickness :
-        # TODO : by default get the thickness from the HDF5 directly
             The thickness of the sample
 
         db_path :
-        # TODO : delete this parameter and find a way to save the db data into the HDF5
             path of the direct beam data
 
         roi_size_x :
-        # TODO : by default get the x size from the HDF5 directly
             Horizontal size of the region of interest. By default gets the beam size of the HDF5
 
         roi_size_y :
-        # TODO : by default get the y size from the HDF5 directly
             Vertical size of the region of interest. By default gets the beam size of the HDF5
         """
         if db_path is None:
@@ -1152,6 +1147,8 @@ class NexusFile:
                 i_list = abs_data
                 mask = self.list_smi_data[index].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
+
+                # TODO : make a file with 2 sub entry ? one for DB and one for sample
 
                 create_process(nx_file,
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -1239,7 +1236,8 @@ class NexusFile:
     def process_2_param_intensity(self, group_name="DATA_RAD_AVG",
                                   other_variable="ENTRY/INSTRUMENT/DETECTOR/SDD"):
         """
-        TODO : loop over all files, get the x param and get the list of other param to build a mesh grind and put it into diplay data
+        TODO : loop over all files, get the x param and get the list of other param to build a mesh grid and put it
+        TODO : into diplay data
         Parameters
         ----------
         group_name

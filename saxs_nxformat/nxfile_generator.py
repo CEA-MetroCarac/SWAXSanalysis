@@ -26,10 +26,9 @@ import fabio
 import h5py
 import numpy as np
 
-from . import DTC_PATH, TREATED_PATH, BASE_DIR, ICON_PATH, DICT_UNIT, QUEUE_PATH
-from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
+from . import *
 from .class_nexus_file import NexusFile
-from .utils import string_2_value, convert, delete_data, save_data
+from .utils import *
 
 
 def data_treatment(
@@ -83,7 +82,8 @@ def data_treatment(
 def generate_nexus(
         edf_path: str | Path,
         hdf5_path: str | Path,
-        settings_path: str | Path
+        settings_path: str | Path,
+        is_db: bool = False
 ) -> str:
     """
     The main function. it creates the hdf5 file and fills all it's content
@@ -91,6 +91,9 @@ def generate_nexus(
 
     Parameters
     ----------
+    is_db :
+        flag to know if the data is a direct beam data
+
     edf_path :
         Path of the original file
 
@@ -164,10 +167,12 @@ def generate_nexus(
     # TODO : Think of a better file name template
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
+    if is_db:
+        sample_name = sample_name+"DB"
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
-    hdf5_path = os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5")
+    hdf5_path = Path(os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"))
 
     # We save the data
     with h5py.File(hdf5_path, "w") as save_file:
@@ -184,8 +189,29 @@ def generate_nexus(
         save_file["ENTRY/DATA"].attrs["Q_indices"] = [0, 1]
         del save_file["ENTRY/DATA"].attrs["mask_indices"]
         save_file["ENTRY/DATA"].attrs["mask_indices"] = [0, 1]
-        # TODO : Add an if statement to check for a "do absolute" flag
-        # TODO : if there is load the calibration data into the file
+
+        do_absolute = extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity")
+        if do_absolute and not is_db:
+            # TODO : find db_path, extract data, put in file under DATA_DIRECT_BEAM
+            db_path = Path(extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity", "attribute", "dbpath"))
+            db_path = pathlib.Path(*db_path.parts[1:])
+
+            # trick : we don't know when the path is going to be valid, so we strip the first part
+            # of the path util there is a match
+            while len(db_path.parts[1:]) != 0:
+                print("og path", db_path)
+                try:
+                    print("path tried", QUEUE_PATH / db_path)
+                    db_hdf5_path = generate_nexus(QUEUE_PATH / db_path, hdf5_path.parents[0], settings_path, is_db=True)
+                    # Turns continuously since it never goes to except when it succeeds
+                    # Do absolute intensity and then return hdf5 path!
+                except Exception as error:
+                    db_path = pathlib.Path(*db_path.parts[1:])
+                    print(error)
+            print("\npath used", QUEUE_PATH / db_path)
+
+
+
     return hdf5_path
 
 

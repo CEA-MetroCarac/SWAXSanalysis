@@ -1664,7 +1664,7 @@
                         "content": {
                             "@dbpath": {
                                 "element type": "attribute",
-                                "value": "",
+                                "value": "direct_beam_path",
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
