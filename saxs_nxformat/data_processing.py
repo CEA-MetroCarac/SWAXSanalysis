@@ -306,6 +306,17 @@ class GUI_process(tk.Tk):
                     )
                     for group in get_group_names(self.selected_files):
                         entry_param.insert(tk.END, group)
+
+                elif param_name == "other_variable":
+                    entry_param = tk.Listbox(
+                        self.param_frame,
+                        font=FONT_TEXT,
+                        selectmode=tk.SINGLE,
+                        exportselection=False
+                    )
+                    for group in get_group_names(self.selected_files):
+                        entry_param.insert(tk.END, group)
+
                 else:
                     entry_param = tk.Entry(self.param_frame,
                                            font=FONT_TEXT)

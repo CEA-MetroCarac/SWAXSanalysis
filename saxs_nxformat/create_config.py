@@ -78,11 +78,11 @@ class GUI_setting(tk.Tk):
         self.frame3 = tk.Frame(self)
         self.stringvar_file_name = tk.StringVar()
         self.frame3.pack(padx=8, pady=8, fill="x")
-        self._create_widget_frame3_1()
+        self._create_next_step()
 
-        self._create_widgets_frame1()
+        self._create_input()
 
-    def _create_widgets_frame1(self) -> None:
+    def _create_input(self) -> None:
         """
         This method adds a label, an entry field, and a browse button to the first frame.
         The entry field displays the absolute path of the reference file selected 
@@ -109,14 +109,14 @@ class GUI_setting(tk.Tk):
             self.frame1,
             text="browse",
             font=FONT_BUTTON,
-            command=lambda: self._create_widget_frame2_1(
+            command=lambda: self._display_edf_header(
                 entry_datapath,
                 stringvar_datapath
             )
         )
         button_browse_data.grid(column=2, row=0, sticky="w")
 
-    def _create_widget_frame2_1(
+    def _display_edf_header(
             self,
             widget: tk.Entry,
             string_var: tk.StringVar
@@ -171,9 +171,9 @@ class GUI_setting(tk.Tk):
             check_button.grid(column=2, row=row_nbr, sticky="w", pady=4)
             check_button.state(['!alternate'])
 
-        self._create_widget_frame3_1()
+        self._create_next_step()
 
-    def _create_widget_frame2_2(
+    def _display_nexus_structure(
             self,
             checked_label: list[str]
     ) -> None:
@@ -224,7 +224,7 @@ class GUI_setting(tk.Tk):
                                      row=line[0],
                                      sticky="w")
 
-                # If the element is a dataset we display a label in the first column
+                # If the element is a dataset or attribute we display a label in the first column
                 else:
                     if len(possible_value) == 1 and content is None:
                         level = level + 1
@@ -292,9 +292,9 @@ class GUI_setting(tk.Tk):
 
         create_fillables(self.dict_config)
 
-        self.create_widget_frame3_2()
+        self.create_save()
 
-    def _create_widget_frame3_1(self) -> None:
+    def _create_next_step(self) -> None:
         """
         This method creates the next step and close button
         for the frame 2-1.
@@ -318,7 +318,7 @@ class GUI_setting(tk.Tk):
             command=lambda: self.destroy())
         button_close.pack(padx=8, pady=8, side="left")
 
-    def create_widget_frame3_2(self) -> None:
+    def create_save(self) -> None:
         """
         This method creates the save and close button as well as
         the entry to enter a name for the settings file for the frame 2-2
@@ -415,8 +415,8 @@ class GUI_setting(tk.Tk):
             "Do you confirm you want to keep the following parameters :\n" +
             string[0:-2:1])
         if confirm:
-            self._create_widget_frame2_2(checked_labels)
-            self.create_widget_frame3_2()
+            self._display_nexus_structure(checked_labels)
+            self.create_save()
 
     def _save_settings(self) -> None:
         """

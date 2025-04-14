@@ -148,6 +148,26 @@ def convert(
     return number
 
 
+def explore_file(group, explore_group=False, explore_dataset=False, level=0, base_path=""):
+    paths = []
+
+    for key in group.keys():
+        item = group[key]
+        full_path = f"{base_path}/{key}"
+
+        if isinstance(item, h5py.Group):
+            paths.append(full_path)
+            paths.extend(explore_file(item, explore_group, explore_dataset, level + 1, full_path))
+        elif isinstance(item, h5py.Dataset) and explore_group:
+            paths.append(full_path)
+            if item.attrs and explore_dataset:
+                for key_attribute in item.attrs.keys():
+                    paths.append(f"{full_path}/{key_attribute}")
+
+    return paths
+
+
+
 def extract_from_h5(
         nx_file: h5py.File,
         h5path: str,
@@ -183,7 +203,7 @@ def extract_from_h5(
     else:
         raise Exception(f"{h5path} is not in the file {nx_file}")
 
-    # We detect if the dataset is a scalar, an array or an attribute
+    # We detect if the dataset is a scalar, an array, bytes, or an attribute
     if data_type == "dataset" and np.shape(dataset) == ():
         return dataset[()]
     elif data_type == "dataset" and np.shape(dataset) != ():

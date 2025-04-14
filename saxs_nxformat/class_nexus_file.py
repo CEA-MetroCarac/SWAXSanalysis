@@ -10,6 +10,7 @@ import os
 import shutil
 import re
 import inspect
+import copy
 from typing import Dict, Any
 
 import h5py
@@ -1073,8 +1074,7 @@ class NexusFile:
             Vertical size of the region of interest. By default gets the beam size of the HDF5
         """
         if db_path is None:
-            print("No direct beam data")
-            return
+            raise Exception("No direct beam data path")
 
         if len(self.file_paths) != len(self.list_smi_data):
             self._stitching()
@@ -1131,7 +1131,7 @@ class NexusFile:
             I_ROI_db = I_ROI_db / time_db
 
             transmission = I_ROI_data / I_ROI_db
-            scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1/sample_thickness))
+            scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1 / sample_thickness))
             scaling_factor = scaling_factor * 1e-9
 
             abs_data = raw_data * scaling_factor
@@ -1236,12 +1236,94 @@ class NexusFile:
                            )
     """
 
+    def process_2_param_intensity(self, group_name="DATA_RAD_AVG",
+                                  other_variable="ENTRY/INSTRUMENT/DETECTOR/SDD"):
+        """
+        TODO : loop over all files, get the x param and get the list of other param to build a mesh grind and put it into diplay data
+        Parameters
+        ----------
+        group_name
+        other_variable
+
+        Returns
+        -------
+
+        """
+        for index, h5file in enumerate(self.nx_files):
+            try:
+                extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+            except Exception:
+                raise f"{group_name} does not have any intensity data"
+
+            if len(np.shape(extracted_value_data)) != 1:
+                raise Exception("ENTRY/{group_name}/I is not a 1D dataset")
+
+            if f"ENTRY/{group_name}/R" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
+            elif f"ENTRY/{group_name}/Q" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
+            elif f"ENTRY/{group_name}/Chi" in nxfile:
+                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
+            else:
+                raise Exception(f"{group_name} does not have any R / Q / Chi data")
+
+
+
+            self._display_data(index, )
+
     def process_delete_data(
             self,
             group_name: str = "DATA_Q_SPACE"
     ) -> None:
         for index, nxfile in enumerate(self.nx_files):
             delete_data(nxfile, group_name)
+
+    def _detect_variables(self):
+        """
+        Process detecting all common variable between the opened files and returning only the ones that
+        change in between those files.
+
+        Returns
+        -------
+        Dictionary :
+            - key : path of the variable in the HDF5 file
+            - value : list of unique values (no duplicate)
+        """
+        dict_var = {}
+        # We get all parameters' paths
+        for index, nx_file in enumerate(self.nx_files):
+            base_path = "ENTRY/INSTRUMENT"
+            paths = explore_file(nx_file[base_path], explore_group=True, explore_dataset=False, base_path=base_path)
+            dict_var[nx_file] = paths
+
+        # We count the number of times each paths appear in all the list
+        dict_count = {}
+        for key, value in dict_var.items():
+            for h5path in value:
+                if h5path in dict_count.keys():
+                    dict_count[h5path] += 1
+                else:
+                    dict_count[h5path] = 1
+
+        # If the number of time the parameter appear is different from the number of file we delete this parameter
+        dict_valid_path = copy.deepcopy(dict_count)
+        for path, count in dict_count.items():
+            if count != len(self.nx_files) or isinstance(self.nx_files[0][path], h5py.Group):
+                del dict_valid_path[path]
+
+        # We get the parameter for each file
+        dict_param_value = {}
+        for path in dict_valid_path.keys():
+            param_dict = {}
+            for h5file in dict_var.keys():
+                value = extract_from_h5(h5file, path)
+                if isinstance(value, bytes):
+                    value = value.decode("utf-8")
+                filename = Path(h5file.filename).name
+                param_dict[filename] = value
+            if len(set(param_dict.values())) != 1:
+                dict_param_value[path] = param_dict
+        return dict_param_value
 
     def _display_data(
             self,
@@ -1434,22 +1516,19 @@ class NexusFile:
 
 if __name__ == "__main__":
 
-    profiler = cProfile.Profile()
-    profiler.enable()
+    # profiler = cProfile.Profile()
+    # profiler.enable()
 
-    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - XEUSS" \
-               r"\year - 2025\config ID - 202503101406\experiment - measure\detector - SAXS\format - NX"
+    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - XEUSS\year - 2025\config " \
+               r"ID - 202504090957\experiment - measure\detector - SAXS\format - NX"
     path_list = []
 
     for file in os.listdir(data_dir):
         path_list.append(os.path.join(data_dir, file))
 
-    nx_files = NexusFile(path_list[0:2], do_batch=True)
-    print(nx_files.nx_files)
-    nx_files.add_file(path_list[2:4])
-    print(nx_files.nx_files)
-    nx_files.nexus_close()
+    nx_files = NexusFile(path_list, do_batch=True)
+    print(nx_files._detect_variables())
 
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('tottime')
-    stats.print_stats()
+    # profiler.disable()
+    # stats = pstats.Stats(profiler).sort_stats('tottime')
+    # stats.print_stats()
