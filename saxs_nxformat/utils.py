@@ -378,11 +378,20 @@ def delete_data(
     group_name :
         Name of the data group to delete
     """
+    # We delete the data
     group_name = group_name.upper()
     if group_name in nx_file["/ENTRY"]:
         del nx_file[f"/ENTRY/{group_name}"]
     else:
-        print("This group does not exists")
+        raise Exception(f"The group /ENTRY/{group_name} does not exist in the file {nx_file.filename}")
+
+    # We delete the associated process
+    process_name = group_name.removeprefix("DATA_")
+
+    if process_name in nx_file["/ENTRY"]:
+        del nx_file[f"/ENTRY/{process_name}"]
+    else:
+        raise Exception(f"The group /ENTRY/{process_name} does not exist in the file {nx_file.filename}")
 
 
 def detect_variation(
