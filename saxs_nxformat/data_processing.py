@@ -233,11 +233,24 @@ class GUI_process(tk.Tk):
             Name of the process that will have its parameters
             displayed in the frame
         """
+        self.to_process = []
+        selected_index = self.file_list.curselection()
+
+        for index in selected_index:
+            self.to_process += [self.selected_files[index]]
+
         if self.selected_files is None:
             self.after(
                 0,
                 self.print_log,
                 "You didn't specify any file to process.\nCouldn't build parameters properly."
+            )
+            return
+        if len(self.to_process) == 0:
+            self.after(
+                0,
+                self.print_log,
+                "You didn't select any file to process.\nCouldn't build parameters properly."
             )
             return
 
@@ -270,7 +283,7 @@ class GUI_process(tk.Tk):
 
         self.input_data = ttk.Combobox(self.param_frame,
                                        font=FONT_TEXT)
-        self.input_data["values"] = get_group_names(self.selected_files)
+        self.input_data["values"] = get_group_names(self.to_process)
         self.input_data.current(0)
         self.input_data.grid(column=1, row=2, pady=5, padx=5, sticky="we")
 
@@ -296,7 +309,7 @@ class GUI_process(tk.Tk):
                 if param_name == "group_name":
                     entry_param = ttk.Combobox(self.param_frame,
                                                font=FONT_TEXT)
-                    entry_param["values"] = get_group_names(self.selected_files)
+                    entry_param["values"] = get_group_names(self.to_process)
                 elif param_name == "group_names":
                     entry_param = tk.Listbox(
                         self.param_frame,
@@ -304,7 +317,7 @@ class GUI_process(tk.Tk):
                         selectmode=tk.MULTIPLE,
                         exportselection=False
                     )
-                    for group in get_group_names(self.selected_files):
+                    for group in get_group_names(self.to_process):
                         entry_param.insert(tk.END, group)
 
                 elif param_name == "other_variable":
@@ -314,7 +327,7 @@ class GUI_process(tk.Tk):
                         selectmode=tk.SINGLE,
                         exportselection=False
                     )
-                    for group in get_group_names(self.selected_files):
+                    for group in get_group_names(self.to_process):
                         entry_param.insert(tk.END, group)
 
                 else:

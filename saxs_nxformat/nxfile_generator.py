@@ -168,7 +168,7 @@ def generate_nexus(
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     if is_db:
-        sample_name = sample_name+"DB"
+        sample_name = sample_name + "DB"
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
@@ -198,21 +198,25 @@ def generate_nexus(
 
             # trick : we don't know when the path is going to be valid, so we strip the first part
             # of the path util there is a match
-            while len(db_path.parts[1:]) != 0:
-                print("og path", db_path)
+            do_while = True
+            while len(db_path.parts[1:]) != 0 and do_while:
                 try:
-                    print("path tried", QUEUE_PATH / db_path)
                     db_hdf5_path = generate_nexus(QUEUE_PATH / db_path, hdf5_path.parents[0], settings_path, is_db=True)
-                    # Turns continuously since it never goes to except when it succeeds
-                    # Do absolute intensity and then return hdf5 path!
+                    do_while = False
                 except Exception as error:
                     db_path = pathlib.Path(*db_path.parts[1:])
-                    print(error)
             print("\npath used", QUEUE_PATH / db_path)
 
+    if do_absolute == 1 and not is_db:
+        nx_file = NexusFile([hdf5_path], do_batch=False)
+        try:
+            nx_file.process_absolute_intensity(db_hdf5_path, group_name="DATA_ABS", save=True)
+        except Exception as error:
+            print(error)
+        finally:
+            nx_file.nexus_close()
 
-
-    return hdf5_path
+    return str(hdf5_path)
 
 
 def search_setting_edf(
@@ -333,7 +337,6 @@ class GUI_generator(tk.Tk):
     def __init__(self) -> None:
         self.activate_thread = False
         self.line_dict = {}
-        self.selected_processes = {}
 
         super().__init__()
         self.title("Auto Generate Controller")
@@ -386,34 +389,6 @@ class GUI_generator(tk.Tk):
         )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
 
-        self.process_list_label = tk.Label(
-            self.control_panel,
-            text="Select processes to apply",
-            font=FONT_TEXT,
-            padx=10, pady=10)
-        self.process_list_label.grid(column=0, row=5, sticky="w", padx=5)
-
-        self.process_list = tk.Listbox(
-            self.control_panel,
-            selectmode=tk.MULTIPLE,
-            width=80,
-            font=FONT_TEXT
-        )
-        self.process_list.grid(padx=10, pady=10, row=6, column=0)
-        self.process_list.configure(exportselection=False)
-        self.process_list.bind("<<ListboxSelect>>", self.build_process_list)
-
-        self.process = {}
-        for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
-            if name.startswith("process_"):
-                if name.startswith("process_q_space"):
-                    continue
-                process_name = name.removeprefix("process_").replace("_", " ")
-                self.process[process_name] = method
-                self.process_list.insert(tk.END, process_name)
-                if process_name in ["q space", "radial average"]:
-                    self.process_list.selection_set(tk.END)
-        self.build_process_list()
         # Close Button
         close_button = tk.Button(
             self.control_panel,
@@ -455,15 +430,6 @@ class GUI_generator(tk.Tk):
         """Function to print logs in the Tkinter Text widget."""
         self.log_text.insert(tk.END, message + "\n\n")
         self.log_text.see(tk.END)
-
-    def build_process_list(
-            self,
-            event=None
-    ) -> None:
-        self.selected_processes = {}
-        for index in self.process_list.curselection():
-            selected_item = self.process_list.get(index)
-            self.selected_processes[selected_item] = self.process[selected_item]
 
     def auto_generate(self) -> None:
         """
@@ -527,8 +493,24 @@ class GUI_generator(tk.Tk):
             finally:
                 shutil.copy(file_path, result[1] / file_path.name)
 
-            nx_file = NexusFile([new_file_path])
+            # We decide whether we want to do absolute intensity treatment or not
+            with h5py.File(new_file_path, "r") as h5obj:
+                do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
+            print(do_absolute)
+            if do_absolute == 1:
+                input_group = "DATA_ABS"
+            else:
+                input_group = "DATA"
+
+            # We then do the absolute treatment
+            self.after(
+                0,
+                self.print_log,
+                f"Opening {Path(new_file_path).name} using {input_group} as base data"
+            )
+            nx_file = NexusFile([new_file_path], input_data_group=input_group)
             try:
+                # Do Q space
                 self.after(
                     0,
                     self.print_log,
@@ -540,18 +522,19 @@ class GUI_generator(tk.Tk):
                     self.print_log,
                     f"q space done."
                 )
-                for process_name, process in self.selected_processes.items():
-                    self.after(
-                        0,
-                        self.print_log,
-                        f"Doing {process_name}..."
-                    )
-                    process(nx_file, save=True)
-                    self.after(
-                        0,
-                        self.print_log,
-                        f"{process_name} done."
-                    )
+
+                # Do radial average
+                self.after(
+                    0,
+                    self.print_log,
+                    f"Doing radial integration"
+                )
+                nx_file.process_radial_average(save=True)
+                self.after(
+                    0,
+                    self.print_log,
+                    f"radial integration done."
+                )
             except Exception as exception:
                 self.after(
                     0,
@@ -579,13 +562,6 @@ class GUI_generator(tk.Tk):
 
     def start_thread(self) -> None:
         """Start the auto_generate function in a separate thread."""
-        if not self.selected_processes:
-            self.after(
-                0,
-                self.print_log,
-                "You did not select any processes"
-            )
-            return
         self.activate_thread = True
         thread = threading.Thread(target=self.auto_generate, daemon=True)
         thread.start()

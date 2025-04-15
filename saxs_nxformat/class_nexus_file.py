@@ -1040,7 +1040,7 @@ class NexusFile:
             save: bool = False,
             roi_size_x: int = 30,
             roi_size_y: int = 30,
-            sample_thickness: float = 1e-9,
+            sample_thickness: float = 0.15,
     ):
         """
         This process convert the intensities in your file into absolute intensities.
@@ -1127,6 +1127,7 @@ class NexusFile:
 
             transmission = I_ROI_data / I_ROI_db
             scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1 / sample_thickness))
+            # TODO : 1e-9 pas forcément correct
             scaling_factor = scaling_factor * 1e-9
 
             abs_data = raw_data * scaling_factor
@@ -1445,7 +1446,9 @@ class NexusFile:
                 indices_high_var = detect_variation(extracted_value_data, 1e5)
                 if len(indices_high_var):
                     first_index, last_index = indices_high_var[0], indices_high_var[-1]
-
+            ResDir2 = r"C:\Users\AT280565\PycharmProjects\EdfToHdf5\data\GC_treated"
+            ref = np.loadtxt(os.path.join(ResDir2, 'GlassyCarbonT-10p_ErrorBar.dat'), skiprows=124)
+            self.ax.plot(ref[:, 0], ref[:, 1], linewidth=2, color='c')
             self.ax.plot(
                 extracted_param_data[first_index:last_index],
                 extracted_value_data[first_index:last_index],
@@ -1509,7 +1512,7 @@ class NexusFile:
         """
         for index, file_obj in enumerate(self.nx_files):
             file_obj.close()
-            repack_hdf5(self.file_paths[index], self.file_paths[index] + ".tmp")
+            repack_hdf5(self.file_paths[index], str(self.file_paths[index]) + ".tmp")
 
 
 if __name__ == "__main__":
