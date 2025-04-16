@@ -432,13 +432,8 @@ class GUI_process(tk.Tk):
                     entry_value = str(widget.get())
                     value = string_2_value(entry_value)
 
-                if tag == "group_name":
-                    err = False
-                    err_str = f"The group {value} is not present in the following files :\n"
-                    for path in self.to_process:
-                        with h5py.File(path, "r") as h5_obj:
-                            if value not in h5_obj:
-                                err = True
+                if "other_variable" in tag:
+                    value = value[0]
 
                 param_dict[tag] = value
 

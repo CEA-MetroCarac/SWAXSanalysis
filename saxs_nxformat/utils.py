@@ -104,7 +104,7 @@ def convert(
     number :
         The converted value
     """
-    if unit_start == "arbitrary" or unit_end == "arbitrary" or number is None:
+    if unit_start == "arbitrary" or unit_end == "arbitrary" or type(number) not in [int, float]:
         return number
     unit_type1 = None
     unit_type2 = None
@@ -142,9 +142,9 @@ def convert(
         starting_unit = DICT_UNIT[unit_type][unit_start]
         ending_unit = DICT_UNIT[unit_type][unit_end]
 
+        print(number, starting_unit, ending_unit)
         number = number * (starting_unit / ending_unit)
 
-    # print(number_start, unitStart, number, unitEnd)
     return number
 
 

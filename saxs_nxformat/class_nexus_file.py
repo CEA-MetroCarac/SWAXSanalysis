@@ -2,9 +2,7 @@
 The main feature of this module is the NexusFile class which is used
 to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
-TODO : Ajouter un moyen de construire des donnée 2D profil radial
-TODO : en fonction d'un parametre commun à tout les fichiers.
-TODO : (détecter le paramètre qui change au sein d'un groupe de fichier ?)
+TODO : Add smoothing method
 """
 import os
 import shutil
@@ -1038,9 +1036,9 @@ class NexusFile:
             group_name: str = "DATA_ABS",
             display: bool = False,
             save: bool = False,
-            roi_size_x: int = 30,
-            roi_size_y: int = 30,
-            sample_thickness: float = 0.15,
+            roi_size_x: int = 40,
+            roi_size_y: int = 40,
+            sample_thickness: float = 1.16e-2,
     ):
         """
         This process convert the intensities in your file into absolute intensities.
@@ -1123,12 +1121,23 @@ class NexusFile:
                 beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
                 ]
             )
+            plt.figure()
+            plt.imshow(
+                raw_db[
+                beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
+                beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
+                ],
+                vmin=0,
+                vmax=np.percentile(
+                    raw_db[~np.isnan(raw_db)],
+                    99)
+            )
+            plt.show()
             I_ROI_db = I_ROI_db / time_db
 
             transmission = I_ROI_data / I_ROI_db
             scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1 / sample_thickness))
-            # TODO : 1e-9 pas forcément correct
-            scaling_factor = scaling_factor * 1e-9
+            scaling_factor = scaling_factor * 1e-9 #5.3050172e-9
 
             abs_data = raw_data * scaling_factor
 
@@ -1234,13 +1243,20 @@ class NexusFile:
                            )
     """
 
-    def process_2_param_intensity(self, group_name="DATA_RAD_AVG",
-                                  other_variable="ENTRY/INSTRUMENT/DETECTOR/SDD"):
+    def process_2_param_intensity(
+            self,
+            save: bool = False,
+            display: bool = False,
+            group_name: str = "DATA_RAD_AVG",
+            other_variable: str = "ENTRY/COLLECTION/stretch"
+    ):
         """
         TODO : loop over all files, get the x param and get the list of other param to build a mesh grid and put it
         TODO : into diplay data
         Parameters
         ----------
+        save
+        display
         group_name
         other_variable
 
@@ -1248,27 +1264,50 @@ class NexusFile:
         -------
 
         """
-        for index, h5file in enumerate(self.nx_files):
-            try:
-                extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
-            except Exception:
-                raise f"{group_name} does not have any intensity data"
+        # We extract the intensity and first parameter
+        dict_param, dict_value = self.get_raw_data(group_name=group_name)
 
-            if len(np.shape(extracted_value_data)) != 1:
-                raise Exception("ENTRY/{group_name}/I is not a 1D dataset")
+        # We extract the second parameter
+        dict_other_param = {}
+        for index_file, h5obj in enumerate(self.nx_files):
+            dict_other_param[Path(self.file_paths[index_file]).name] = extract_from_h5(h5obj, other_variable)
 
-            if f"ENTRY/{group_name}/R" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
-            elif f"ENTRY/{group_name}/Q" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
-            elif f"ENTRY/{group_name}/Chi" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
-            else:
-                raise Exception(f"{group_name} does not have any R / Q / Chi data")
+        # We check to see if the param have the same lengths
+        common_len = 0
+        for index, (key, value) in enumerate(dict_param.items()):
+            if index == 0:
+                common_len = len(value)
+                continue
+            if common_len != len(value):
+                raise Exception(f"the file {key} does not have the same amount of point in "
+                                f"it's intensity array as the other files ({common_len} points)")
 
+        # We create the parameter meshes and the intensity array
+        param_array = np.zeros((2, len(self.nx_files), common_len))
+        value_array = np.zeros((len(self.nx_files), common_len))
+        for index, (key, value) in enumerate(dict_other_param.items()):
+            param_array[0, index, :] = dict_param[key]
+            param_array[1, index, :] = value
+            value_array[index, :] = dict_value[key]
 
+        print(param_array)
 
-            self._display_data(index, )
+        if display:
+            plt.figure()
+            cplot = plt.pcolor(
+                param_array[0, ...],
+                param_array[1, ...],
+                value_array,
+                vmin=0,
+                vmax=np.percentile(
+                    value_array[~np.isnan(value_array)],
+                    95),
+                cmap=PLT_CMAP,
+                shading="auto"
+            )
+            cbar = plt.colorbar(cplot)
+            cbar.set_label("Intensity")
+            plt.show()
 
     def process_delete_data(
             self,
@@ -1528,7 +1567,7 @@ if __name__ == "__main__":
         path_list.append(os.path.join(data_dir, file))
 
     nx_files = NexusFile(path_list, do_batch=True)
-    print(nx_files._detect_variables())
+    print(nx_files.process_2_param_intensity(display=True))
 
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('tottime')

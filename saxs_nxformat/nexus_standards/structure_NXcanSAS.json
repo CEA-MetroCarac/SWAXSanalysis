@@ -1487,12 +1487,7 @@
                     "/experiment_type": {
                         "element type": "dataset",
                         "value": null,
-                        "possible value": [
-                            "SAXS",
-                            "WAXS",
-                            "GI-SAXS",
-                            "GI-WAXS"
-                        ],
+                        "possible value": [],
                         "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Type of the experiment",
@@ -1501,10 +1496,7 @@
                     "/geometry": {
                         "element type": "dataset",
                         "value": null,
-                        "possible value": [
-                            "Reflexion",
-                            "Transmission"
-                        ],
+                        "possible value": [],
                         "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Whether the incident beam was transmitted or reflected to get the measurement",

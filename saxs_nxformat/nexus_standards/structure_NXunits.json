@@ -3,6 +3,7 @@
         "arbitrary": 1,
         "m": 1,
         "mm": 0.001,
+        "µm": 1e-06,
         "nm": 1e-09,
         "angstrom": 1e-10
     },

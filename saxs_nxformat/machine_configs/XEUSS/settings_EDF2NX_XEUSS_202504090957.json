@@ -1586,12 +1586,7 @@
                     "/experiment_type": {
                         "element type": "dataset",
                         "value": "exp_type",
-                        "possible value": [
-                            "SAXS",
-                            "WAXS",
-                            "GI-SAXS",
-                            "GI-WAXS"
-                        ],
+                        "possible value": [],
                         "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Type of the experiment",
@@ -1600,10 +1595,7 @@
                     "/geometry": {
                         "element type": "dataset",
                         "value": "Geometry",
-                        "possible value": [
-                            "Reflexion",
-                            "Transmission"
-                        ],
+                        "possible value": [],
                         "EX_required": false,
                         "type": "NX_CHAR",
                         "docstring": "Whether the incident beam was transmitted or reflected to get the measurement",
@@ -1666,6 +1658,35 @@
                                 "element type": "attribute",
                                 "value": "direct_beam_path",
                                 "possible value": [],
+                                "EX_required": true,
+                                "type": "NX_CHAR",
+                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
+                            }
+                        }
+                    },
+                    "/stretch": {
+                        "element type": "dataset",
+                        "value": "TST-Position",
+                        "possible value": [],
+                        "EX_required": false,
+                        "type": "NX_NUMBER",
+                        "docstring": "Amount of stretching the sample went under",
+                        "content": {
+                            "@units": {
+                                "element type": "attribute",
+                                "value": [
+                                    "µm",
+                                    "m"
+                                ],
+                                "possible value": [
+                                    [
+                                        "m",
+                                        "mm",
+                                        "µm",
+                                        "nm"
+                                    ],
+                                    "m"
+                                ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
                                 "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
