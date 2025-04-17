@@ -321,14 +321,26 @@ class GUI_process(tk.Tk):
                         entry_param.insert(tk.END, group)
 
                 elif param_name == "other_variable":
+                    dict_var = {}
+                    nx_file = NexusFile(self.to_process)
+                    try:
+                        dict_var = nx_file._detect_variables()
+                    except Exception as error:
+                        self.after(
+                            0,
+                            self.print_log,
+                            f"{error}"
+                        )
+                    finally:
+                        nx_file.nexus_close()
                     entry_param = tk.Listbox(
                         self.param_frame,
                         font=FONT_TEXT,
                         selectmode=tk.SINGLE,
                         exportselection=False
                     )
-                    for group in get_group_names(self.to_process):
-                        entry_param.insert(tk.END, group)
+                    for var in dict_var.keys():
+                        entry_param.insert(tk.END, var)
 
                 else:
                     entry_param = tk.Entry(self.param_frame,
