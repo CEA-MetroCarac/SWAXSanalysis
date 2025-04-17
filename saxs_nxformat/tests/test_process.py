@@ -3,24 +3,10 @@ module to test all the processes in the nexus class
 """
 import math
 import numpy as np
-from ..class_nexus_file import NexusFile
-from .generate_dummy import *
+from saxs_nxformat.class_nexus_file import NexusFile
 
 
 def test_nexus_class():
-    generate_sample_db()
-    generate_sample_data()
-    generate_nexus(
-        mod_dir_path / "files" / "dummy_test_0_0.edf",
-        mod_dir_path / "files",
-        mod_dir_path / "files" / "settings_EDF2NX_XEUSS_202503250953.json"
-    )
-    generate_nexus(
-        mod_dir_path / "files" / "dummy_test_0_1.edf",
-        mod_dir_path / "files",
-        mod_dir_path / "files" / "settings_EDF2NX_XEUSS_202503250953.json"
-    )
-
     file_list = ["./files/dummySample_img0.h5"]
     file_number = len(file_list)
     nx_obj = NexusFile(file_list)

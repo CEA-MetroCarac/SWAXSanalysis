@@ -15,8 +15,8 @@ from typing import Any
 
 import h5py
 import numpy as np
-from ..utils import *
-from .. import DICT_UNIT
+from saxs_nxformat.utils import *
+from saxs_nxformat import DICT_UNIT
 
 
 def test_convert():
