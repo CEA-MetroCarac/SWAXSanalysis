@@ -142,7 +142,7 @@ def convert(
         starting_unit = DICT_UNIT[unit_type][unit_start]
         ending_unit = DICT_UNIT[unit_type][unit_end]
 
-        print(number, starting_unit, ending_unit)
+        # print(number, starting_unit, ending_unit)
         number = number * (starting_unit / ending_unit)
 
     return number

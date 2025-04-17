@@ -205,7 +205,6 @@ def generate_nexus(
                     do_while = False
                 except Exception as error:
                     db_path = pathlib.Path(*db_path.parts[1:])
-            print("\npath used", QUEUE_PATH / db_path)
 
     if do_absolute == 1 and not is_db:
         nx_file = NexusFile([hdf5_path], do_batch=False)
@@ -496,7 +495,6 @@ class GUI_generator(tk.Tk):
             # We decide whether we want to do absolute intensity treatment or not
             with h5py.File(new_file_path, "r") as h5obj:
                 do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
-            print(do_absolute)
             if do_absolute == 1:
                 input_group = "DATA_ABS"
             else:

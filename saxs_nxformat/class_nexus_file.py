@@ -1038,7 +1038,7 @@ class NexusFile:
             save: bool = False,
             roi_size_x: int = 30,
             roi_size_y: int = 30,
-            sample_thickness: float = 1.16e-2,
+            sample_thickness: float = 1,
     ):
         """
         This process convert the intensities in your file into absolute intensities.
@@ -1121,23 +1121,21 @@ class NexusFile:
                 beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
                 ]
             )
-            # plt.figure()
-            # plt.imshow(
-            #     raw_db[
-            #     beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
-            #     beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
-            #     ],
-            #     vmin=0,
-            #     vmax=np.percentile(
-            #         raw_db[~np.isnan(raw_db)],
-            #         99)
-            # )
-            # plt.show()
             I_ROI_db = I_ROI_db / time_db
 
             transmission = I_ROI_data / I_ROI_db
-            scaling_factor = I_ROI_data / (I_ROI_db * transmission * (1 / sample_thickness))
-            scaling_factor = scaling_factor * 1e-9 #5.3050172e-9
+            scaling_factor = 1 / (transmission * sample_thickness * I_ROI_db * time)
+
+            print(
+                f"Absolute intensity parameters :\n"
+                f"  - db path : {db_path}\n"
+                f"  - I_ROI_DATA : {I_ROI_data}\n"
+                f"  - I_ROI_DB : {I_ROI_db}\n"
+                f"  - time : {time}\n"
+                f"  - time_db : {time_db}\n"
+                f"  - transmission : {transmission}\n"
+                f"  - SF : {scaling_factor}\n"
+            )
 
             abs_data = raw_data * scaling_factor
 
@@ -1158,7 +1156,7 @@ class NexusFile:
                 mask = self.list_smi_data[index].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
 
-                # TODO : make a file with 2 sub entry ? one for DB and one for sample
+                # TODO : make a file with 2 sub entry? one for DB and one for sample
 
                 create_process(nx_file,
                                f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
@@ -1194,7 +1192,8 @@ class NexusFile:
                 label_x=label_x, label_y=label_y,
                 xmin=xmin, xmax=xmax,
                 ymin=ymin, ymax=ymax,
-                title=title, percentile=percentile
+                title=title, percentile=percentile,
+                legend=True
             )
 
     """
@@ -1290,7 +1289,6 @@ class NexusFile:
             param_array[1, index, :] = value
             value_array[index, :] = dict_value[key]
 
-        print(param_array)
 
         if display:
             self._display_data(
@@ -1341,7 +1339,6 @@ class NexusFile:
         # If the number of time the parameter appear is different from the number of file we delete this parameter
         dict_valid_path = copy.deepcopy(dict_count)
         for path, count in dict_count.items():
-            print(path, count)
             if count != len(self.nx_files) or isinstance(self.nx_files[0][path], h5py.Group):
                 del dict_valid_path[path]
 
@@ -1510,7 +1507,7 @@ class NexusFile:
                     self.fig, self.ax = plt.subplots(dims, dims, layout="constrained")
                     self.init_plot = False
 
-                if dims != 1 and index:
+                if dims != 1 and index is not None:
                     current_ax = self.ax[int(index // dims), int(index % dims)]
                 else:
                     current_ax = self.ax
