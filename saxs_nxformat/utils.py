@@ -167,7 +167,6 @@ def explore_file(group, explore_group=False, explore_dataset=False, level=0, bas
     return paths
 
 
-
 def extract_from_h5(
         nx_file: h5py.File,
         h5path: str,
@@ -396,7 +395,7 @@ def delete_data(
 
 def detect_variation(
         array: np.ndarray,
-        variation_threshold: float | int
+        relative_tol: float | int
 ) -> np.ndarray:
     """
     return the indices where we go from a value under low to a value aboce high
@@ -404,35 +403,26 @@ def detect_variation(
     Parameters
     ----------
     variation_threshold :
-        Threshold at whoch the change is detected
+        Threshold at which the change is detected
 
     array :
         The array where the variation have to be detected
-
-    low :
-        low threshold
-
-    high :
-        high threshold
 
     Returns
     -------
     list of indices where the variations are detected
     """
+
     diff_array = np.diff(array)
-    return np.where(diff_array > variation_threshold)[0] + 1
-
-
-def mobile_mean(
-        data: np.ndarray,
-        nbr_neighbour: int = 5
-) -> np.ndarray:
-    if nbr_neighbour % 2 == 0:
-        raise ValueError("nbr_neighbour doit être impair pour un lissage symétrique.")
-
-    kernel = np.ones(nbr_neighbour) / nbr_neighbour
-    smoothed_data = np.convolve(data, kernel, mode='valid')
-    return smoothed_data
+    # print("np.diff :\n", diff_array)
+    # print("np.where :\n", np.where(diff_array > relative_tol*array[1:]))
+    # We ignore the values where the array is equal to zero (relative tol doesn't make sense)
+    non_zero_mask = array[1:] != 0
+    # We build the condition
+    condition = np.abs(diff_array[non_zero_mask]) > np.abs(relative_tol * array[1:][non_zero_mask])
+    # We get the indices
+    indices = np.where(non_zero_mask)[0][condition] + 1
+    return indices
 
 
 class VerticalScrolledFrame(ttk.Frame):

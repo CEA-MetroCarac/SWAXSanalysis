@@ -15,7 +15,7 @@ from tkinter import ttk, filedialog
 from . import DESKTOP_PATH, ICON_PATH
 from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
 from .class_nexus_file import NexusFile
-from .utils import string_2_value, extract_from_h5
+from .utils import string_2_value, extract_from_h5, VerticalScrolledFrame
 
 
 def get_group_names(
@@ -97,12 +97,14 @@ class GUI_process(tk.Tk):
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
 
-        self.frame_inputs = tk.Frame(self, border=5, relief="ridge")
+        self.frame_inputs = VerticalScrolledFrame(self, width=100, height=300)
+        self.frame_inputs.configure(border=5, relief="ridge")
         self.frame_inputs.grid(row=0, column=0, sticky="nsew", pady=5, padx=5)
         self._inputs_building()
 
-        self.param_frame = tk.Frame(self, border=5, relief="ridge")
+        self.param_frame = VerticalScrolledFrame(self, 100, 300)
         self.param_frame.grid(row=1, rowspan=2, column=0, sticky="news", pady=5, padx=5)
+        self.param_frame.config(border=5, relief="ridge")
 
         self.frame_processes = tk.Frame(self, border=5, relief="ridge")
         self.frame_processes.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
@@ -132,17 +134,17 @@ class GUI_process(tk.Tk):
         """
         Builds the input frame
         """
-        self.frame_inputs.columnconfigure(0, weight=1)
-        self.frame_inputs.columnconfigure(1, weight=1)
+        self.frame_inputs.interior.columnconfigure(0, weight=1)
+        self.frame_inputs.interior.columnconfigure(1, weight=1)
         frame_title = tk.Label(
-            self.frame_inputs,
+            self.frame_inputs.interior,
             text="Inputs",
             font=FONT_TITLE,
             padx=10, pady=10)
         frame_title.grid(column=0, row=0, sticky="w", pady=(15, 20), padx=5, columnspan=2)
 
         browse_button = tk.Button(
-            self.frame_inputs,
+            self.frame_inputs.interior,
             text="Upload files",
             font=FONT_BUTTON,
             command=self.browse_files,
@@ -150,12 +152,12 @@ class GUI_process(tk.Tk):
             pady=5)
         browse_button.grid(column=0, row=1, columnspan=2)
 
-        self.file_list = tk.Listbox(self.frame_inputs, selectmode=tk.MULTIPLE)
+        self.file_list = tk.Listbox(self.frame_inputs.interior, selectmode=tk.MULTIPLE)
         self.file_list.grid(column=0, row=2, sticky="news", columnspan=2)
         self.file_list.configure(exportselection=False)
 
         select_all_button = tk.Button(
-            self.frame_inputs,
+            self.frame_inputs.interior,
             text="Select all",
             font=FONT_BUTTON,
             command=lambda: self.file_list.selection_set(0, "end"),
@@ -164,7 +166,7 @@ class GUI_process(tk.Tk):
         select_all_button.grid(column=0, row=3)
 
         unselect_all_button = tk.Button(
-            self.frame_inputs,
+            self.frame_inputs.interior,
             text="Unselect all",
             font=FONT_BUTTON,
             command=lambda: self.file_list.selection_clear(0, "end"),
@@ -174,30 +176,26 @@ class GUI_process(tk.Tk):
 
         self.do_batch_var = tk.IntVar()
         self.do_batch = tk.Checkbutton(
-            self.frame_inputs,
+            self.frame_inputs.interior,
             text="Join files and graphs",
             font=FONT_TEXT,
             variable=self.do_batch_var
         )
         self.do_batch.grid(column=0, row=4, sticky="we", columnspan=2)
 
-    def _process_building(self) -> None:
-        """
-        Builds the frame containing all available processes
-        """
         frame_title = tk.Label(
-            self.frame_processes,
+            self.frame_inputs.interior,
             text="Process options",
             font=FONT_TITLE
         )
-        frame_title.grid(column=0, row=0, sticky="w", pady=(5, 20), padx=5)
+        frame_title.grid(column=0, row=5, sticky="w", pady=(5, 20), padx=5)
 
-        current_row = 1
+        current_row = 6
         current_column = 0
 
         for process_name in self.process.keys():
             button_process = tk.Button(
-                self.frame_processes,
+                self.frame_inputs.interior,
                 text=process_name.replace("_", " "),
                 font=FONT_BUTTON,
                 command=lambda name=process_name: self._create_params(name),
@@ -205,20 +203,21 @@ class GUI_process(tk.Tk):
             )
             button_process.grid(
                 column=current_column,
+                columnspan=2,
                 row=current_row,
-                padx=15,
-                pady=15,
+                padx=5,
+                pady=5,
                 sticky="news"
             )
 
-            self.frame_processes.rowconfigure(current_row, weight=1)
-            self.frame_processes.columnconfigure(current_column, weight=1)
+            self.frame_inputs.interior.rowconfigure(current_row, weight=1)
+            current_row += 1
 
-            if current_column >= 2:
-                current_column = 0
-                current_row += 1
-            else:
-                current_column += 1
+    def _process_building(self) -> None:
+        """
+        Builds the frame containing all available processes
+        """
+
 
     def _create_params(
             self,
@@ -254,34 +253,34 @@ class GUI_process(tk.Tk):
             )
             return
 
-        self.param_frame.columnconfigure(0, weight=0)
-        self.param_frame.columnconfigure(1, weight=1)
+        self.param_frame.interior.columnconfigure(0, weight=0)
+        self.param_frame.interior.columnconfigure(1, weight=1)
 
-        for widget in self.param_frame.winfo_children():
+        for widget in self.param_frame.interior.winfo_children():
             widget.destroy()
 
         frame_title = tk.Label(
-            self.param_frame,
+            self.param_frame.interior,
             text="Process parameters",
             font=FONT_TITLE,
         )
         frame_title.grid(column=0, columnspan=2, row=0, sticky="we", pady=(5, 20), padx=5)
 
         label_process = tk.Label(
-            self.param_frame,
+            self.param_frame.interior,
             text=f"Process : {process_name}",
             font=FONT_TEXT
         )
         label_process.grid(column=0, columnspan=2, row=1, sticky="w", pady=(5, 20), padx=5)
 
         label_input_data = tk.Label(
-            self.param_frame,
+            self.param_frame.interior,
             font=FONT_TEXT,
             text="input data group"
         )
         label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
 
-        self.input_data = ttk.Combobox(self.param_frame,
+        self.input_data = ttk.Combobox(self.param_frame.interior,
                                        font=FONT_TEXT)
         self.input_data["values"] = get_group_names(self.to_process)
         self.input_data.current(0)
@@ -294,25 +293,25 @@ class GUI_process(tk.Tk):
 
         current_row = 3
         for param in param_list:
-            self.param_frame.rowconfigure(current_row, weight=1)
+            self.param_frame.interior.rowconfigure(current_row, weight=1)
             if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name_type, param_value = param_str.split("=")
                 param_name, param_type = param_name_type.split(":")
                 label_param = tk.Label(
-                    self.param_frame,
+                    self.param_frame.interior,
                     text=param_name.replace("_", " "),
                     font=FONT_TEXT
                 )
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
 
                 if param_name == "group_name":
-                    entry_param = ttk.Combobox(self.param_frame,
+                    entry_param = ttk.Combobox(self.param_frame.interior,
                                                font=FONT_TEXT)
                     entry_param["values"] = get_group_names(self.to_process)
                 elif param_name == "group_names":
                     entry_param = tk.Listbox(
-                        self.param_frame,
+                        self.param_frame.interior,
                         font=FONT_TEXT,
                         selectmode=tk.MULTIPLE,
                         exportselection=False
@@ -334,7 +333,7 @@ class GUI_process(tk.Tk):
                     finally:
                         nx_file.nexus_close()
                     entry_param = tk.Listbox(
-                        self.param_frame,
+                        self.param_frame.interior,
                         font=FONT_TEXT,
                         selectmode=tk.SINGLE,
                         exportselection=False
@@ -343,7 +342,7 @@ class GUI_process(tk.Tk):
                         entry_param.insert(tk.END, var)
 
                 else:
-                    entry_param = tk.Entry(self.param_frame,
+                    entry_param = tk.Entry(self.param_frame.interior,
                                            font=FONT_TEXT)
                 entry_param.insert(0, str(param_value.strip(" ").strip("'")))
                 entry_param.grid(column=1, row=current_row, pady=5, padx=5, sticky="we")
@@ -351,7 +350,7 @@ class GUI_process(tk.Tk):
                 current_row += 1
 
         confirm_button = tk.Button(
-            self.param_frame,
+            self.param_frame.interior,
             text="Confirm",
             font=FONT_BUTTON,
             command=lambda process=method: self._start_processing(process)
@@ -434,7 +433,7 @@ class GUI_process(tk.Tk):
 
         # We get the parameters and convert them
         param_dict = {}
-        for widget in self.param_frame.winfo_children():
+        for widget in self.param_frame.interior.winfo_children():
             if hasattr(widget, 'tag'):
                 tag = widget.tag
                 if isinstance(widget, tk.Listbox):

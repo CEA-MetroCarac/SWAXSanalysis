@@ -604,11 +604,6 @@ class NexusFile:
         pts : int, optional
             Number of points for the averaging process.
         """
-        if r_min is None:
-            optimize_range = True
-        else:
-            optimize_range = False
-
         self.init_plot = True
 
         if len(self.file_paths) != len(self.list_smi_data):
@@ -672,8 +667,7 @@ class NexusFile:
                     label_x="$q_r (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
-                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]",
-                    optimize_range=False
+                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]"
                 )
 
             if save:
@@ -1181,6 +1175,7 @@ class NexusFile:
             xmax: None | float | int = None,
             ymin: None | float | int = None,
             ymax: None | float | int = None,
+            optimize_range: bool = False,
             percentile: int | float = 99
     ) -> None:
         self.init_plot = True
@@ -1193,7 +1188,7 @@ class NexusFile:
                 xmin=xmin, xmax=xmax,
                 ymin=ymin, ymax=ymax,
                 title=title, percentile=percentile,
-                legend=True
+                legend=True, optimize_range=optimize_range
             )
 
     """
@@ -1474,13 +1469,12 @@ class NexusFile:
 
             first_index, last_index = 0, -1
             if optimize_range:
-                # TODO : revoir la fonction high var
-                indices_high_var = detect_variation(extracted_value_data, 1e5)
-                if len(indices_high_var):
+                indices_high_var = detect_variation(extracted_value_data, 0.8)
+                print(indices_high_var)
+                if len(indices_high_var) > 2:
+                    first_index, last_index = indices_high_var[0], indices_high_var[-2]
+                elif len(indices_high_var) == 2:
                     first_index, last_index = indices_high_var[0], indices_high_var[-1]
-            ResDir2 = r"C:\Users\AT280565\PycharmProjects\EdfToHdf5\data\GC_treated"
-            ref = np.loadtxt(os.path.join(ResDir2, 'GlassyCarbonT-10p_ErrorBar.dat'), skiprows=124)
-            self.ax.plot(ref[:, 0], ref[:, 1], linewidth=2, color='c')
             self.ax.plot(
                 extracted_param_data[first_index:last_index],
                 extracted_value_data[first_index:last_index],
