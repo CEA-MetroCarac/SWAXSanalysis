@@ -11,6 +11,9 @@ import h5py
 import pathlib
 import tkinter as tk
 from tkinter import ttk, filedialog
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 from . import DESKTOP_PATH, ICON_PATH
 from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
@@ -91,7 +94,7 @@ class GUI_process(tk.Tk):
         self.title("Data processing")
 
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=2)
+        self.columnconfigure(1, weight=1)
         self.columnconfigure(2, weight=1)
 
         self.rowconfigure(0, weight=1)
@@ -106,9 +109,8 @@ class GUI_process(tk.Tk):
         self.param_frame.grid(row=1, rowspan=2, column=0, sticky="news", pady=5, padx=5)
         self.param_frame.config(border=5, relief="ridge")
 
-        self.frame_processes = tk.Frame(self, border=5, relief="ridge")
-        self.frame_processes.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
-        self._process_building()
+        self.frame_plot = tk.Frame(self, border=5, relief="ridge")
+        self.frame_plot.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
 
         self.frame_log = tk.Frame(self, border=5, relief="ridge")
         self.frame_log.grid(row=0, rowspan=3, column=2, sticky="nsew", pady=5, padx=5)
@@ -213,11 +215,20 @@ class GUI_process(tk.Tk):
             self.frame_inputs.interior.rowconfigure(current_row, weight=1)
             current_row += 1
 
-    def _process_building(self) -> None:
+    def _plot_building(self) -> None:
         """
         Builds the frame containing all available processes
         """
+        for widget in self.frame_plot.winfo_children():
+            widget.destroy()
 
+        canvas = FigureCanvasTkAgg(self.fig, master=self.frame_plot)
+        toolbar = NavigationToolbar2Tk(canvas, self.frame_plot)
+        canvas.draw()
+        toolbar.update()
+        canvas.get_tk_widget().pack()
+
+        plt.close()
 
     def _create_params(
             self,
@@ -466,7 +477,12 @@ class GUI_process(tk.Tk):
         # #############################
         nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
         try:
-            process(nxfiles, **param_dict)
+            result = process(nxfiles, **param_dict)
+
+            if result is not None:
+                self.ax, self.fig = result
+                self._plot_building()
+
         except Exception as exception:
             self.after(
                 0,
@@ -490,6 +506,7 @@ class GUI_process(tk.Tk):
         # stats = pstats.Stats(profiler).sort_stats('tottime')
         # stats.print_stats()
         # ####################################################
+
 
 if __name__ == "__main__":
     app = GUI_process()

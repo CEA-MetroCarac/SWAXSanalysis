@@ -9,7 +9,8 @@ import shutil
 import re
 import inspect
 import copy
-from typing import Dict, Any
+from typing import Dict, Any, Tuple
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 import h5py
 import matplotlib.pyplot as plt
@@ -369,7 +370,7 @@ class NexusFile:
             save: bool = False,
             group_name: str = "DATA_Q_SPACE",
             percentile: float | int = 99
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to put the data in Q space (Fourier space). This will save an array
         containing the intensity values and another array containing the vector Q associated
@@ -434,6 +435,7 @@ class NexusFile:
                                "array containing the positions in q-space, A^-1.\n"
                                "Each element of the array Q is a vector containing qx and qy"
                                )
+        return self.ax, self.fig
 
     def process_caking(
             self,
@@ -447,7 +449,7 @@ class NexusFile:
             radial_max: None | float | int = None,
             pts_rad: None | int = None,
             percentile: float | int = 99
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to cake the data. This will display the data in the (q_r, chi) coordinate system.
 
@@ -562,6 +564,7 @@ class NexusFile:
                                f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
                                f"   - Radial Q range : [{radial_min:.4f}, {radial_max:.4f}] with {pts_rad} points\n"
                                )
+        return self.ax, self.fig
 
     def process_radial_average(
             self,
@@ -573,7 +576,7 @@ class NexusFile:
             angle_min: None | float | int = None,
             angle_max: None | float | int = None,
             pts: None | int = None
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to perform radial averaging of data in Fourier space. This will reduce the signal to
         one dimension : intensity versus distance from the center
@@ -685,6 +688,7 @@ class NexusFile:
                                f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}]\n"
                                f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {pts} points\n"
                                )
+        return self.ax, self.fig
 
     def process_azimuthal_average(
             self,
@@ -697,7 +701,7 @@ class NexusFile:
             angle_min: None | float | int = None,
             angle_max: None | float | int = None,
             npt_azi: None | int = None
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to do the radial average of the data in fourier space
 
@@ -815,6 +819,7 @@ class NexusFile:
                                f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}] with {npt_azi} points\n"
                                f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {npt_rad} points\n"
                                )
+        return self.ax, self.fig
 
     def process_horizontal_integration(
             self,
@@ -825,7 +830,7 @@ class NexusFile:
             qx_max: None | float | int = None,
             qy_min: None | float | int = None,
             qy_max: None | float | int = None
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to perform horizontal integration of the data in Fourier space.
 
@@ -919,6 +924,7 @@ class NexusFile:
                                f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                )
+        return self.ax, self.fig
 
     def process_vertical_integration(
             self,
@@ -929,7 +935,7 @@ class NexusFile:
             qx_max: None | float | int = None,
             qy_min: None | float | int = None,
             qy_max: None | float | int = None
-    ) -> None:
+    ) -> tuple[Any, Any]:
         """
         Method used to do the vertical integration of the data in fourier space.
 
@@ -1023,6 +1029,7 @@ class NexusFile:
                                f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
                                )
+        return self.ax, self.fig
 
     def process_absolute_intensity(
             self,
@@ -1162,6 +1169,7 @@ class NexusFile:
                                f"   - Sample thickness : {sample_thickness:.4f}"
                                f"   - Region of interest size : ({roi_size_x:.2f}, {roi_size_y:.2f})"
                                )
+        return self.ax, self.fig
 
     def process_display(
             self,
@@ -1177,7 +1185,7 @@ class NexusFile:
             ymax: None | float | int = None,
             optimize_range: bool = False,
             percentile: int | float = 99
-    ) -> None:
+    ) -> tuple[Any, Any]:
         self.init_plot = True
         for index, nxfile in enumerate(self.nx_files):
             self._display_data(
@@ -1190,6 +1198,7 @@ class NexusFile:
                 title=title, percentile=percentile,
                 legend=True, optimize_range=optimize_range
             )
+        return self.ax, self.fig
 
     """
     Deprecated but could still be usefull
@@ -1284,13 +1293,13 @@ class NexusFile:
             param_array[1, index, :] = value
             value_array[index, :] = dict_value[key]
 
-
         if display:
             self._display_data(
                 extracted_param_data=param_array,
                 extracted_value_data=value_array,
                 percentile=percentile
             )
+        return self.ax, self.fig
 
     def process_delete_data(
             self,
@@ -1444,10 +1453,10 @@ class NexusFile:
             # in the same figure
             if self.do_batch:
                 if self.init_plot:
-                    self.fig, self.ax = plt.subplots(figsize=(10, 6))
+                    self.fig, self.ax = plt.subplots()
                     self.init_plot = False
             else:
-                self.fig, self.ax = plt.subplots(figsize=(10, 6))
+                self.fig, self.ax = plt.subplots()
             self.ax.set_xscale(scale_x)
             self.ax.set_yscale(scale_y)
 
@@ -1481,15 +1490,13 @@ class NexusFile:
                 label=f"{label}",
                 color=plot_color
             )
+            if legend:
+                self.ax.legend()
 
             if self.do_batch:
                 if index == len(self.nx_files) - 1:
-                    if legend:
-                        self.ax.legend()
                     plt.show()
             else:
-                if legend:
-                    self.ax.legend()
                 plt.show()
 
         # If the intensity value is a 2D array we imshow it
