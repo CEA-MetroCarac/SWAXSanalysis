@@ -67,7 +67,7 @@ class GUI_process(tk.Tk):
     process_frame :
         frame containing all the available processes in NexusFile
 
-    param_frame :
+    frame_params :
         frame containing all the parameters associated to the selected process
 
     progress_label :
@@ -99,16 +99,12 @@ class GUI_process(tk.Tk):
 
         self.frame_inputs = VerticalScrolledFrame(self, width=100, height=300)
         self.frame_inputs.configure(border=5, relief="ridge")
-        self.frame_inputs.grid(row=0, column=0, sticky="nsew", pady=5, padx=5)
+        self.frame_inputs.grid(row=0, rowspan=3, column=0, sticky="nsew", pady=5, padx=5)
         self._inputs_building()
 
-        self.param_frame = VerticalScrolledFrame(self, 100, 300)
-        self.param_frame.grid(row=1, rowspan=2, column=0, sticky="news", pady=5, padx=5)
-        self.param_frame.config(border=5, relief="ridge")
-
-        self.frame_processes = tk.Frame(self, border=5, relief="ridge")
-        self.frame_processes.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
-        self._process_building()
+        self.frame_params = VerticalScrolledFrame(self, width=100, height=300)
+        self.frame_params.configure(border=5, relief="ridge")
+        self.frame_params.grid(row=0, rowspan=2, column=1, sticky="nsew", pady=5, padx=5)
 
         self.frame_log = tk.Frame(self, border=5, relief="ridge")
         self.frame_log.grid(row=0, rowspan=3, column=2, sticky="nsew", pady=5, padx=5)
@@ -218,7 +214,6 @@ class GUI_process(tk.Tk):
         Builds the frame containing all available processes
         """
 
-
     def _create_params(
             self,
             process_name: str
@@ -253,34 +248,34 @@ class GUI_process(tk.Tk):
             )
             return
 
-        self.param_frame.interior.columnconfigure(0, weight=0)
-        self.param_frame.interior.columnconfigure(1, weight=1)
+        self.frame_params.interior.columnconfigure(0, weight=0)
+        self.frame_params.interior.columnconfigure(1, weight=1)
 
-        for widget in self.param_frame.interior.winfo_children():
+        for widget in self.frame_params.interior.winfo_children():
             widget.destroy()
 
         frame_title = tk.Label(
-            self.param_frame.interior,
+            self.frame_params.interior,
             text="Process parameters",
             font=FONT_TITLE,
         )
         frame_title.grid(column=0, columnspan=2, row=0, sticky="we", pady=(5, 20), padx=5)
 
         label_process = tk.Label(
-            self.param_frame.interior,
+            self.frame_params.interior,
             text=f"Process : {process_name}",
             font=FONT_TEXT
         )
         label_process.grid(column=0, columnspan=2, row=1, sticky="w", pady=(5, 20), padx=5)
 
         label_input_data = tk.Label(
-            self.param_frame.interior,
+            self.frame_params.interior,
             font=FONT_TEXT,
             text="input data group"
         )
         label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
 
-        self.input_data = ttk.Combobox(self.param_frame.interior,
+        self.input_data = ttk.Combobox(self.frame_params.interior,
                                        font=FONT_TEXT)
         self.input_data["values"] = get_group_names(self.to_process)
         self.input_data.current(0)
@@ -293,25 +288,25 @@ class GUI_process(tk.Tk):
 
         current_row = 3
         for param in param_list:
-            self.param_frame.interior.rowconfigure(current_row, weight=1)
+            self.frame_params.interior.rowconfigure(current_row, weight=1)
             if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name_type, param_value = param_str.split("=")
                 param_name, param_type = param_name_type.split(":")
                 label_param = tk.Label(
-                    self.param_frame.interior,
+                    self.frame_params.interior,
                     text=param_name.replace("_", " "),
                     font=FONT_TEXT
                 )
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
 
                 if param_name == "group_name":
-                    entry_param = ttk.Combobox(self.param_frame.interior,
+                    entry_param = ttk.Combobox(self.frame_params.interior,
                                                font=FONT_TEXT)
                     entry_param["values"] = get_group_names(self.to_process)
                 elif param_name == "group_names":
                     entry_param = tk.Listbox(
-                        self.param_frame.interior,
+                        self.frame_params.interior,
                         font=FONT_TEXT,
                         selectmode=tk.MULTIPLE,
                         exportselection=False
@@ -333,7 +328,7 @@ class GUI_process(tk.Tk):
                     finally:
                         nx_file.nexus_close()
                     entry_param = tk.Listbox(
-                        self.param_frame.interior,
+                        self.frame_params.interior,
                         font=FONT_TEXT,
                         selectmode=tk.SINGLE,
                         exportselection=False
@@ -342,7 +337,7 @@ class GUI_process(tk.Tk):
                         entry_param.insert(tk.END, var)
 
                 else:
-                    entry_param = tk.Entry(self.param_frame.interior,
+                    entry_param = tk.Entry(self.frame_params.interior,
                                            font=FONT_TEXT)
                 entry_param.insert(0, str(param_value.strip(" ").strip("'")))
                 entry_param.grid(column=1, row=current_row, pady=5, padx=5, sticky="we")
@@ -350,7 +345,7 @@ class GUI_process(tk.Tk):
                 current_row += 1
 
         confirm_button = tk.Button(
-            self.param_frame.interior,
+            self.frame_params.interior,
             text="Confirm",
             font=FONT_BUTTON,
             command=lambda process=method: self._start_processing(process)
@@ -433,7 +428,7 @@ class GUI_process(tk.Tk):
 
         # We get the parameters and convert them
         param_dict = {}
-        for widget in self.param_frame.interior.winfo_children():
+        for widget in self.frame_params.interior.winfo_children():
             if hasattr(widget, 'tag'):
                 tag = widget.tag
                 if isinstance(widget, tk.Listbox):
@@ -490,6 +485,7 @@ class GUI_process(tk.Tk):
         # stats = pstats.Stats(profiler).sort_stats('tottime')
         # stats.print_stats()
         # ####################################################
+
 
 if __name__ == "__main__":
     app = GUI_process()

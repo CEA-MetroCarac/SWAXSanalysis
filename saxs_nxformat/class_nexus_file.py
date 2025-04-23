@@ -9,6 +9,7 @@ import shutil
 import re
 import inspect
 import copy
+import time
 from typing import Dict, Any
 
 import h5py
@@ -1486,11 +1487,12 @@ class NexusFile:
                 if index == len(self.nx_files) - 1:
                     if legend:
                         self.ax.legend()
-                    plt.show()
+                    plt.show(block=False)
             else:
                 if legend:
                     self.ax.legend()
-                plt.show()
+                plt.show(block=False)
+                time.sleep(0.5)
 
         # If the intensity value is a 2D array we imshow it
         elif len(np.shape(extracted_value_data)) == 2:
@@ -1528,9 +1530,10 @@ class NexusFile:
 
             if self.do_batch:
                 if index == len(self.nx_files) - 1:
-                    plt.show()
+                    plt.show(block=False)
             else:
-                plt.show()
+                plt.show(block=False)
+                time.sleep(0.5)
 
     def nexus_close(self):
         """
