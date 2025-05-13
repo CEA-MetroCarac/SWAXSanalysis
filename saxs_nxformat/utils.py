@@ -354,7 +354,7 @@ def save_data(
             del nx_file[f"{group_path}"].attrs["Q_indices"]
             del nx_file[f"{group_path}"].attrs["mask_indices"]
 
-        nx_file[f"{group_path}"].attrs["I_axes"] = ["Q"]
+        nx_file[f"{group_path}"].attrs["I_axes"] = "Q"
         nx_file[f"{group_path}"].attrs["Q_indices"] = [0]
         nx_file[f"{group_path}"].attrs["mask_indices"] = [0]
     elif dim == 2:

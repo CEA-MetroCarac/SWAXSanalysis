@@ -2,7 +2,7 @@
 The main feature of this module is the NexusFile class which is used
 to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
-TODO : Add smoothing method
+TODO : Add smoothing method?
 """
 import os
 import shutil

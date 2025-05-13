@@ -252,12 +252,13 @@ def search_setting_edf(
     # Recursively searching in treatment queue for files to treat
     if recursively:
         for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
-            edf_name = Path(filepath).name
-            result = tree_structure_manager(edf_name, settings_name)
+            filepath = Path(filepath)
+            result = tree_structure_manager(filepath, settings_path)
+            edf_name = filepath.name
             if result[-1] / edf_name not in treated_edf:
                 edf_original_path = filepath
     else:
-        # Search in center only
+        # Search in data treatment center only
         for file in os.listdir(DTC_PATH):
             if ".edf" in file.lower():
                 edf_name = file
@@ -270,17 +271,17 @@ def search_setting_edf(
 
 
 def tree_structure_manager(
-        file: str,
-        settings: str
+        file_path: str | Path,
+        settings_path: str | Path
 ) -> str | tuple[any, any]:
     """
     Creates a structured folder hierarchy based on the EDF file name and settings file.
 
     Parameters
     ----------
-    file : str
+    file_path : str
         Name of the EDF file to be converted.
-    settings : str
+    settings_path : str
         Name of the settings file used for conversion.
 
     Returns
@@ -289,10 +290,17 @@ def tree_structure_manager(
         - The paths where FDH5 and EDF5 files should be saved.
         - An error message in case of a permission issue.
     """
+    if not isinstance(file_path, Path):
+        file_path = Path(file_path)
+
+    if not isinstance(settings_path, Path):
+        settings_path = Path(settings_path)
+
+    file = file_path.name
+    settings = settings_path.name
+
     # Dissecting the settings file name
     settings = settings.removeprefix("settings_")
-    current_time = datetime.now()
-    year = str(current_time.strftime("%Y"))
     try:
         origin2ending, instrument, date_txt = settings.rsplit("_", 2)
     except ValueError:
@@ -303,21 +311,22 @@ def tree_structure_manager(
 
     # Dissecting the data file name
     split_file_name = file.removesuffix(".edf").split("_")
-    exp_name = split_file_name[0]
-    if split_file_name[1] == "0":
+    if "vd" in split_file_name:
+        *exp_name, detector, _, _ = split_file_name
+    else:
+        *exp_name, detector, _ = split_file_name
+    if detector == "0":
         detector = "SAXS"
-    elif split_file_name[1] == "1":
+    elif detector == "1":
         detector = "WAXS"
     else:
         detector = "other"
 
+    # TODO : path too dependent on the data file name format
     common_path = (
             TREATED_PATH /
             f"instrument - {instrument}" /
-            f"year - {year}" /
-            f"config ID - {date}" /
-            f"experiment - {exp_name}" /
-            f"detector - {detector}"
+            file_path.relative_to(QUEUE_PATH).parent
     )
 
     target_dir = common_path / f"format - {ending_format}"
@@ -460,12 +469,13 @@ class GUI_generator(tk.Tk):
                 self.after(
                     0,
                     self.print_log,
-                    f"No file found, sleeping for {sleep_time} seconds."
+                    f"No file found, sleeping for {sleep_time} seconds.\n"
+                    f"You can close or stop safely."
                 )
                 time.sleep(sleep_time)
                 continue
 
-            result = tree_structure_manager(file_path.name, settings_path.name)
+            result = tree_structure_manager(file_path, settings_path)
             if result[0] == "perm error":
                 self.after(
                     0,
@@ -555,7 +565,7 @@ class GUI_generator(tk.Tk):
         self.after(
             0,
             self.print_log,
-            "The program is done sleeping! you can start it again."
+            "The program is done! you can close or start it again."
         )
 
     def start_thread(self) -> None:
