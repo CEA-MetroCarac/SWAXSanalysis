@@ -1285,7 +1285,6 @@ class NexusFile:
             param_array[1, index, :] = value
             value_array[index, :] = dict_value[key]
 
-
         if display:
             self._display_data(
                 extracted_param_data=param_array,
@@ -1545,19 +1544,31 @@ class NexusFile:
 
 
 if __name__ == "__main__":
-
     # profiler = cProfile.Profile()
     # profiler.enable()
 
-    data_dir = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - XEUSS\year - 2025\config " \
-               r"ID - 202504090957\experiment - measure\detector - SAXS\format - NX"
-    path_list = []
+    data_path = r"C:\Users\AT280565\Desktop\Data Treatment Center\Treated Data\instrument - " \
+                r"XEUSS\250429_Al_test\250429_Al_run02\format - " \
+                r"NX\Eprouvette_AluMg_run02_img00001-00002_20250512125323.h5"
 
-    for file in os.listdir(data_dir):
-        path_list.append(os.path.join(data_dir, file))
+    with h5py.File(data_path) as file:
+        data1 = file["ENTRY/DATA/I"][:]
 
-    nx_files = NexusFile(path_list, do_batch=True)
-    print(nx_files.process_2_param_intensity(display=True))
+    plt.figure()
+    plt.imshow(
+        data1,
+        vmin=0,
+        vmax=np.percentile(
+            data1[~np.isnan(data1)],
+            99),
+        cmap=PLT_CMAP
+    )
+    cbar = plt.colorbar()
+    cbar.set_label("Intensity")
+    plt.xlabel("$p_x$ (pixel)")
+    plt.ylabel("$p_y$ (pixel)")
+    plt.title("Raw Data")
+    plt.show()
 
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('tottime')
