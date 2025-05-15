@@ -3,16 +3,13 @@ module description
 """
 
 import json
-import os
-import re
-import sys
 import tkinter as tk
 from datetime import datetime
-from pathlib import Path
 from tkinter import ttk, filedialog
 
 import fabio
 from fabio.fabioimage import FabioImage
+
 from . import CONF_PATH, DTC_PATH, ICON_PATH, BASE_DIR
 from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE
 from .utils import VerticalScrolledFrame

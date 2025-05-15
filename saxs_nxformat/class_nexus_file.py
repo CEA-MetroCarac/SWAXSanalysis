@@ -4,22 +4,18 @@ to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
 TODO : Add smoothing method?
 """
+import copy
+import inspect
 import os
 import shutil
-import re
-import inspect
-import copy
 import time
-from typing import Dict, Any
-
-import h5py
-import matplotlib.pyplot as plt
-import numpy as np
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+from smi_analysis import SMI_beamline
 
 from . import PLT_CMAP, PLT_CMAP_OBJ
 from .utils import *
-from smi_analysis import SMI_beamline
 
 
 def repack_hdf5(
@@ -85,6 +81,21 @@ def extract_smi_param(
         h5obj: h5py.File,
         input_data_group: str
 ) -> dict:
+    """
+    Extract the parameters used by SMI from an hdf5 object.
+    the h5 file must follow the NXcanSAS standard
+    Parameters
+    ----------
+    h5obj :
+        opened h5 file that contains the parameters
+
+    input_data_group :
+        Data group used to extract parameters
+
+    Returns :
+        parameters used by SMI
+    -------
+    """
     dict_parameters = {
         "beam stop": [[0, 0]]
     }
@@ -190,8 +201,8 @@ class NexusFile:
             self.file_paths = h5_paths
         else:
             raise TypeError(
-                f"You tried to pass the path of the file(s) you want to open "
-                f"as something other than a list."
+                "You tried to pass the path of the file(s) you want to open "
+                "as something other than a list."
             )
 
         self.init_plot = True
@@ -206,7 +217,7 @@ class NexusFile:
 
         self.nx_files = []
 
-        for index, file_path in enumerate(self.file_paths):
+        for file_path in self.file_paths:
             nx_file = h5py.File(file_path, "r+")
             self.nx_files.append(nx_file)
 
@@ -216,8 +227,8 @@ class NexusFile:
     def _stitching(self):
         self.list_smi_data = []
         self.intensities_data = []
-        for index, nx_file in enumerate(self.nx_files):
-            dict_parameters = self.dicts_parameters[index]
+        for dict_param in self.dicts_parameters:
+            dict_parameters = dict_param
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
@@ -240,6 +251,20 @@ class NexusFile:
             self,
             method_name: str | None = None
     ) -> str:
+        """
+        Method allowing to display the docstring
+        of any methods from this class
+
+        Parameters
+        ----------
+        method_name:
+            Name of the method to display. If is None, will display
+            all available method to display
+
+        Return:
+            the Doc string of the selected method
+        -------
+        """
         return_string = ""
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
             if method_name is None or method_name == name:
@@ -253,8 +278,9 @@ class NexusFile:
                         param_str = str(param[1])
                         return_string += f"\n    {param_str}"
         if method_name is None:
-            return_string += f"\nPlease rerun this function and pass the name of one method as a parameter\n" \
-                             f"to get more information concerning this particular method"
+            return_string += \
+                "\nPlease rerun this function and pass the name of one method as a parameter\n" \
+                "to get more information concerning this particular method"
         return return_string
 
     def get_file(self) -> list[h5py.File]:
@@ -267,22 +293,31 @@ class NexusFile:
             self,
             new_h5_paths: list[str] | list[Path]
     ) -> None:
+        """
+        Allows for the addition of more file to
+        an already opened object from this class
+
+        Parameters
+        ----------
+        new_h5_paths:
+            Path list of all the files that need to be added
+        """
 
         if isinstance(new_h5_paths, list):
             for path in new_h5_paths:
                 if not isinstance(path, str) and not isinstance(path, Path):
                     raise TypeError(
-                        f"Your list of path contains something other than a string or Path :"
+                        "Your list of path contains something other than a string or Path :"
                         f"{path} is not a string or a Path object"
                     )
             self.file_paths = self.file_paths + new_h5_paths
         else:
             raise TypeError(
-                f"You tried to pass the path of the file(s) you want to open "
-                f"as something other than a list."
+                "You tried to pass the path of the file(s) you want to open "
+                "as something other than a list."
             )
 
-        for index, file_path in enumerate(new_h5_paths):
+        for file_path in new_h5_paths:
             nx_file = h5py.File(file_path, "r+")
             self.nx_files.append(nx_file)
 
@@ -316,23 +351,35 @@ class NexusFile:
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
-                extracted_value_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/I"))
+                extracted_value_data[file_name] = \
+                    np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/I"))
 
             if f"ENTRY/{group_name}/R" in nxfile:
-                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/R"))
+                extracted_param_data[file_name] = \
+                    np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/R"))
             elif f"ENTRY/{group_name}/Q" in nxfile:
-                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Q"))
+                extracted_param_data[file_name] = \
+                    np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Q"))
             elif f"ENTRY/{group_name}/Chi" in nxfile:
-                extracted_param_data[file_name] = np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi"))
+                extracted_param_data[file_name] = \
+                    np.array(extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi"))
             else:
                 extracted_param_data[file_name] = None
 
         return extracted_param_data, extracted_value_data
 
     def get_parameters(self):
+        """
+        Getter of the dict containing parameters used for SMI analysis
+
+        Returns:
+            dict of parameters
+        -------
+
+        """
         param_dict = {}
-        for index, nxfile in enumerate(self.nx_files):
-            file_path = Path(self.file_paths[index])
+        for index, file_path in enumerate(self.file_paths):
+            file_path = Path(file_path)
             file_name = file_path.name
 
             param_dict[file_name] = self.dicts_parameters[index]
@@ -359,7 +406,10 @@ class NexusFile:
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
-                string = extract_from_h5(nxfile, f"ENTRY/{group_name}/description").decode("utf-8")
+                string = extract_from_h5(
+                    nxfile,
+                    f"ENTRY/{group_name}/description"
+                ).decode("utf-8")
                 extracted_description[file_name] = string
 
         return extracted_description
@@ -372,8 +422,9 @@ class NexusFile:
             percentile: float | int = 99
     ) -> None:
         """
-        Method used to put the data in Q space (Fourier space). This will save an array
-        containing the intensity values and another array containing the vector Q associated
+        Method used to put the data in Q space (Fourier space).
+        This will save an array containing the intensity values
+        and another array containing the vector Q associated
         to each intensities
 
         Parameters
@@ -400,7 +451,9 @@ class NexusFile:
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+            smi_data.calculate_integrator_trans(
+                self.dicts_parameters[index]["detector rotation"]
+            )
 
             dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
             qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[2])
@@ -418,7 +471,7 @@ class NexusFile:
                     extracted_value_data=smi_data.img_st,
                     label_x="$q_{hor} (A^{-1})$",
                     label_y="$q_{ver} (A^{-1})$",
-                    title=f"2D Data in q-space",
+                    title="2D Data in q-space",
                     percentile=percentile
                 )
 
@@ -428,13 +481,14 @@ class NexusFile:
 
                 save_data(self.nx_files[index], group_name, "Q", mesh_q, smi_data.img_st, mask)
 
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Conversion to q-space",
-                               "This process converts the 2D array Q containing the position in A into a 2D "
-                               "array containing the positions in q-space, A^-1.\n"
-                               "Each element of the array Q is a vector containing qx and qy"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Conversion to q-space",
+                    "This process converts the 2D array Q containing the position in A into a 2D "
+                    "array containing the positions in q-space, A^-1.\n"
+                    "Each element of the array Q is a vector containing qx and qy"
+                )
 
     def process_caking(
             self,
@@ -450,12 +504,14 @@ class NexusFile:
             percentile: float | int = 99
     ) -> None:
         """
-        Method used to cake the data. This will display the data in the (q_r, chi) coordinate system.
+        Method used to cake the data.
+        This will display the data in the (q_r, chi) coordinate system.
 
         Parameters
         ----------
         percentile :
-            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+            Controls the intensity range.
+            It will go from 0 to percentile / 100 * (max intensity)
 
         display :
             Choose if you want the result displayed or not
@@ -545,7 +601,7 @@ class NexusFile:
                     scale_x="log", scale_y="log",
                     label_x="$q_r (A^{-1})$",
                     label_y="$\\chi$",
-                    title=f"Caked q-space data",
+                    title="Caked q-space data",
                     percentile=percentile
                 )
 
@@ -554,15 +610,17 @@ class NexusFile:
 
                 save_data(self.nx_files[index], group_name, "Q", mesh_cake, smi_data.cake, mask)
 
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Data caking",
-                               "This process plots the intensity with respect to the azimuthal angle and the distance "
-                               "from the center of the q-space.\n"
-                               "Parameters used :\n"
-                               f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
-                               f"   - Radial Q range : [{radial_min:.4f}, {radial_max:.4f}] with {pts_rad} points\n"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Data caking",
+                    "This process plots the intensity with respect to "
+                    "the azimuthal angle and the distance "
+                    "from the center of the q-space.\n"
+                    "Parameters used :\n"
+                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
+                    f"   - Radial Q range : [{radial_min:.4f}, {radial_max:.4f}] with {pts_rad} points\n"
+                )
 
     def process_radial_average(
             self,
@@ -576,8 +634,9 @@ class NexusFile:
             pts: None | int = None
     ) -> None:
         """
-        Method used to perform radial averaging of data in Fourier space. This will reduce the signal to
-        one dimension : intensity versus distance from the center
+        Method used to perform radial averaging of data in Fourier space.
+        This will reduce the signal to one dimension :
+        intensity versus distance from the center
 
         Parameters
         ----------
@@ -633,10 +692,14 @@ class NexusFile:
             elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
                 default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
             else:
-                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
+                )
 
             defaults = {
-                "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
+                "r_max": np.sqrt(
+                    max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2
+                ),
                 "r_min": default_r_min,
                 "angle_min": -180,
                 "angle_max": 180,
@@ -677,15 +740,16 @@ class NexusFile:
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Radial averaging",
-                               "This process integrates the intensity signal over a specified radial angle range"
-                               "and radial q range.\n"
-                               "Parameters used :\n"
-                               f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}]\n"
-                               f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {pts} points\n"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Radial averaging",
+                    "This process integrates the intensity signal over a specified radial angle range"
+                    "and radial q range.\n"
+                    "Parameters used :\n"
+                    f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}]\n"
+                    f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {pts} points\n"
+                )
 
     def process_azimuthal_average(
             self,
@@ -794,7 +858,8 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=np.deg2rad(smi_data.chi_azi), extracted_value_data=smi_data.I_azi,
+                    extracted_param_data=np.deg2rad(smi_data.chi_azi),
+                    extracted_value_data=smi_data.I_azi,
                     scale_x="linear", scale_y="log",
                     label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
@@ -807,15 +872,16 @@ class NexusFile:
                 i_list = smi_data.I_azi
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Chi", chi_list, i_list, mask)
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Azimuthal averaging",
-                               "This process integrates the intensity signal over a specified azimuthal angle range"
-                               " and radial q range.\n"
-                               "Parameters used :\n"
-                               f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}] with {npt_azi} points\n"
-                               f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {npt_rad} points\n"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Azimuthal averaging",
+                    "This process integrates the intensity signal over a specified azimuthal angle range"
+                    " and radial q range.\n"
+                    "Parameters used :\n"
+                    f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}] with {npt_azi} points\n"
+                    f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {npt_rad} points\n"
+                )
 
     def process_horizontal_integration(
             self,
@@ -911,15 +977,17 @@ class NexusFile:
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Horizontal integration",
-                               "This process integrates the intensity signal over a specified horizontal strip in "
-                               "q-space.\n"
-                               "Parameters used :\n"
-                               f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
-                               f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Horizontal integration",
+                    "This process integrates the intensity signal "
+                    "over a specified horizontal strip in "
+                    "q-space.\n"
+                    "Parameters used :\n"
+                    f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                    f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                )
 
     def process_vertical_integration(
             self,
@@ -1015,15 +1083,16 @@ class NexusFile:
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
 
-                create_process(self.nx_files[index],
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Vertical integration",
-                               "This process integrates the intensity signal over a specified vertical strip in "
-                               "q-space\n"
-                               "Parameters used :\n"
-                               f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
-                               f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
-                               )
+                create_process(
+                    self.nx_files[index],
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Vertical integration",
+                    "This process integrates the intensity signal over a specified vertical strip in "
+                    "q-space\n"
+                    "Parameters used :\n"
+                    f"   - Horizontal Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                    f"   - Vertical Q range : [{qx_min:.4f}, {qx_max:.4f}]\n"
+                )
 
     def process_absolute_intensity(
             self,
@@ -1062,7 +1131,7 @@ class NexusFile:
             Vertical size of the region of interest. By default gets the beam size of the HDF5
         """
         if db_path is None:
-            raise Exception("No direct beam data path")
+            raise TypeError("No direct beam data path provided")
 
         if len(self.file_paths) != len(self.list_smi_data):
             self._stitching()
@@ -1094,39 +1163,41 @@ class NexusFile:
             raw_data = self.dicts_parameters[index]["I raw data"][0]
             beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
             beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
-            time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
+            expo_time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
 
-            I_ROI_data = np.sum(
+            i_roi_data = np.sum(
                 raw_data[
                 beam_center_y - roi_size_y:beam_center_y + roi_size_y,
                 beam_center_x - roi_size_x:beam_center_x + roi_size_x
                 ]
             )
-            I_ROI_data = I_ROI_data / time
+            i_roi_data = i_roi_data / expo_time
 
             with h5py.File(db_path) as h5obj:
                 raw_db = extract_from_h5(h5obj, "ENTRY/DATA/I")
-                beam_center_x_db = int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x"))
-                beam_center_y_db = int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
+                beam_center_x_db = \
+                    int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x"))
+                beam_center_y_db = \
+                    int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
                 time_db = extract_from_h5(h5obj, "ENTRY/COLLECTION/exposition_time")
 
-            I_ROI_db = np.sum(
+            i_roi_db = np.sum(
                 raw_db[
                 beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
                 beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
                 ]
             )
-            I_ROI_db = I_ROI_db / time_db
+            i_roi_db = i_roi_db / time_db
 
-            transmission = I_ROI_data / I_ROI_db
-            scaling_factor = 1 / (transmission * sample_thickness * I_ROI_db * time)
+            transmission = i_roi_data / i_roi_db
+            scaling_factor = 1 / (transmission * sample_thickness * i_roi_db * expo_time)
 
             print(
                 f"Absolute intensity parameters :\n"
                 f"  - db path : {db_path}\n"
-                f"  - I_ROI_DATA : {I_ROI_data}\n"
-                f"  - I_ROI_DB : {I_ROI_db}\n"
-                f"  - time : {time}\n"
+                f"  - I_ROI_DATA : {i_roi_data}\n"
+                f"  - I_ROI_DB : {i_roi_db}\n"
+                f"  - time : {expo_time}\n"
                 f"  - time_db : {time_db}\n"
                 f"  - transmission : {transmission}\n"
                 f"  - SF : {scaling_factor}\n"
@@ -1142,7 +1213,7 @@ class NexusFile:
                     scale_x="log", scale_y="log",
                     label_x="$q_{hor} (A^{-1})$",
                     label_y="$Intensity (m^{-1})$",
-                    title=f"Absolute intensity of the data"
+                    title="Absolute intensity of the data"
                 )
 
             if save:
@@ -1151,18 +1222,17 @@ class NexusFile:
                 mask = self.list_smi_data[index].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
 
-                # TODO : make a file with 2 sub entry? one for DB and one for sample
-
-                create_process(nx_file,
-                               f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
-                               "Absolute Intensity",
-                               "This process computes the absolute intensity of the data based on "
-                               "direct beam data file\n"
-                               "Parameters used :\n"
-                               f"   - Path of the file : {db_path}"
-                               f"   - Sample thickness : {sample_thickness:.4f}"
-                               f"   - Region of interest size : ({roi_size_x:.2f}, {roi_size_y:.2f})"
-                               )
+                create_process(
+                    nx_file,
+                    f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
+                    "Absolute Intensity",
+                    "This process computes the absolute intensity of the data based on "
+                    "direct beam data file\n"
+                    "Parameters used :\n"
+                    f"   - Path of the file : {db_path}"
+                    f"   - Sample thickness : {sample_thickness:.4f}"
+                    f"   - Region of interest size : ({roi_size_x:.2f}, {roi_size_y:.2f})"
+                )
 
     def process_display(
             self,
@@ -1179,6 +1249,47 @@ class NexusFile:
             optimize_range: bool = False,
             percentile: int | float = 99
     ) -> None:
+        """
+        Public method used to display data
+       Parameters
+        ----------
+        ymax :
+            upper y range
+
+        ymin :
+            lower y range
+
+        xmax :
+            upper x range
+
+        xmin :
+            lower x range
+
+        optimize_range :
+            Bool to know if the range should be optimized for display
+
+        percentile :
+            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+            This parameter is only usefull for 2D plotting
+
+        title :
+            Title of the plot
+
+        label_y :
+            Title of the y axis
+
+        label_x :
+            Title of the x axis
+
+        scale_y :
+            Scale of the y axis "linear" or "log"
+
+        scale_x :
+            Scale of the x axis "linear" or "log"
+
+        group_name:
+            Name of the data group to be displayed
+        """
         self.init_plot = True
         for index, nxfile in enumerate(self.nx_files):
             self._display_data(
@@ -1194,6 +1305,7 @@ class NexusFile:
 
     """
     Deprecated but could still be usefull
+    
     def process_concatenate(
             self,
             group_names: None | list[str] = None
@@ -1247,6 +1359,7 @@ class NexusFile:
             percentile: float | int = 95
     ):
         """
+        TODO : complete docstring / allow plotting according to index as second parameter
         Parameters
         ----------
         percentile
@@ -1265,7 +1378,8 @@ class NexusFile:
         # We extract the second parameter
         dict_other_param = {}
         for index_file, h5obj in enumerate(self.nx_files):
-            dict_other_param[Path(self.file_paths[index_file]).name] = extract_from_h5(h5obj, other_variable)
+            dict_other_param[Path(self.file_paths[index_file]).name] = \
+                extract_from_h5(h5obj, other_variable)
 
         # We check to see if the param have the same lengths
         common_len = 0
@@ -1274,8 +1388,8 @@ class NexusFile:
                 common_len = len(value)
                 continue
             if common_len != len(value):
-                raise Exception(f"the file {key} does not have the same amount of point in "
-                                f"it's intensity array as the other files ({common_len} points)")
+                raise ValueError(f"the file {key} does not have the same amount of point in "
+                                 f"it's intensity array as the other files ({common_len} points)")
 
         # We create the parameter meshes and the intensity array
         param_array = np.zeros((2, len(self.nx_files), common_len))
@@ -1296,12 +1410,21 @@ class NexusFile:
             self,
             group_name: str = "DATA_Q_SPACE"
     ) -> None:
-        for index, nxfile in enumerate(self.nx_files):
+        """
+        Method used to delete a data group from all files
+
+        Parameters
+        ----------
+        group_name:
+            Data_group to delete
+        """
+        for nxfile in self.nx_files:
             delete_data(nxfile, group_name)
 
     def _detect_variables(self):
         """
-        Process detecting all common variable between the opened files and returning only the ones that
+        Process detecting all common variable between the
+        opened files and returning only the ones that
         change in between those files.
 
         Returns
@@ -1312,26 +1435,37 @@ class NexusFile:
         """
         dict_var = {}
         # We get all parameters' paths
-        for index, nx_file in enumerate(self.nx_files):
+        for nx_file in self.nx_files:
             base_path = "ENTRY/INSTRUMENT"
-            paths = explore_file(nx_file[base_path], explore_group=True, explore_dataset=False, base_path=base_path)
+            paths = explore_file(
+                nx_file[base_path],
+                explore_group=True,
+                explore_dataset=False,
+                base_path=base_path
+            )
             dict_var[nx_file] = paths
 
-        for index, nx_file in enumerate(self.nx_files):
+        for nx_file in self.nx_files:
             base_path = "ENTRY/COLLECTION"
-            paths = explore_file(nx_file[base_path], explore_group=True, explore_dataset=False, base_path=base_path)
+            paths = explore_file(
+                nx_file[base_path],
+                explore_group=True,
+                explore_dataset=False,
+                base_path=base_path
+            )
             dict_var[nx_file] = paths
 
         # We count the number of times each paths appear in all the list
         dict_count = {}
-        for key, value in dict_var.items():
+        for value in dict_var.values():
             for h5path in value:
                 if h5path in dict_count.keys():
                     dict_count[h5path] += 1
                 else:
                     dict_count[h5path] = 1
 
-        # If the number of time the parameter appear is different from the number of file we delete this parameter
+        # If the number of time the parameter appear is different
+        # from the number of file we delete this parameter
         dict_valid_path = copy.deepcopy(dict_count)
         for path, count in dict_count.items():
             if count != len(self.nx_files) or isinstance(self.nx_files[0][path], h5py.Group):
@@ -1507,7 +1641,7 @@ class NexusFile:
                 else:
                     current_ax = self.ax
             else:
-                fig, ax = plt.subplots(layout="constrained")
+                _, ax = plt.subplots(layout="constrained")
                 current_ax = ax
 
             current_ax.set_xlabel(label_x)

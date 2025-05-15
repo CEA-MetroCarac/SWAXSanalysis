@@ -3,17 +3,15 @@ This module is meant to help the user process their data
 TODO : faire passer les processus dans input et mettre le display au milieu
 """
 import inspect
-import re
-from typing import List, Any
-import cProfile, pstats
-
-import h5py
 import pathlib
 import tkinter as tk
 from tkinter import ttk, filedialog
+from typing import Any
+
+import h5py
 
 from . import DESKTOP_PATH, ICON_PATH
-from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_NOTE, FONT_LOG
+from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_LOG
 from .class_nexus_file import NexusFile
 from .utils import string_2_value, extract_from_h5, VerticalScrolledFrame
 
@@ -21,6 +19,18 @@ from .utils import string_2_value, extract_from_h5, VerticalScrolledFrame
 def get_group_names(
         file_list: list[pathlib.Path] | list[str]
 ) -> list[Any]:
+    """
+    This function finds the groups that are shared by
+    all files in the file_list
+
+    Parameters
+    ----------
+    file_list :
+        List of the files' paths
+
+    Returns :
+        All groups shared by all the files
+    """
     group_count = {}
     groups = []
     for file_path in file_list:
@@ -80,6 +90,7 @@ class GUI_process(tk.Tk):
     def __init__(self) -> None:
         self.selected_files = None
         self.process = {}
+        self.to_process = []
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
             if name.startswith("process_"):
                 self.process[name.removeprefix("process_")] = method
@@ -292,7 +303,7 @@ class GUI_process(tk.Tk):
             if param[0] not in ["self"]:
                 param_str = str(param[1])
                 param_name_type, param_value = param_str.split("=")
-                param_name, param_type = param_name_type.split(":")
+                param_name, _ = param_name_type.split(":")
                 label_param = tk.Label(
                     self.frame_params.interior,
                     text=param_name.replace("_", " "),
@@ -444,11 +455,7 @@ class GUI_process(tk.Tk):
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
-        do_batch_state = self.do_batch_var.get()
-        if do_batch_state == 1:
-            do_batch_state = True
-        else:
-            do_batch_state = False
+        do_batch_state = bool(self.do_batch_var.get())
 
         self.after(
             0,

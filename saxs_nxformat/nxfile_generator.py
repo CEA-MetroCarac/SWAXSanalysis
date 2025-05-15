@@ -5,20 +5,15 @@ settings file also present in that parent folder
 TODO : force rad_avg just like q_space
 """
 import gc
+import glob
 import json
 import os
-import glob
-import inspect
-import re
+import pathlib
 import shutil
-import sys
 import threading
 import time
 import tkinter as tk
-import tkinter.messagebox
 import tracemalloc
-from typing import Dict, List, Tuple
-
 from datetime import datetime
 from pathlib import Path
 
@@ -26,9 +21,10 @@ import fabio
 import h5py
 import numpy as np
 
-from . import *
+from . import FONT_TITLE, FONT_BUTTON, FONT_LOG
+from . import ICON_PATH, TREATED_PATH, QUEUE_PATH, DTC_PATH
 from .class_nexus_file import NexusFile
-from .utils import *
+from .utils import string_2_value, save_data, extract_from_h5, convert
 
 
 def data_treatment(
@@ -74,7 +70,11 @@ def data_treatment(
 
     logical_mask = np.logical_not(data_i > -1)
 
-    output = {"R_data": np.array(r_grid), "I_data": np.array(data_i), "mask": np.array([logical_mask])}
+    output = {
+        "R_data": np.array(r_grid),
+        "I_data": np.array(data_i),
+        "mask": np.array([logical_mask])
+    }
 
     return output
 
@@ -172,7 +172,11 @@ def generate_nexus(
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
-    hdf5_path = Path(os.path.join(hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"))
+    hdf5_path = Path(
+        os.path.join(
+            hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"
+        )
+    )
 
     # We save the data
     with h5py.File(hdf5_path, "w") as save_file:
@@ -181,7 +185,14 @@ def generate_nexus(
 
         treated_data = data_treatment(edf_data, save_file)
 
-        save_data(save_file, "DATA", "Q", treated_data["R_data"], treated_data["I_data"], treated_data["mask"])
+        save_data(
+            save_file,
+            "DATA",
+            "Q",
+            treated_data["R_data"],
+            treated_data["I_data"],
+            treated_data["mask"]
+        )
 
         del save_file["ENTRY/DATA"].attrs["I_axes"]
         save_file["ENTRY/DATA"].attrs["I_axes"] = ["Q", "Q"]
@@ -193,7 +204,12 @@ def generate_nexus(
         do_absolute = extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity")
         if do_absolute and not is_db:
             # TODO : find db_path, extract data, put in file under DATA_DIRECT_BEAM
-            db_path = Path(extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity", "attribute", "dbpath"))
+            db_path = Path(extract_from_h5(
+                save_file,
+                "ENTRY/COLLECTION/do_absolute_intensity",
+                "attribute",
+                "dbpath")
+            )
             db_path = pathlib.Path(*db_path.parts[1:])
 
             # trick : we don't know when the path is going to be valid, so we strip the first part
@@ -201,15 +217,24 @@ def generate_nexus(
             do_while = True
             while len(db_path.parts[1:]) != 0 and do_while:
                 try:
-                    db_hdf5_path = generate_nexus(QUEUE_PATH / db_path, hdf5_path.parents[0], settings_path, is_db=True)
+                    db_hdf5_path = generate_nexus(
+                        QUEUE_PATH / db_path,
+                        hdf5_path.parents[0],
+                        settings_path,
+                        is_db=True
+                    )
                     do_while = False
-                except Exception as error:
+                except Exception as _:
                     db_path = pathlib.Path(*db_path.parts[1:])
 
     if do_absolute == 1 and not is_db:
         nx_file = NexusFile([hdf5_path], do_batch=False)
         try:
-            nx_file.process_absolute_intensity(db_hdf5_path, group_name="DATA_ABS", save=True)
+            nx_file.process_absolute_intensity(
+                db_hdf5_path,
+                group_name="DATA_ABS",
+                save=True
+            )
         except Exception as error:
             print(error)
         finally:
@@ -275,7 +300,7 @@ def tree_structure_manager(
         settings_path: str | Path
 ) -> str | tuple[any, any]:
     """
-    Creates a structured folder hierarchy based on the EDF file name and settings file.
+    Creates a structured folder hierarchy based on the EDF file path and settings file.
 
     Parameters
     ----------
@@ -296,33 +321,17 @@ def tree_structure_manager(
     if not isinstance(settings_path, Path):
         settings_path = Path(settings_path)
 
-    file = file_path.name
     settings = settings_path.name
 
     # Dissecting the settings file name
     settings = settings.removeprefix("settings_")
     try:
-        origin2ending, instrument, date_txt = settings.rsplit("_", 2)
+        origin2ending, instrument, _ = settings.rsplit("_", 2)
     except ValueError:
         return "Invalid settings file format"
 
     origin_format, ending_format = origin2ending.split("2")
-    date = date_txt.removesuffix(".json")
 
-    # Dissecting the data file name
-    split_file_name = file.removesuffix(".edf").split("_")
-    if "vd" in split_file_name:
-        *exp_name, detector, _, _ = split_file_name
-    else:
-        *exp_name, detector, _ = split_file_name
-    if detector == "0":
-        detector = "SAXS"
-    elif detector == "1":
-        detector = "WAXS"
-    else:
-        detector = "other"
-
-    # TODO : path too dependent on the data file name format
     common_path = (
             TREATED_PATH /
             f"instrument - {instrument}" /
@@ -341,6 +350,9 @@ def tree_structure_manager(
 
 
 class GUI_generator(tk.Tk):
+    """
+    This class is used to build a GUI for the control panel
+    """
 
     def __init__(self) -> None:
         self.activate_thread = False
@@ -441,7 +453,8 @@ class GUI_generator(tk.Tk):
 
     def auto_generate(self) -> None:
         """
-        This is a thread that runs continuously and tries to export edf files found in the parent folder
+        This is a thread that runs continuously
+        and tries to export edf files found in the parent folder
         into h5 files using the settings file found in the same folder.
         """
         tracemalloc.start()
@@ -522,26 +535,26 @@ class GUI_generator(tk.Tk):
                 self.after(
                     0,
                     self.print_log,
-                    f"Doing q space..."
+                    "Doing q space..."
                 )
                 nx_file.process_q_space(save=True)
                 self.after(
                     0,
                     self.print_log,
-                    f"q space done."
+                    "q space done."
                 )
 
                 # Do radial average
                 self.after(
                     0,
                     self.print_log,
-                    f"Doing radial integration"
+                    "Doing radial integration"
                 )
                 nx_file.process_radial_average(save=True)
                 self.after(
                     0,
                     self.print_log,
-                    f"radial integration done."
+                    "radial integration done."
                 )
             except Exception as exception:
                 self.after(
@@ -589,11 +602,15 @@ class GUI_generator(tk.Tk):
         )
 
     def close(self) -> None:
+        """
+        Properly closes the window
+        """
         self.destroy()
 
 
 if __name__ == "__main__":
-    import cProfile, pstats
+    import cProfile
+    import pstats
 
     profiler = cProfile.Profile()
     profiler.enable()

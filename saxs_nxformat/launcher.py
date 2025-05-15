@@ -6,22 +6,20 @@ opens a GUI allowing the user to:
 - Process data
 """
 
-import os
-import sys
-import shutil
 import ctypes
+import shutil
 import tkinter as tk
+
+from . import CONF_PATH, QUEUE_PATH, ICON_PATH, BASE_DIR
+from . import DTC_PATH, IPYNB_PATH, TREATED_PATH
+from . import FONT_TITLE, FONT_BUTTON
+from .create_config import GUI_setting
+from .data_processing import GUI_process
+from .nxfile_generator import GUI_generator
 
 # To manage icon of the app
 myappid: str = 'CEA.nxformat.launcher'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-
-
-# We build the environment
-from . import *
-from .create_config import GUI_setting
-from .data_processing import GUI_process
-from .nxfile_generator import GUI_generator
 
 
 # Launch commands
@@ -151,4 +149,3 @@ if __name__ == "__main__":
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('cumtime')
     # stats.print_stats()
-

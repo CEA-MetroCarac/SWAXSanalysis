@@ -1,7 +1,6 @@
 """
 Package-wide functions and classes
 """
-import pathlib
 import re
 import tkinter as tk
 from tkinter import ttk
@@ -9,6 +8,7 @@ from typing import Any
 
 import h5py
 import numpy as np
+
 from . import DICT_UNIT
 
 
@@ -149,6 +149,31 @@ def convert(
 
 
 def explore_file(group, explore_group=False, explore_dataset=False, level=0, base_path=""):
+    """
+    Allows the user to display the structure of an
+    HDF5 file
+
+    Parameters
+    ----------
+    group :
+        group currently explored
+
+    explore_group:
+        Choose whether you want to go inside groups or not
+
+    explore_dataset:
+        Choose whether you want to go inside datasets or not
+
+    level:
+        Current indentation level
+
+    base_path:
+        h5 Path of the group
+
+    Returns
+    -------
+    Paths of all groups / datset / attributes contained in the file
+    """
     paths = []
 
     for key in group.keys():
@@ -200,7 +225,7 @@ def extract_from_h5(
         dataset = nx_file[h5path]
         attributes = dataset.attrs
     else:
-        raise Exception(f"{h5path} is not in the file {nx_file}")
+        raise TypeError(f"{h5path} is not in the file {nx_file}")
 
     # We detect if the dataset is a scalar, an array, bytes, or an attribute
     if data_type == "dataset" and np.shape(dataset) == ():
@@ -382,7 +407,9 @@ def delete_data(
     if group_name in nx_file["/ENTRY"]:
         del nx_file[f"/ENTRY/{group_name}"]
     else:
-        raise Exception(f"The group /ENTRY/{group_name} does not exist in the file {nx_file.filename}")
+        raise ValueError(
+            f"The group /ENTRY/{group_name} does not exist in the file {nx_file.filename}"
+        )
 
     # We delete the associated process
     process_name = group_name.removeprefix("DATA_")
@@ -390,7 +417,9 @@ def delete_data(
     if process_name in nx_file["/ENTRY"]:
         del nx_file[f"/ENTRY/{process_name}"]
     else:
-        raise Exception(f"The group /ENTRY/{process_name} does not exist in the file {nx_file.filename}")
+        raise ValueError(
+            f"The group /ENTRY/{process_name} does not exist in the file {nx_file.filename}"
+        )
 
 
 def detect_variation(
@@ -398,12 +427,12 @@ def detect_variation(
         relative_tol: float | int
 ) -> np.ndarray:
     """
-    return the indices where we go from a value under low to a value aboce high
+    return the indices where there is a change greater than the relative tolerance
 
     Parameters
     ----------
-    variation_threshold :
-        Threshold at which the change is detected
+    relative_tol :
+        Relative tolerance of the variation
 
     array :
         The array where the variation have to be detected
@@ -414,8 +443,6 @@ def detect_variation(
     """
 
     diff_array = np.diff(array)
-    # print("np.diff :\n", diff_array)
-    # print("np.where :\n", np.where(diff_array > relative_tol*array[1:]))
     # We ignore the values where the array is equal to zero (relative tol doesn't make sense)
     non_zero_mask = array[1:] != 0
     # We build the condition
