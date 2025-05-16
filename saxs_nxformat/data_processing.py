@@ -338,6 +338,7 @@ class GUI_process(tk.Tk):
                         )
                     finally:
                         nx_file.nexus_close()
+
                     entry_param = tk.Listbox(
                         self.frame_params.interior,
                         font=FONT_TEXT,
@@ -346,6 +347,7 @@ class GUI_process(tk.Tk):
                     )
                     for var in dict_var.keys():
                         entry_param.insert(tk.END, var)
+                    entry_param.insert(tk.END, "Index")
 
                 else:
                     entry_param = tk.Entry(self.frame_params.interior,

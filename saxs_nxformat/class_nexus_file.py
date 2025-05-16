@@ -1374,12 +1374,21 @@ class NexusFile:
         """
         # We extract the intensity and first parameter
         dict_param, dict_value = self.get_raw_data(group_name=group_name)
+        for key, value in dict_value.items():
+            if len(np.shape(value)) != 1:
+                raise TypeError(f"Data in {group_name}, in file "
+                                f"{key}, is not one dimensional")
 
         # We extract the second parameter
         dict_other_param = {}
-        for index_file, h5obj in enumerate(self.nx_files):
-            dict_other_param[Path(self.file_paths[index_file]).name] = \
-                extract_from_h5(h5obj, other_variable)
+        if other_variable == "Index":
+            for index_file, h5obj in enumerate(self.nx_files):
+                dict_other_param[Path(self.file_paths[index_file]).name] = \
+                    index_file
+        else:
+            for index_file, h5obj in enumerate(self.nx_files):
+                dict_other_param[Path(self.file_paths[index_file]).name] = \
+                    extract_from_h5(h5obj, other_variable)
 
         # We check to see if the param have the same lengths
         common_len = 0
@@ -1644,6 +1653,7 @@ class NexusFile:
                 _, ax = plt.subplots(layout="constrained")
                 current_ax = ax
 
+            print(label_x)
             current_ax.set_xlabel(label_x)
             current_ax.set_ylabel(label_y)
             current_ax.set_title(title)
