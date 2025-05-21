@@ -101,7 +101,20 @@ def extract_smi_param(
     }
 
     # We extract the relevant info from the H5 file
+    if f"ENTRY/{input_data_group}" not in h5obj:
+        raise KeyError(
+            f"the group ENTRY/{input_data_group} "
+            f"is not a node of the current file"
+        )
+
     intensity_data = [h5obj[f"ENTRY/{input_data_group}/I"][:]]
+
+    if len(np.shape(intensity_data[0])) != 2:
+        raise TypeError(
+            f"The shape of the data in ENTRY/{input_data_group} "
+            f"is not 2 dimensional"
+        )
+
     position_data = [h5obj[f"ENTRY/{input_data_group}/Q"][:]]
     dict_parameters["I raw data"] = intensity_data
     dict_parameters["R raw data"] = position_data
@@ -167,9 +180,6 @@ class NexusFile:
 
     list_smi_data :
         list of Stitched data using the SMI package
-
-    intensities_data :
-        list of array of intensities
     """
 
     def __init__(
@@ -180,7 +190,7 @@ class NexusFile:
     ) -> None:
         """
         The init of this class consists of extracting every releavant parameters
-        from the h5 file and using it to open the data and stitch it using the SMI_package
+        from the h5 file.
 
         Parameters
         ----------
@@ -213,7 +223,6 @@ class NexusFile:
 
         self.dicts_parameters = []
         self.list_smi_data = []
-        self.intensities_data = []
 
         self.nx_files = []
 
@@ -226,7 +235,6 @@ class NexusFile:
 
     def _stitching(self):
         self.list_smi_data = []
-        self.intensities_data = []
         for dict_param in self.dicts_parameters:
             dict_parameters = dict_param
 
@@ -244,7 +252,6 @@ class NexusFile:
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
-            self.intensities_data.append(dict_parameters["I raw data"])
             self.list_smi_data.append(smi_data)
 
     def show_method(
@@ -1247,12 +1254,16 @@ class NexusFile:
             ymin: None | float | int = None,
             ymax: None | float | int = None,
             optimize_range: bool = False,
+            legend: bool = True,
             percentile: int | float = 99
     ) -> None:
         """
         Public method used to display data
        Parameters
         ----------
+        legend :
+            Choose whether you want to display the legend
+
         ymax :
             upper y range
 
@@ -1300,7 +1311,7 @@ class NexusFile:
                 xmin=xmin, xmax=xmax,
                 ymin=ymin, ymax=ymax,
                 title=title, percentile=percentile,
-                legend=True, optimize_range=optimize_range
+                legend=legend, optimize_range=optimize_range
             )
 
     """
@@ -1676,7 +1687,7 @@ class NexusFile:
                     plt.show(block=False)
             else:
                 plt.show(block=False)
-                time.sleep(0.5)
+                time.sleep(0.1)
 
     def nexus_close(self):
         """

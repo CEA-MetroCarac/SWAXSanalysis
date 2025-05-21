@@ -165,6 +165,9 @@ def generate_nexus(
 
     # We build the file name
     # TODO : Think of a better file name template
+###########################
+### Xeuss specific part ###
+###########################
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
     if is_db:
@@ -172,13 +175,25 @@ def generate_nexus(
     current_time = datetime.now()
     time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
     split_edf_name = edf_name.removesuffix(".edf").split("_")
+
+    if is_db:
+        final_name = f"{sample_name}_img{split_edf_name[-1]}.h5"
+    else:
+        final_name = f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"
+###########################
+### Xeuss specific part ###
+###########################
+
     hdf5_path = Path(
         os.path.join(
-            hdf5_path, f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"
+            hdf5_path, final_name
         )
     )
 
     # We save the data
+    if hdf5_path.exists():
+        pass
+
     with h5py.File(hdf5_path, "w") as save_file:
         # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
@@ -515,6 +530,12 @@ class GUI_generator(tk.Tk):
             finally:
                 shutil.copy(file_path, result[1] / file_path.name)
 
+            self.after(
+                0,
+                self.print_log,
+                f"{file_path.name} has been converted successfully\n"
+            )
+
             # We decide whether we want to do absolute intensity treatment or not
             with h5py.File(new_file_path, "r") as h5obj:
                 do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
@@ -529,8 +550,9 @@ class GUI_generator(tk.Tk):
                 self.print_log,
                 f"Opening {Path(new_file_path).name} using {input_group} as base data"
             )
-            nx_file = NexusFile([new_file_path], input_data_group=input_group)
+            nx_file = None
             try:
+                nx_file = NexusFile([new_file_path], input_data_group=input_group)
                 # Do Q space
                 self.after(
                     0,
@@ -562,18 +584,13 @@ class GUI_generator(tk.Tk):
                     self.print_log,
                     str(exception)
                 )
-                raise exception
+                raise Exception
             finally:
-                nx_file.nexus_close()
+                if nx_file is not None:
+                    nx_file.nexus_close()
 
             del nx_file
             gc.collect()
-
-            self.after(
-                0,
-                self.print_log,
-                f"{file_path.name} has been converted successfully\n"
-            )
         tracemalloc.stop()
         self.after(
             0,
@@ -598,7 +615,7 @@ class GUI_generator(tk.Tk):
         self.after(
             0,
             self.print_log,
-            "Auto-generation stopped. The program is still sleeping!"
+            "Auto-generation stopped. The program is still processing!"
         )
 
     def close(self) -> None:
