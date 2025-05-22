@@ -20,7 +20,7 @@ from .utils import VerticalScrolledFrame
 ######################
 
 
-class GUI_setting(tk.Tk):
+class GUI_setting(tk.Frame):
     """
     A GUI application for creating the configuration files.
 
@@ -48,17 +48,17 @@ class GUI_setting(tk.Tk):
         The frame containing action buttons for navigation and saving.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.iconbitmap(ICON_PATH)
-        self.focus_force()
+    def __init__(self, parent) -> None:
+        super().__init__(parent)
+        # self.iconbitmap(ICON_PATH)
+        # self.focus_force()
 
         json_path = BASE_DIR / "nexus_standards" / "structure_NXcanSAS.json"
         with open(json_path, "r", encoding="utf-8") as file:
             self.dict_config = json.load(file)
 
-        self.title("Config creator")
-        self.geometry("700x700")
+        # self.title("Config creator")
+        # self.geometry("700x700")
 
         label_title = tk.Label(self, text="Config builder",
                                fg="black", font=FONT_TITLE, justify="left")

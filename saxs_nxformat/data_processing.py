@@ -58,7 +58,7 @@ def get_group_names(
     return groups
 
 
-class GUI_process(tk.Tk):
+class GUI_process(tk.Frame):
     """
     A gui allowing the user to process his data automatically
 
@@ -87,7 +87,7 @@ class GUI_process(tk.Tk):
         files that are to be processed
     """
 
-    def __init__(self) -> None:
+    def __init__(self, parent) -> None:
         self.selected_files = None
         self.process = {}
         self.to_process = []
@@ -95,11 +95,11 @@ class GUI_process(tk.Tk):
             if name.startswith("process_"):
                 self.process[name.removeprefix("process_")] = method
 
-        super().__init__()
-        self.iconbitmap(ICON_PATH)
-        self.focus_force()
-        self.geometry("1200x900")
-        self.title("Data processing")
+        super().__init__(parent)
+        # self.iconbitmap(ICON_PATH)
+        # self.focus_force()
+        # self.geometry("1200x900")
+        # self.title("Data processing")
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)

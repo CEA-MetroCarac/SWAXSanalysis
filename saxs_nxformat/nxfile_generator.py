@@ -364,18 +364,18 @@ def tree_structure_manager(
         return "Permission to create directory denied"
 
 
-class GUI_generator(tk.Tk):
+class GUI_generator(tk.Frame):
     """
     This class is used to build a GUI for the control panel
     """
 
-    def __init__(self) -> None:
+    def __init__(self, parent) -> None:
         self.activate_thread = False
         self.line_dict = {}
 
-        super().__init__()
-        self.title("Auto Generate Controller")
-        self.iconbitmap(ICON_PATH)
+        super().__init__(parent)
+        # self.title("Auto Generate Controller")
+        # self.iconbitmap(ICON_PATH)
         self.columnconfigure(1, weight=2)
         self.rowconfigure(0, weight=1)
 
@@ -584,7 +584,7 @@ class GUI_generator(tk.Tk):
                     self.print_log,
                     str(exception)
                 )
-                raise Exception
+                # raise exception
             finally:
                 if nx_file is not None:
                     nx_file.nexus_close()

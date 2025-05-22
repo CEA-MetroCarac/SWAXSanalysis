@@ -9,6 +9,7 @@ opens a GUI allowing the user to:
 import ctypes
 import shutil
 import tkinter as tk
+from tkinter import ttk
 
 from . import CONF_PATH, QUEUE_PATH, ICON_PATH, BASE_DIR
 from . import DTC_PATH, IPYNB_PATH, TREATED_PATH
@@ -139,13 +140,46 @@ def launcher_gui() -> None:
 
     root.mainloop()
 
+class MainApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("edf2NeXus")
+        self.geometry("800x600")
+        self.iconbitmap(ICON_PATH)
+        self.focus_force()
+
+        style = ttk.Style()
+        style.configure("TNotebook.Tab", font=FONT_BUTTON)
+
+        notebook = ttk.Notebook(self)
+        notebook.pack(fill='both', expand=True)
+
+        tab1 = GUI_generator(notebook)
+        tab2 = GUI_process(notebook)
+        tab3 = GUI_setting(notebook)
+
+        notebook.add(
+            tab1,
+            text="NeXus file generation"
+        )
+        notebook.add(
+            tab2,
+            text="Data processing"
+        )
+        notebook.add(
+            tab3,
+            text="Settings generator"
+        )
+
+
 
 if __name__ == "__main__":
     # import cProfile, pstats
     #
     # profiler = cProfile.Profile()
     # profiler.enable()
-    launcher_gui()
+    app = MainApp()
+    app.mainloop()
     # profiler.disable()
     # stats = pstats.Stats(profiler).sort_stats('cumtime')
     # stats.print_stats()
