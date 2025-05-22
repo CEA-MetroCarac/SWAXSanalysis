@@ -245,16 +245,12 @@ class GUI_process(tk.Frame):
             self.to_process += [self.selected_files[index]]
 
         if self.selected_files is None:
-            self.after(
-                0,
-                self.print_log,
+            self.print_log(
                 "You didn't specify any file to process.\nCouldn't build parameters properly."
             )
             return
         if len(self.to_process) == 0:
-            self.after(
-                0,
-                self.print_log,
+            self.print_log(
                 "You didn't select any file to process.\nCouldn't build parameters properly."
             )
             return
@@ -331,9 +327,7 @@ class GUI_process(tk.Frame):
                     try:
                         dict_var = nx_file._detect_variables()
                     except Exception as error:
-                        self.after(
-                            0,
-                            self.print_log,
+                        self.print_log(
                             f"{error}"
                         )
                     finally:
@@ -411,8 +405,15 @@ class GUI_process(tk.Frame):
             message: str
     ) -> None:
         """Function to print logs in the Tkinter Text widget."""
-        self.log_text.insert(tk.END, message + "\n\n")
-        self.log_text.see(tk.END)
+
+        def print_message():
+            self.log_text.insert(tk.END, message + "\n\n")
+            self.log_text.see(tk.END)
+
+        self.after(
+            0,
+            print_message()
+        )
 
     def _start_processing(
             self,
@@ -458,10 +459,7 @@ class GUI_process(tk.Frame):
 
         # We fill out the parameters for every file
         do_batch_state = bool(self.do_batch_var.get())
-
-        self.after(
-            0,
-            self.print_log,
+        self.print_log(
             f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
         )
         # #############################
@@ -472,9 +470,7 @@ class GUI_process(tk.Frame):
         try:
             process(nxfiles, **param_dict)
         except Exception as exception:
-            self.after(
-                0,
-                self.print_log,
+            self.print_log(
                 str(exception)
             )
             raise exception
@@ -484,9 +480,7 @@ class GUI_process(tk.Frame):
                 text="No processing in progress",
                 fg="#6DB06E"
             )
-        self.after(
-            0,
-            self.print_log,
+        self.print_log(
             "Process done"
         )
         # ####################################################
