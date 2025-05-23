@@ -483,8 +483,11 @@ class GUI_generator(tk.Frame):
         into h5 files using the settings file found in the same folder.
         """
         tracemalloc.start()
+        start_time = time.time()
         sleep_time = 10
         while self.activate_thread:
+            if self.jenkins and time.time()-start_time > 3500:
+                break
             current, peak = tracemalloc.get_traced_memory()
 
             self.print_log(
@@ -577,6 +580,8 @@ class GUI_generator(tk.Frame):
 
             del nx_file
             gc.collect()
+            print(time.time() - start_time)
+
         tracemalloc.stop()
         self.print_log(
             "The program is done! you can close or start it again."
