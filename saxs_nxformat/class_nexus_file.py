@@ -1199,16 +1199,16 @@ class NexusFile:
             transmission = i_roi_data / i_roi_db
             scaling_factor = 1 / (transmission * sample_thickness * i_roi_db * expo_time)
 
-            print(
-                f"Absolute intensity parameters :\n"
-                f"  - db path : {db_path}\n"
-                f"  - I_ROI_DATA : {i_roi_data}\n"
-                f"  - I_ROI_DB : {i_roi_db}\n"
-                f"  - time : {expo_time}\n"
-                f"  - time_db : {time_db}\n"
-                f"  - transmission : {transmission}\n"
-                f"  - SF : {scaling_factor}\n"
-            )
+            # print(
+            #     f"Absolute intensity parameters :\n"
+            #     f"  - db path : {db_path}\n"
+            #     f"  - I_ROI_DATA : {i_roi_data}\n"
+            #     f"  - I_ROI_DB : {i_roi_db}\n"
+            #     f"  - time : {expo_time}\n"
+            #     f"  - time_db : {time_db}\n"
+            #     f"  - transmission : {transmission}\n"
+            #     f"  - SF : {scaling_factor}\n"
+            # )
 
             abs_data = raw_data * scaling_factor
 

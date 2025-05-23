@@ -6,6 +6,7 @@ opens a GUI allowing the user to:
 - Process data
 """
 
+import argparse
 import ctypes
 import shutil
 import tkinter as tk
@@ -21,6 +22,7 @@ from .nxfile_generator import GUI_generator
 # To manage icon of the app
 myappid: str = 'CEA.nxformat.launcher'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
 
 # GUI
 class MainApp(tk.Tk):
@@ -62,7 +64,21 @@ if __name__ == "__main__":
     #
     # profiler = cProfile.Profile()
     # profiler.enable()
-    JENKINS = True
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("--jenkins", type=str)
+    arguments = arg_parser.parse_args()
+
+    if arguments.jenkins:
+        arguments.jenkins.lower()
+        if arguments.jenkins == "false":
+            JENKINS = False
+        elif arguments.jenkins == "true":
+            JENKINS = True
+        else:
+            raise ValueError("The argument --jenkins must be true or false")
+    else:
+        raise ValueError("The argument --jenkins was not filled")
+
     if JENKINS:
         app = GUI_generator(jenkins=JENKINS)
         app.activate_thread = True
