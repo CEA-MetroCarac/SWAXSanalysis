@@ -27,34 +27,6 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 # GUI
 class MainApp(tk.Tk):
     def __init__(self, jenkins):
-        # We create the file if they do not exist
-        DTC_PATH.mkdir(parents=True, exist_ok=True)
-        CONF_PATH.mkdir(parents=True, exist_ok=True)
-        TREATED_PATH.mkdir(parents=True, exist_ok=True)
-        IPYNB_PATH.mkdir(parents=True, exist_ok=True)
-        QUEUE_PATH.mkdir(parents=True, exist_ok=True)
-
-        # We move the notebook, jupyter launcher and settings into the DTC
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
-            IPYNB_PATH
-        )
-
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
-            IPYNB_PATH
-        )
-
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
-            IPYNB_PATH
-        )
-
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
-            CONF_PATH
-        )
-
         super().__init__()
         self.jenkins = jenkins
 
@@ -88,10 +60,34 @@ class MainApp(tk.Tk):
 
 
 if __name__ == "__main__":
-    # import cProfile, pstats
-    #
-    # profiler = cProfile.Profile()
-    # profiler.enable()
+    # We create the file if they do not exist
+    DTC_PATH.mkdir(parents=True, exist_ok=True)
+    CONF_PATH.mkdir(parents=True, exist_ok=True)
+    TREATED_PATH.mkdir(parents=True, exist_ok=True)
+    IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+    QUEUE_PATH.mkdir(parents=True, exist_ok=True)
+
+    # We move the notebook, jupyter launcher and settings into the DTC
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
+        CONF_PATH
+    )
+
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument("--jenkins", type=str)
     arguments = arg_parser.parse_args()
@@ -114,6 +110,3 @@ if __name__ == "__main__":
     else:
         app = MainApp(JENKINS)
         app.mainloop()
-    # profiler.disable()
-    # stats = pstats.Stats(profiler).sort_stats('cumtime')
-    # stats.print_stats()
