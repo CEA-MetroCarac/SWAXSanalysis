@@ -16,6 +16,7 @@ import tkinter as tk
 import tracemalloc
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 import fabio
 import h5py
@@ -160,39 +161,17 @@ def generate_nexus(
                     attribute_value = string_2_value(str(attribute_value), value["type"])
                 parent_element.attrs[clean_key] = attribute_value
 
-    with open(settings_path, "r", encoding="utf-8") as config_file:
-        config_dict = json.load(config_file)
-
-    # We build the file name
-    # TODO : Think of a better file name template
-    ###########################
-    ### Xeuss specific part ###
-    ###########################
-    sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
-    sample_name = edf_header.get(sample_name_key, "defaultSampleName")
-    if is_db:
-        sample_name = sample_name + "DB"
-    current_time = datetime.now()
-    time_stamp = str(current_time.strftime("%Y%m%d%H%M%S"))
-    split_edf_name = edf_name.removesuffix(".edf").split("_")
-
-    if is_db:
-        final_name = f"{sample_name}_img{split_edf_name[-1]}.h5"
-    else:
-        final_name = f"{sample_name}_img{split_edf_name[-1]}_{time_stamp}.h5"
-    ###########################
-    ### Xeuss specific part ###
-    ###########################
-
-    hdf5_path = Path(
-        os.path.join(
-            hdf5_path, final_name
-        )
-    )
-
     # We save the data
     if hdf5_path.exists():
-        pass
+        if is_db:
+            string_hdf5_path = str(hdf5_path)
+            string_hdf5_path.removesuffix(".h5")
+            hdf5_path = Path(string_hdf5_path + "_DB.h5")
+        else:
+            raise Exception(f"{hdf5_path} already exists")
+
+    with open(settings_path, "r", encoding="utf-8") as config_file:
+        config_dict = json.load(config_file)
 
     with h5py.File(hdf5_path, "w") as save_file:
         # TODO : compute real uncertainties here
@@ -234,12 +213,12 @@ def generate_nexus(
                 try:
                     db_hdf5_path = generate_nexus(
                         QUEUE_PATH / db_path,
-                        hdf5_path.parents[0],
+                        hdf5_path,
                         settings_path,
                         is_db=True
                     )
                     do_while = False
-                except Exception as _:
+                except Exception as exception:
                     db_path = pathlib.Path(*db_path.parts[1:])
 
     if do_absolute == 1 and not is_db:
@@ -251,16 +230,14 @@ def generate_nexus(
                 save=True
             )
         except Exception as error:
-            print(error)
+            raise error
         finally:
             nx_file.nexus_close()
 
     return str(hdf5_path)
 
 
-def search_setting_edf(
-        recursively: bool = False
-) -> tuple[None, None] | tuple[None | str | Path, Path]:
+def search_setting_edf() -> tuple[None, None, None] | tuple[Path, Path, Path]:
     """
     This function searches an edf file and a settings file
     in the parent folder.
@@ -274,45 +251,96 @@ def search_setting_edf(
         Path of the settings file.
     """
     edf_name, settings_name, edf_original_path = None, None, None
+    h5_file_path = None
     # First, we try to get the settings file
     for file in os.listdir(DTC_PATH):
         if "settings_edf2nx" in file.lower():
             settings_name = file
     if settings_name is None:
-        return None, None
+        return None, None, None
     else:
         settings_path = Path(DTC_PATH / settings_name)
 
     # Second, we build the list of all edf path in the DTC
     treated_edf = []
-    for filepath in glob.iglob(str(TREATED_PATH / "**/*.edf"), recursive=True):
+    for filepath in glob.iglob(str(TREATED_PATH / "**/*.h5"), recursive=True):
         treated_edf.append(Path(filepath))
 
-    # Recursively searching in treatment queue for files to treat
-    if recursively:
-        for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
-            filepath = Path(filepath)
-            result = tree_structure_manager(filepath, settings_path)
-            edf_name = filepath.name
-            if result[-1] / edf_name not in treated_edf:
-                edf_original_path = filepath
+    for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
+        filepath = Path(filepath)
+        target_dir = tree_structure_manager(filepath, settings_path)
+        h5_file_path = generate_h5_path(settings_path, filepath, target_dir)
+        if h5_file_path not in treated_edf:
+            edf_original_path = filepath
+            break
+        else:
+            h5_file_path = None
+            edf_original_path = None
+
+    if edf_original_path is None or h5_file_path is None:
+        return None, None, None
+
+    return Path(edf_original_path), Path(settings_path), Path(h5_file_path)
+
+
+def generate_h5_path(
+        settings_path,
+        edf_path,
+        destination_folder
+):
+    """
+    Extremely dependent of how the files are named
+
+    Parameters
+    ----------
+    edf_path :
+        Path of the edf file to convert
+
+    destination_folder :
+        Folder where the h5 file is to be saved
+
+    Returns
+    -------
+    h5_file_path :
+        The complete h5 file path
+
+    """
+    edf_name = edf_path.name
+    edf_file = fabio.open(edf_path)
+    edf_header = edf_file.header
+    with open(settings_path, "r", encoding="utf-8") as config_file:
+        config_dict = json.load(config_file)
+
+    sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
+    sample_name = edf_header.get(sample_name_key, "defaultSampleName")
+
+    #######################
+    ### Xeuss dependent ###
+    #######################
+    split_edf_name = edf_name.removesuffix(".edf").split("_")
+
+    if split_edf_name[-2] == "0":
+        detector = "SAXS"
+    elif split_edf_name[-2] == "1":
+        detector = "WAXS"
     else:
-        # Search in data treatment center only
-        for file in os.listdir(DTC_PATH):
-            if ".edf" in file.lower():
-                edf_name = file
-                edf_original_path = Path(DTC_PATH / edf_name)
+        detector = "other"
 
-    if edf_original_path is None:
-        return None, None
+    final_name = f"{sample_name}_{detector}_img{split_edf_name[-1]}.h5"
+    #######################
+    ### Xeuss dependent ###
+    #######################
 
-    return Path(edf_original_path), Path(settings_path)
+    h5_file_path = Path(destination_folder) / final_name
+
+    return Path(h5_file_path)
+
 
 
 def tree_structure_manager(
         file_path: str | Path,
         settings_path: str | Path
-) -> str | tuple[any, any]:
+) -> str | Path:
     """
     Creates a structured folder hierarchy based on the EDF file path and settings file.
 
@@ -346,21 +374,17 @@ def tree_structure_manager(
 
     origin_format, ending_format = origin2ending.split("2")
 
-    common_path = (
+    target_dir = (
             TREATED_PATH /
             f"instrument - {instrument}" /
             file_path.relative_to(QUEUE_PATH).parent
     )
 
-    target_dir = common_path / f"format - {ending_format}"
-    other_dir = common_path / f"format - {origin_format}"
-
     try:
         target_dir.mkdir(parents=True, exist_ok=True)
-        other_dir.mkdir(parents=True, exist_ok=True)
-        return target_dir, other_dir
-    except PermissionError:
-        return "Permission to create directory denied"
+        return target_dir
+    except Exception as exception:
+        raise exception
 
 
 class GUI_generator(tk.Frame):
@@ -486,7 +510,7 @@ class GUI_generator(tk.Frame):
         start_time = time.time()
         sleep_time = 10
         while self.activate_thread:
-            if self.jenkins and time.time()-start_time > 3500:
+            if self.jenkins and time.time() - start_time > 3500:
                 break
             current, peak = tracemalloc.get_traced_memory()
 
@@ -502,7 +526,7 @@ class GUI_generator(tk.Frame):
                 )
                 break
 
-            file_path, settings_path = search_setting_edf(recursively=True)
+            file_path, settings_path, h5_file_path = search_setting_edf()
 
             if file_path is None or settings_path is None:
                 self.print_log(
@@ -512,26 +536,17 @@ class GUI_generator(tk.Frame):
                 time.sleep(sleep_time)
                 continue
 
-            result = tree_structure_manager(file_path, settings_path)
-            if result[0] == "perm error":
-                self.print_log(
-                    "The program could not create the file due to a permission error"
-                )
-                self.activate_thread = False
-                break
             self.print_log(
                 f"Converting : {file_path.name}, please wait"
             )
 
             try:
-                new_file_path = generate_nexus(file_path, result[0], settings_path)
+                new_file_path = generate_nexus(file_path, h5_file_path, settings_path)
             except Exception as exception:
                 self.print_log(
                     str(exception)
                 )
-                raise exception
-            finally:
-                shutil.copy(file_path, result[1] / file_path.name)
+                continue
 
             self.print_log(
                 f"{file_path.name} has been converted successfully\n"
@@ -573,7 +588,7 @@ class GUI_generator(tk.Frame):
                 self.print_log(
                     str(exception)
                 )
-                raise exception
+                continue
             finally:
                 if nx_file is not None:
                     nx_file.nexus_close()
