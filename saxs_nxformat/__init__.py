@@ -27,7 +27,8 @@ def get_desktop_path() -> Path:
 
 
 # Path to the different folders
-# DESKTOP_PATH: Path  = get_desktop_path()
+DESKTOP_PATH: Path  = get_desktop_path()
+
 # ENV_PATH: Path      = DESKTOP_PATH
 
 ENV_PATH: Path      = \
