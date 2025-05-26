@@ -510,7 +510,7 @@ class GUI_generator(tk.Frame):
         start_time = time.time()
         sleep_time = 10
         while self.activate_thread:
-            if self.jenkins and time.time() - start_time > 3500:
+            if self.jenkins and time.time() - start_time > 60:
                 break
             current, peak = tracemalloc.get_traced_memory()
 
