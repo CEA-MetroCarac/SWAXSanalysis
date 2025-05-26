@@ -27,11 +27,11 @@ def get_desktop_path() -> Path:
 
 
 # Path to the different folders
-DESKTOP_PATH: Path  = get_desktop_path()
+# DESKTOP_PATH: Path  = get_desktop_path()
+# ENV_PATH: Path      = DESKTOP_PATH
 
-ENV_PATH: Path      = DESKTOP_PATH
-# ENV_PATH: Path      = \
-#     Path("//kiev/share_nfs/200-Science_et_Technique/200.7-PFNC-CARACTERISATION/200.7.5-XEUSS1")
+ENV_PATH: Path      = \
+    Path("//kiev/share_nfs/200-Science_et_Technique/200.7-PFNC-CARACTERISATION/200.7.5-XEUSS1")
 DTC_PATH: Path      = ENV_PATH / "Data Treatment Center"
 CONF_PATH: Path     = DTC_PATH / "Configs"
 TREATED_PATH: Path  = DTC_PATH / "Treated Data"
