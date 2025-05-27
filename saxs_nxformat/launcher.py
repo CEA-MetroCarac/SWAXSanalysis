@@ -31,15 +31,30 @@ class MainApp(tk.Tk):
         self.jenkins = jenkins
 
         self.title("edf2NeXus")
-        self.geometry("800x600")
+
+        # Setup geometry
+        window_width = 1500
+        window_height = 800
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        x = (screen_width // 2) - (window_width // 2)
+        y = (screen_height // 2) - (window_height // 2)
+
+        self.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
         self.iconbitmap(ICON_PATH)
         self.focus_force()
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
         style = ttk.Style()
         style.configure("TNotebook.Tab", font=FONT_BUTTON)
 
         notebook = ttk.Notebook(self)
-        notebook.pack(fill='both', expand=True)
+        notebook.grid(sticky="news", row=0)
 
         self.tab1 = GUI_generator(notebook, jenkins)
         self.tab2 = GUI_process(notebook)
@@ -67,7 +82,7 @@ class MainApp(tk.Tk):
             padx=10,
             font=FONT_BUTTON
         )
-        close_button.pack(pady=10, padx=10)
+        close_button.grid(sticky="w", pady=10, padx=10, row=1)
 
     def close(self) -> None:
         """

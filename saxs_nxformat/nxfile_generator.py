@@ -448,18 +448,6 @@ class GUI_generator(tk.Frame):
         )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
 
-        # Close Button
-        close_button = tk.Button(
-            self.control_panel,
-            text="Close",
-            command=self.close,
-            bg="#DBDFAC",
-            fg="black",
-            padx=10,
-            font=FONT_BUTTON
-        )
-        close_button.grid(pady=10, padx=10, row=7, column=0)
-
     def _build_log_frame(self) -> None:
         self.log_panel.columnconfigure(0, weight=1)
         self.log_panel.rowconfigure(1, weight=1)
@@ -617,12 +605,6 @@ class GUI_generator(tk.Frame):
         self.print_log(
             "Auto-generation stopped. The program is still processing!"
         )
-
-    def close(self) -> None:
-        """
-        Properly closes the window
-        """
-        self.destroy()
 
 
 if __name__ == "__main__":
