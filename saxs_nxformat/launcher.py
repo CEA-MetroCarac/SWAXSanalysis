@@ -58,6 +58,57 @@ class MainApp(tk.Tk):
             text="Settings generator"
         )
 
+        close_button = tk.Button(
+            self,
+            text="Close",
+            command=self.close,
+            bg="#DBDFAC",
+            fg="black",
+            padx=10,
+            font=FONT_BUTTON
+        )
+        close_button.pack(pady=10, padx=10)
+
+    def close(self) -> None:
+        """
+        Properly closes the window
+        """
+        self.destroy()
+
+
+def launcher_gui():
+    """Launches the GUI"""
+    # We create the file if they do not exist
+    DTC_PATH.mkdir(parents=True, exist_ok=True)
+    CONF_PATH.mkdir(parents=True, exist_ok=True)
+    TREATED_PATH.mkdir(parents=True, exist_ok=True)
+    IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+    QUEUE_PATH.mkdir(parents=True, exist_ok=True)
+
+    # We move the notebook, jupyter launcher and settings into the DTC
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
+        IPYNB_PATH
+    )
+
+    shutil.copy(
+        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
+        CONF_PATH
+    )
+
+    app = MainApp(JENKINS)
+    app.mainloop()
+
 
 if __name__ == "__main__":
     # We create the file if they do not exist
