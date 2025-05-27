@@ -111,53 +111,59 @@ def launcher_gui():
 
 
 if __name__ == "__main__":
-    # We create the file if they do not exist
-    DTC_PATH.mkdir(parents=True, exist_ok=True)
-    CONF_PATH.mkdir(parents=True, exist_ok=True)
-    TREATED_PATH.mkdir(parents=True, exist_ok=True)
-    IPYNB_PATH.mkdir(parents=True, exist_ok=True)
-    QUEUE_PATH.mkdir(parents=True, exist_ok=True)
-
-    # We move the notebook, jupyter launcher and settings into the DTC
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
-        CONF_PATH
-    )
-
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--jenkins", type=str)
-    arguments = arg_parser.parse_args()
-
-    if arguments.jenkins:
-        arguments.jenkins.lower()
-        if arguments.jenkins == "false":
-            JENKINS = False
-        elif arguments.jenkins == "true":
-            JENKINS = True
+    try:
+        # We create the file if they do not exist
+        DTC_PATH.mkdir(parents=True, exist_ok=True)
+        CONF_PATH.mkdir(parents=True, exist_ok=True)
+        TREATED_PATH.mkdir(parents=True, exist_ok=True)
+        IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+        QUEUE_PATH.mkdir(parents=True, exist_ok=True)
+    
+        # We move the notebook, jupyter launcher and settings into the DTC
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
+            CONF_PATH
+        )
+    
+        arg_parser = argparse.ArgumentParser()
+        arg_parser.add_argument("--jenkins", type=str)
+        arguments = arg_parser.parse_args()
+    
+        if arguments.jenkins:
+            arguments.jenkins.lower()
+            if arguments.jenkins == "false":
+                JENKINS = False
+            elif arguments.jenkins == "true":
+                JENKINS = True
+            else:
+                raise ValueError("The argument --jenkins must be true or false")
         else:
-            raise ValueError("The argument --jenkins must be true or false")
-    else:
-        raise ValueError("The argument --jenkins was not filled")
-
-    if JENKINS:
-        app = GUI_generator(jenkins=JENKINS)
-        app.activate_thread = True
-        app.auto_generate()
-    else:
-        app = MainApp(JENKINS)
-        app.mainloop()
+            raise ValueError("The argument --jenkins was not filled")
+    
+        if JENKINS:
+            app = GUI_generator(jenkins=JENKINS)
+            app.activate_thread = True
+            app.auto_generate()
+        else:
+            app = MainApp(JENKINS)
+            app.mainloop()
+    except Exception as e:
+        print("Une erreur est survenue :", e)
+        import traceback
+        traceback.print_exc()
+        input("Appuyez sur Entrée pour quitter.")
