@@ -78,36 +78,42 @@ class MainApp(tk.Tk):
 
 def launcher_gui():
     """Launches the GUI"""
-    # We create the file if they do not exist
-    DTC_PATH.mkdir(parents=True, exist_ok=True)
-    CONF_PATH.mkdir(parents=True, exist_ok=True)
-    TREATED_PATH.mkdir(parents=True, exist_ok=True)
-    IPYNB_PATH.mkdir(parents=True, exist_ok=True)
-    QUEUE_PATH.mkdir(parents=True, exist_ok=True)
-
-    # We move the notebook, jupyter launcher and settings into the DTC
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
-        IPYNB_PATH
-    )
-
-    shutil.copy(
-        BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
-        CONF_PATH
-    )
-
-    app = MainApp(JENKINS)
-    app.mainloop()
+    try:
+        # We create the file if they do not exist
+        DTC_PATH.mkdir(parents=True, exist_ok=True)
+        CONF_PATH.mkdir(parents=True, exist_ok=True)
+        TREATED_PATH.mkdir(parents=True, exist_ok=True)
+        IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+        QUEUE_PATH.mkdir(parents=True, exist_ok=True)
+    
+        # We move the notebook, jupyter launcher and settings into the DTC
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
+            IPYNB_PATH
+        )
+    
+        shutil.copy(
+            BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
+            CONF_PATH
+        )
+    
+        app = MainApp(JENKINS)
+        app.mainloop()
+    except Exception as e:
+        print("Une erreur est survenue :", e)
+        import traceback
+        traceback.print_exc()
+        input("Appuyez sur Entrée pour quitter.")
 
 
 if __name__ == "__main__":
