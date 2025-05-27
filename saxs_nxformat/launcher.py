@@ -107,13 +107,13 @@ def launcher_gui():
             CONF_PATH
         )
     
-        app = MainApp(JENKINS)
+        app = MainApp(False)
         app.mainloop()
     except Exception as e:
-        print("Une erreur est survenue :", e)
+        print("An error as occured", e)
         import traceback
         traceback.print_exc()
-        input("Appuyez sur Entrée pour quitter.")
+        input("Press enter to quit")
 
 
 if __name__ == "__main__":
@@ -169,7 +169,7 @@ if __name__ == "__main__":
             app = MainApp(JENKINS)
             app.mainloop()
     except Exception as e:
-        print("Une erreur est survenue :", e)
+        print("An error as occured", e)
         import traceback
         traceback.print_exc()
-        input("Appuyez sur Entrée pour quitter.")
+        input("Press enter to quit")
