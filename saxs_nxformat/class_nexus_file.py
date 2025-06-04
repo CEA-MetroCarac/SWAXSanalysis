@@ -505,8 +505,8 @@ class NexusFile:
             azi_min: None | float | int = None,
             azi_max: None | float | int = None,
             pts_azi: None | int = None,
-            radial_min: None | float | int = None,
-            radial_max: None | float | int = None,
+            rad_min: None | float | int = None,
+            rad_max: None | float | int = None,
             pts_rad: None | int = None,
             percentile: float | int = 99
     ) -> None:
@@ -532,10 +532,10 @@ class NexusFile:
         pts_rad:
             Number of point in the radial range
 
-        radial_max:
+        rad_max:
             Maximum of the radial range
 
-        radial_min:
+        rad_min:
             Minimum of the radial range
 
         pts_azi:
@@ -555,18 +555,33 @@ class NexusFile:
         initial_none_flags = {
             "azi_min": azi_min is None,
             "azi_max": azi_max is None,
-            "radial_min": radial_min is None,
-            "radial_max": radial_max is None,
+            "rad_min": rad_min is None,
+            "rad_max": rad_max is None,
             "pts_azi": pts_azi is None,
             "pts_rad": pts_rad is None,
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
+            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+
+            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+                default_r_min = 0
+            elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
+                default_r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
+            elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
+                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+            else:
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
+                )
+
             defaults = {
                 "azi_min": -180,
                 "azi_max": 180,
-                "radial_min": min(smi_data.qz),
-                "radial_max": max(smi_data.qz),
+                "rad_max": np.sqrt(
+                    max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2
+                ),
+                "rad_min": default_r_min,
                 "pts_azi": 1000,
                 "pts_rad": 1000,
             }
@@ -576,10 +591,10 @@ class NexusFile:
                 azi_min = defaults["azi_min"]
             if initial_none_flags["azi_max"]:
                 azi_max = defaults["azi_max"]
-            if initial_none_flags["radial_min"]:
-                radial_min = defaults["radial_min"]
-            if initial_none_flags["radial_max"]:
-                radial_max = defaults["radial_max"]
+            if initial_none_flags["rad_min"]:
+                rad_min = defaults["rad_min"]
+            if initial_none_flags["rad_max"]:
+                rad_max = defaults["rad_max"]
             if initial_none_flags["pts_azi"]:
                 pts_azi = defaults["pts_azi"]
             if initial_none_flags["pts_rad"]:
@@ -587,7 +602,7 @@ class NexusFile:
 
             smi_data.caking(
                 azimuth_range=[azi_min, azi_max],
-                radial_range=[radial_min, radial_max],
+                radial_range=[rad_min, rad_max],
                 npt_azim=pts_azi,
                 npt_rad=pts_rad
             )
@@ -626,7 +641,7 @@ class NexusFile:
                     "from the center of the q-space.\n"
                     "Parameters used :\n"
                     f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
-                    f"   - Radial Q range : [{radial_min:.4f}, {radial_max:.4f}] with {pts_rad} points\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {pts_rad} points\n"
                 )
 
     def process_radial_average(
@@ -634,10 +649,10 @@ class NexusFile:
             display: bool = False,
             save: bool = False,
             group_name: str = "DATA_RAD_AVG",
-            r_min: None | float | int = None,
-            r_max: None | float | int = None,
-            angle_min: None | float | int = None,
-            angle_max: None | float | int = None,
+            rad_min: None | float | int = None,
+            rad_max: None | float | int = None,
+            azi_min: None | float | int = None,
+            azi_max: None | float | int = None,
             pts: None | int = None
     ) -> None:
         """
@@ -656,16 +671,16 @@ class NexusFile:
         group_name : str, optional
             Name of the group that will contain the data.
 
-        r_min : float, optional
+        rad_min : float, optional
             Minimum radial value for averaging.
 
-        r_max : float, optional
+        rad_max : float, optional
             Maximum radial value for averaging.
 
-        angle_min : float, optional
+        azi_min : float, optional
             Minimum angle for averaging.
 
-        angle_max : float, optional
+        azi_max : float, optional
             Maximum angle for averaging.
 
         pts : int, optional
@@ -677,10 +692,10 @@ class NexusFile:
             self._stitching()
 
         initial_none_flags = {
-            "r_min": r_min is None,
-            "r_max": r_max is None,
-            "angle_min": angle_min is None,
-            "angle_max": angle_max is None,
+            "rad_min": rad_min is None,
+            "rad_max": rad_max is None,
+            "azi_min": azi_min is None,
+            "azi_max": azi_max is None,
             "pts": pts is None,
         }
 
@@ -704,30 +719,30 @@ class NexusFile:
                 )
 
             defaults = {
-                "r_max": np.sqrt(
+                "rad_max": np.sqrt(
                     max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2
                 ),
-                "r_min": default_r_min,
-                "angle_min": -180,
-                "angle_max": 180,
+                "rad_min": default_r_min,
+                "azi_min": -180,
+                "azi_max": 180,
                 "pts": 2000
             }
 
-            if initial_none_flags["r_min"]:
-                r_min = defaults["r_min"]
-            if initial_none_flags["r_max"]:
-                r_max = defaults["r_max"]
-            if initial_none_flags["angle_min"]:
-                angle_min = defaults["angle_min"]
-            if initial_none_flags["angle_max"]:
-                angle_max = defaults["angle_max"]
+            if initial_none_flags["rad_min"]:
+                rad_min = defaults["rad_min"]
+            if initial_none_flags["rad_max"]:
+                rad_max = defaults["rad_max"]
+            if initial_none_flags["azi_min"]:
+                azi_min = defaults["azi_min"]
+            if initial_none_flags["azi_max"]:
+                azi_max = defaults["azi_max"]
             if initial_none_flags["pts"]:
                 pts = defaults["pts"]
 
             smi_data.radial_averaging(
-                azimuth_range=[angle_min, angle_max],
+                azimuth_range=[azi_min, azi_max],
                 npt=pts,
-                radial_range=[r_min, r_max]
+                radial_range=[rad_min, rad_max]
             )
 
             if display:
@@ -738,7 +753,7 @@ class NexusFile:
                     label_x="$q_r (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
-                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]"
+                          f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
                 )
 
             if save:
@@ -754,8 +769,8 @@ class NexusFile:
                     "This process integrates the intensity signal over a specified radial angle range"
                     "and radial q range.\n"
                     "Parameters used :\n"
-                    f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}]\n"
-                    f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {pts} points\n"
+                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}]\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {pts} points\n"
                 )
 
     def process_azimuthal_average(

@@ -583,7 +583,7 @@ class GUI_generator(tk.Frame):
 
             del nx_file
             gc.collect()
-            print(time.time() - start_time)
+            # print(time.time() - start_time)
 
         tracemalloc.stop()
         self.print_log(
