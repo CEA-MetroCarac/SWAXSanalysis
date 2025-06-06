@@ -471,13 +471,16 @@ class NexusFile:
 
             mesh_q = np.moveaxis(mesh_q, (0, 1, 2), (1, 2, 0))
 
+            # Conversion en nm^-1
+            mesh_q = mesh_q * 10
+
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=mesh_q,
+                    extracted_param_data=mesh_q*10,
                     extracted_value_data=smi_data.img_st,
-                    label_x="$q_{hor} (A^{-1})$",
-                    label_y="$q_{ver} (A^{-1})$",
+                    label_x="$q_{hor} (nm^{-1})$",
+                    label_y="$q_{ver} (nm^{-1})$",
                     title="2D Data in q-space",
                     percentile=percentile
                 )
@@ -566,10 +569,6 @@ class NexusFile:
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
                 default_r_min = 0
-            elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
-                default_r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
-            elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
-                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
             else:
                 default_r_min = np.sqrt(
                     min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
@@ -608,6 +607,8 @@ class NexusFile:
             )
 
             q_list = smi_data.q_cake
+            # Conversion en nm^-1
+            q_list = q_list * 10
             chi_list = smi_data.chi_cake
             q_grid, chi_grid = np.meshgrid(q_list, chi_list)
 
@@ -621,7 +622,7 @@ class NexusFile:
                     extracted_param_data=mesh_cake,
                     extracted_value_data=smi_data.cake,
                     scale_x="log", scale_y="log",
-                    label_x="$q_r (A^{-1})$",
+                    label_x="$q_r (nm^{-1})$",
                     label_y="$\\chi$",
                     title="Caked q-space data",
                     percentile=percentile
@@ -709,10 +710,6 @@ class NexusFile:
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
                 default_r_min = 0
-            elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
-                default_r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
-            elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
-                default_r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
             else:
                 default_r_min = np.sqrt(
                     min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
@@ -748,9 +745,9 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=smi_data.q_rad, extracted_value_data=smi_data.I_rad,
+                    extracted_param_data=smi_data.q_rad*10, extracted_value_data=smi_data.I_rad,
                     scale_x="log", scale_y="log",
-                    label_x="$q_r (A^{-1})$",
+                    label_x="$q_r (nm^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
                           f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
@@ -758,6 +755,8 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_rad
+                # Conversion en nm^-1
+                q_list = q_list * 10
                 i_list = smi_data.I_rad
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -778,11 +777,11 @@ class NexusFile:
             display: bool = False,
             save: bool = False,
             group_name: str = "DATA_AZI_AVG",
-            r_min: None | float | int = None,
-            r_max: None | float | int = None,
+            rad_min: None | float | int = None,
+            rad_max: None | float | int = None,
             npt_rad: None | int = None,
-            angle_min: None | float | int = None,
-            angle_max: None | float | int = None,
+            azi_min: None | float | int = None,
+            azi_max: None | float | int = None,
             npt_azi: None | int = None
     ) -> None:
         """
@@ -796,16 +795,16 @@ class NexusFile:
         npt_rad :
             Number of points in the radial range
 
-        angle_max :
+        azi_max :
             Maximum azimuthal angle
 
-        angle_min :
+        azi_min :
             Minimum azimuthal angle
 
-        r_max :
+        rad_max :
             Maximum distance from the center
 
-        r_min :
+        rad_min :
             Minimum distance from the center
 
         display :
@@ -824,11 +823,11 @@ class NexusFile:
             self._stitching()
 
         initial_none_flags = {
-            "r_min": r_min is None,
-            "r_max": r_max is None,
+            "rad_min": rad_min is None,
+            "rad_max": rad_max is None,
             "npt_rad": npt_rad is None,
-            "angle_min": angle_min is None,
-            "angle_max": angle_max is None,
+            "azi_min": azi_min is None,
+            "azi_max": azi_max is None,
             "npt_azi": npt_azi is None
         }
 
@@ -840,40 +839,40 @@ class NexusFile:
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
-                r_min = 0
+                rad_min = 0
             elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
-                r_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
+                rad_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
             elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+                rad_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
             else:
-                r_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+                rad_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
 
             defaults = {
-                "r_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "r_min": r_min,
+                "rad_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
+                "rad_min": rad_min,
                 "npt_rad": 500,
-                "angle_min": -180,
-                "angle_max": 180,
+                "azi_min": -180,
+                "azi_max": 180,
                 "npt_azi": 500
             }
 
-            if initial_none_flags["r_min"]:
-                r_min = defaults["r_min"]
-            if initial_none_flags["r_max"]:
-                r_max = defaults["r_max"]
+            if initial_none_flags["rad_min"]:
+                rad_min = defaults["rad_min"]
+            if initial_none_flags["rad_max"]:
+                rad_max = defaults["rad_max"]
             if initial_none_flags["npt_rad"]:
                 npt_rad = defaults["npt_rad"]
-            if initial_none_flags["angle_min"]:
-                angle_min = defaults["angle_min"]
-            if initial_none_flags["angle_max"]:
-                angle_max = defaults["angle_max"]
+            if initial_none_flags["azi_min"]:
+                azi_min = defaults["azi_min"]
+            if initial_none_flags["azi_max"]:
+                azi_max = defaults["azi_max"]
             if initial_none_flags["npt_azi"]:
                 npt_azi = defaults["npt_azi"]
 
             smi_data.azimuthal_averaging(
-                azimuth_range=[angle_min, angle_max],
+                azimuth_range=[azi_min, azi_max],
                 npt_azim=npt_azi,
-                radial_range=[r_min, r_max],
+                radial_range=[rad_min, rad_max],
                 npt_rad=npt_rad
             )
 
@@ -886,7 +885,7 @@ class NexusFile:
                     label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
                     title=f"Azimuthal integration over the regions \n "
-                          f"[{angle_min:.4f}, {angle_max:.4f}] and [{r_min:.4f}, {r_max:.4f}]"
+                          f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
                 )
 
             if save:
@@ -901,8 +900,8 @@ class NexusFile:
                     "This process integrates the intensity signal over a specified azimuthal angle range"
                     " and radial q range.\n"
                     "Parameters used :\n"
-                    f"   - Azimuthal range : [{angle_min:.4f}, {angle_max:.4f}] with {npt_azi} points\n"
-                    f"   - Radial Q range : [{r_min:.4f}, {r_max:.4f}] with {npt_rad} points\n"
+                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {npt_azi} points\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {npt_rad} points\n"
                 )
 
     def process_horizontal_integration(
@@ -985,9 +984,9 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
+                    extracted_param_data=smi_data.q_hor*10, extracted_value_data=smi_data.I_hor,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{ver} (A^{-1})$",
+                    label_x="$q_{ver} (nm^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
                           f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
@@ -995,6 +994,8 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_hor
+                # Conversion en nm^-1
+                q_list = q_list * 10
                 i_list = smi_data.I_hor
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -1091,9 +1092,9 @@ class NexusFile:
                 self._display_data(
                     index, self.nx_files[index],
                     group_name=group_name,
-                    extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
+                    extracted_param_data=smi_data.q_ver*10, extracted_value_data=smi_data.I_ver,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{hor} (A^{-1})$",
+                    label_x="$q_{hor} (nm^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
                           f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
@@ -1101,6 +1102,8 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_ver
+                # Conversion en nm^-1
+                q_list = q_list * 10
                 i_list = smi_data.I_ver
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -1231,15 +1234,17 @@ class NexusFile:
                 self._display_data(
                     index, nx_file,
                     group_name=group_name,
-                    extracted_param_data=positions, extracted_value_data=abs_data,
+                    extracted_param_data=positions*10, extracted_value_data=abs_data,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{hor} (A^{-1})$",
+                    label_x="$q_{hor} (nm^{-1})$",
                     label_y="$Intensity (m^{-1})$",
                     title="Absolute intensity of the data"
                 )
 
             if save:
                 q_list = positions
+                # Conversion en nm^-1
+                q_list = q_list * 10
                 i_list = abs_data
                 mask = self.list_smi_data[index].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
