@@ -1,2 +1,4 @@
 *.pyc
-saxs_nxformat/analyse_manuelle.py
+saxs_nxformat/analyse_manuelle_I_ABS_BG.py
+saxs_nxformat/analyse_manuelle_I_ABS_GC.py
+/saxs_nxformat/machine_configs/XEUSS/.ipynb_checkpoints/

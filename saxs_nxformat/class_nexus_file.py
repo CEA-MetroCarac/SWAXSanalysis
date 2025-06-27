@@ -12,11 +12,13 @@ import time
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+
 from smi_analysis import SMI_beamline
 
-from . import PLT_CMAP, PLT_CMAP_OBJ
+from . import PLT_CMAP, PLT_CMAP_OBJ, FONT_PLT
 from .utils import *
 
+plt.rcParams.update(FONT_PLT)
 
 def repack_hdf5(
         input_file: str | Path,
@@ -471,16 +473,13 @@ class NexusFile:
 
             mesh_q = np.moveaxis(mesh_q, (0, 1, 2), (1, 2, 0))
 
-            # Conversion en nm^-1
-            mesh_q = mesh_q * 10
-
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=mesh_q*10,
+                    extracted_param_data=mesh_q,
                     extracted_value_data=smi_data.img_st,
-                    label_x="$q_{hor} (nm^{-1})$",
-                    label_y="$q_{ver} (nm^{-1})$",
+                    label_x="$q_{hor} (A^{-1})$",
+                    label_y="$q_{ver} (A^{-1})$",
                     title="2D Data in q-space",
                     percentile=percentile
                 )
@@ -567,8 +566,19 @@ class NexusFile:
         for index, smi_data in enumerate(self.list_smi_data):
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
-            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+            opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
+            opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
+
+            if opposite_qp and opposite_qz:
                 default_r_min = 0
+            elif opposite_qp and not opposite_qz:
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + 0
+                )
+            elif not opposite_qp and opposite_qz:
+                default_r_min = np.sqrt(
+                    0 + min(np.abs(smi_data.qz)) ** 2
+                )
             else:
                 default_r_min = np.sqrt(
                     min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
@@ -607,8 +617,6 @@ class NexusFile:
             )
 
             q_list = smi_data.q_cake
-            # Conversion en nm^-1
-            q_list = q_list * 10
             chi_list = smi_data.chi_cake
             q_grid, chi_grid = np.meshgrid(q_list, chi_list)
 
@@ -622,7 +630,7 @@ class NexusFile:
                     extracted_param_data=mesh_cake,
                     extracted_value_data=smi_data.cake,
                     scale_x="log", scale_y="log",
-                    label_x="$q_r (nm^{-1})$",
+                    label_x="$q_r (A^{-1})$",
                     label_y="$\\chi$",
                     title="Caked q-space data",
                     percentile=percentile
@@ -708,8 +716,19 @@ class NexusFile:
 
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
-            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
+            opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
+            opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
+
+            if opposite_qp and opposite_qz:
                 default_r_min = 0
+            elif opposite_qp and not opposite_qz:
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + 0
+                )
+            elif not opposite_qp and opposite_qz:
+                default_r_min = np.sqrt(
+                    0 + min(np.abs(smi_data.qz)) ** 2
+                )
             else:
                 default_r_min = np.sqrt(
                     min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
@@ -745,9 +764,9 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=smi_data.q_rad*10, extracted_value_data=smi_data.I_rad,
+                    extracted_param_data=smi_data.q_rad, extracted_value_data=smi_data.I_rad,
                     scale_x="log", scale_y="log",
-                    label_x="$q_r (nm^{-1})$",
+                    label_x="$q_r (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
                           f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
@@ -755,8 +774,7 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_rad
-                # Conversion en nm^-1
-                q_list = q_list * 10
+                q_list = q_list
                 i_list = smi_data.I_rad
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -838,18 +856,27 @@ class NexusFile:
             )
             smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
-            if np.sum(np.sign(smi_data.qp) + np.sign(smi_data.qz)) == 0:
-                rad_min = 0
-            elif np.sign(smi_data.qp[-1]) == np.sign(smi_data.qp[0]):
-                rad_min = np.sqrt(min(np.abs(smi_data.qz)) ** 2)
-            elif np.sign(smi_data.qz[-1]) == np.sign(smi_data.qz[0]):
-                rad_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2)
+            opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
+            opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
+
+            if opposite_qp and opposite_qz:
+                default_r_min = 0
+            elif opposite_qp and not opposite_qz:
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + 0
+                )
+            elif not opposite_qp and opposite_qz:
+                default_r_min = np.sqrt(
+                    0 + min(np.abs(smi_data.qz)) ** 2
+                )
             else:
-                rad_min = np.sqrt(min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2)
+                default_r_min = np.sqrt(
+                    min(np.abs(smi_data.qp)) ** 2 + min(np.abs(smi_data.qz)) ** 2
+                )
 
             defaults = {
                 "rad_max": np.sqrt(max(np.abs(smi_data.qp)) ** 2 + max(np.abs(smi_data.qz)) ** 2),
-                "rad_min": rad_min,
+                "rad_min": default_r_min,
                 "npt_rad": 500,
                 "azi_min": -180,
                 "azi_max": 180,
@@ -958,7 +985,6 @@ class NexusFile:
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
                 "qx_min": smi_data.qp[0],
@@ -984,9 +1010,9 @@ class NexusFile:
             if display:
                 self._display_data(
                     index, self.nx_files[index],
-                    extracted_param_data=smi_data.q_hor*10, extracted_value_data=smi_data.I_hor,
+                    extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{ver} (nm^{-1})$",
+                    label_x="$q_{ver} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
                           f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
@@ -994,8 +1020,7 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_hor
-                # Conversion en nm^-1
-                q_list = q_list * 10
+                q_list = q_list
                 i_list = smi_data.I_hor
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -1065,7 +1090,7 @@ class NexusFile:
                 self.nx_files[index],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+            # smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
 
             defaults = {
                 "qx_min": smi_data.qp[0],
@@ -1092,9 +1117,9 @@ class NexusFile:
                 self._display_data(
                     index, self.nx_files[index],
                     group_name=group_name,
-                    extracted_param_data=smi_data.q_ver*10, extracted_value_data=smi_data.I_ver,
+                    extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{hor} (nm^{-1})$",
+                    label_x="$q_{hor} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
                           f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
@@ -1102,8 +1127,7 @@ class NexusFile:
 
             if save:
                 q_list = smi_data.q_ver
-                # Conversion en nm^-1
-                q_list = q_list * 10
+                q_list = q_list
                 i_list = smi_data.I_ver
                 mask = smi_data.masks
                 save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
@@ -1162,8 +1186,8 @@ class NexusFile:
             self._stitching()
 
         initial_none_flags = {
-            "roi_size_x": roi_size_x is None,
-            "roi_size_y": roi_size_y is None,
+            # "roi_size_x": roi_size_x is None,
+            # "roi_size_y": roi_size_y is None,
             "sample_thickness": sample_thickness is None,
         }
 
@@ -1171,50 +1195,56 @@ class NexusFile:
         for index, nx_file in enumerate(self.nx_files):
 
             defaults = {
-                "roi_size_x": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
-                "roi_size_y": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_y"),
+                # "roi_size_x": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
+                # "roi_size_y": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_y"),
                 "sample_thickness": extract_from_h5(nx_file, "ENTRY/SAMPLE/thickness"),
             }
 
-            if initial_none_flags["roi_size_x"]:
-                roi_size_x = defaults["roi_size_x"]
-            if initial_none_flags["roi_size_y"]:
-                roi_size_y = defaults["roi_size_y"]
+            # if initial_none_flags["roi_size_x"]:
+            #     roi_size_x = defaults["roi_size_x"]
+            # if initial_none_flags["roi_size_y"]:
+            #     roi_size_y = defaults["roi_size_y"]
             if initial_none_flags["sample_thickness"]:
                 sample_thickness = defaults["sample_thickness"]
+                if sample_thickness == 0:
+                    sample_thickness = 1
 
             positions = self.dicts_parameters[index]["R raw data"][0]
 
             raw_data = self.dicts_parameters[index]["I raw data"][0]
-            beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
-            beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
+            # beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
+            # beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
             expo_time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
 
             i_roi_data = np.sum(
-                raw_data[
-                beam_center_y - roi_size_y:beam_center_y + roi_size_y,
-                beam_center_x - roi_size_x:beam_center_x + roi_size_x
-                ]
+                raw_data
+                # raw_data[
+                # beam_center_y - roi_size_y:beam_center_y + roi_size_y,
+                # beam_center_x - roi_size_x:beam_center_x + roi_size_x
+                # ]
             )
             i_roi_data = i_roi_data / expo_time
 
             with h5py.File(db_path) as h5obj:
                 raw_db = extract_from_h5(h5obj, "ENTRY/DATA/I")
-                beam_center_x_db = \
-                    int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x"))
-                beam_center_y_db = \
-                    int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
+                # beam_center_x_db = \
+                #     int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_x"))
+                # beam_center_y_db = \
+                #     int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
                 time_db = extract_from_h5(h5obj, "ENTRY/COLLECTION/exposition_time")
 
             i_roi_db = np.sum(
-                raw_db[
-                beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
-                beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
-                ]
+                raw_db
+                # raw_db[
+                # beam_center_y_db - roi_size_y:beam_center_y_db + roi_size_y,
+                # beam_center_x_db - roi_size_x:beam_center_x_db + roi_size_x
+                # ]
             )
             i_roi_db = i_roi_db / time_db
 
             transmission = i_roi_data / i_roi_db
+            replace_h5_dataset(nx_file, "ENTRY/SAMPLE/thickness", sample_thickness)
+            replace_h5_dataset(nx_file, "ENTRY/SAMPLE/transmission", transmission)
             scaling_factor = 1 / (transmission * sample_thickness * i_roi_db * expo_time)
 
             # print(
@@ -1226,6 +1256,9 @@ class NexusFile:
             #     f"  - time_db : {time_db}\n"
             #     f"  - transmission : {transmission}\n"
             #     f"  - SF : {scaling_factor}\n"
+            #     f"  - sum img : {np.sum(raw_data)}\n"
+            #     f"  - ratio ROI/IMG : {(i_roi_data * expo_time) / np.sum(raw_data)}\n"
+            #     f"  - test facteur : {1 / (i_roi_data * sample_thickness * expo_time)}"
             # )
 
             abs_data = raw_data * scaling_factor
@@ -1234,17 +1267,16 @@ class NexusFile:
                 self._display_data(
                     index, nx_file,
                     group_name=group_name,
-                    extracted_param_data=positions*10, extracted_value_data=abs_data,
+                    extracted_param_data=positions, extracted_value_data=abs_data,
                     scale_x="log", scale_y="log",
-                    label_x="$q_{hor} (nm^{-1})$",
+                    label_x="$q_{hor} (A^{-1})$",
                     label_y="$Intensity (m^{-1})$",
                     title="Absolute intensity of the data"
                 )
 
             if save:
                 q_list = positions
-                # Conversion en nm^-1
-                q_list = q_list * 10
+                q_list = q_list
                 i_list = abs_data
                 mask = self.list_smi_data[index].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
@@ -1383,18 +1415,16 @@ class NexusFile:
 
     def process_2_param_intensity(
             self,
-            save: bool = False,
             display: bool = False,
             group_name: str = "DATA_RAD_AVG",
             other_variable: str = None,
             percentile: float | int = 95
     ):
         """
-        TODO : complete docstring / allow plotting according to index as second parameter
+        TODO : complete docstring
         Parameters
         ----------
         percentile
-        save
         display
         group_name
         other_variable
@@ -1405,8 +1435,8 @@ class NexusFile:
         """
         # We extract the intensity and first parameter
         dict_param, dict_value = self.get_raw_data(group_name=group_name)
-        for key, value in dict_value.items():
-            if len(np.shape(value)) != 1:
+        for key, param2 in dict_value.items():
+            if len(np.shape(param2)) != 1:
                 raise TypeError(f"Data in {group_name}, in file "
                                 f"{key}, is not one dimensional")
 
@@ -1423,20 +1453,22 @@ class NexusFile:
 
         # We check to see if the param have the same lengths
         common_len = 0
-        for index, (key, value) in enumerate(dict_param.items()):
+        for index, (key, param2) in enumerate(dict_param.items()):
             if index == 0:
-                common_len = len(value)
+                common_len = len(param2)
                 continue
-            if common_len != len(value):
+            if common_len != len(param2):
                 raise ValueError(f"the file {key} does not have the same amount of point in "
                                  f"it's intensity array as the other files ({common_len} points)")
 
         # We create the parameter meshes and the intensity array
         param_array = np.zeros((2, len(self.nx_files), common_len))
         value_array = np.zeros((len(self.nx_files), common_len))
-        for index, (key, value) in enumerate(dict_other_param.items()):
+        for index, (key, param2) in enumerate(dict_other_param.items()):
+            # Parameter meshgrid
             param_array[0, index, :] = dict_param[key]
-            param_array[1, index, :] = value
+            param_array[1, index, :] = param2
+            # Intensity grid
             value_array[index, :] = dict_value[key]
 
         if display:
@@ -1458,6 +1490,8 @@ class NexusFile:
         group_name:
             Data_group to delete
         """
+        if not group_name.startswith("DATA_"):
+            raise TypeError(f"{group_name} does not start with 'DATA_' and thus is not a data group")
         for nxfile in self.nx_files:
             delete_data(nxfile, group_name)
 
@@ -1618,10 +1652,10 @@ class NexusFile:
             # in the same figure
             if self.do_batch:
                 if self.init_plot:
-                    self.fig, self.ax = plt.subplots(figsize=(10, 6))
+                    self.fig, self.ax = plt.subplots(figsize=(12, 7))
                     self.init_plot = False
             else:
-                self.fig, self.ax = plt.subplots(figsize=(10, 6))
+                self.fig, self.ax = plt.subplots(figsize=(12, 7))
             self.ax.set_xscale(scale_x)
             self.ax.set_yscale(scale_y)
 
@@ -1684,7 +1718,7 @@ class NexusFile:
                 _, ax = plt.subplots(layout="constrained")
                 current_ax = ax
 
-            print(label_x)
+            current_ax.set_box_aspect(1)
             current_ax.set_xlabel(label_x)
             current_ax.set_ylabel(label_y)
             current_ax.set_title(title)

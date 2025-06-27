@@ -208,11 +208,6 @@ class GUI_process(tk.Frame):
             self.frame_inputs.interior.rowconfigure(current_row, weight=1)
             current_row += 1
 
-    def _process_building(self) -> None:
-        """
-        Builds the frame containing all available processes
-        """
-
     def _create_params(
             self,
             process_name: str
@@ -270,8 +265,10 @@ class GUI_process(tk.Frame):
         )
         label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
 
-        self.input_data = ttk.Combobox(self.frame_params.interior,
-                                       font=FONT_TEXT)
+        self.input_data = ttk.Combobox(
+            self.frame_params.interior,
+            font=FONT_TEXT
+        )
         self.input_data["values"] = get_group_names(self.to_process)
         self.input_data.current(0)
         self.input_data.grid(column=1, row=2, pady=5, padx=5, sticky="we")

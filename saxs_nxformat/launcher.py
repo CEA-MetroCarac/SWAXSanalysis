@@ -1,5 +1,5 @@
 """
-Tests the presence of some required files o nthe desktop then
+Tests the presence of some required files on the desktop then
 opens a GUI allowing the user to:
 - Build a config
 - Convert to the NeXus format

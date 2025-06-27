@@ -408,11 +408,11 @@ def delete_data(
         del nx_file[f"/ENTRY/{group_name}"]
     else:
         raise ValueError(
-            f"The group /ENTRY/{group_name} does not exist in the file {nx_file.filename}"
+            f"The group /ENTRY/{group_name} does not exist in the entrypoint of the file {nx_file.filename}"
         )
 
     # We delete the associated process
-    process_name = group_name.removeprefix("DATA_")
+    process_name = "PROCESS_" + group_name.removeprefix("DATA_")
 
     if process_name in nx_file["/ENTRY"]:
         del nx_file[f"/ENTRY/{process_name}"]

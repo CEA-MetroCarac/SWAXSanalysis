@@ -165,7 +165,7 @@ def generate_nexus(
     if hdf5_path.exists():
         if is_db:
             string_hdf5_path = str(hdf5_path)
-            string_hdf5_path.removesuffix(".h5")
+            string_hdf5_path = string_hdf5_path.removesuffix(".h5")
             hdf5_path = Path(string_hdf5_path + "_DB.h5")
         else:
             raise Exception(f"{hdf5_path} already exists")
@@ -174,7 +174,6 @@ def generate_nexus(
         config_dict = json.load(config_file)
 
     with h5py.File(hdf5_path, "w") as save_file:
-        # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
@@ -197,7 +196,6 @@ def generate_nexus(
 
         do_absolute = extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity")
         if do_absolute and not is_db:
-            # TODO : find db_path, extract data, put in file under DATA_DIRECT_BEAM
             db_path = Path(extract_from_h5(
                 save_file,
                 "ENTRY/COLLECTION/do_absolute_intensity",
