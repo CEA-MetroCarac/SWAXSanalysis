@@ -29,7 +29,6 @@ class MainApp(tk.Tk):
     def __init__(self, jenkins):
         super().__init__()
         self.jenkins = jenkins
-
         self.title("edf2NeXus")
 
         # Setup geometry
