@@ -2,7 +2,6 @@
 TODO : Add global variable for colormap, .ico path and other parameters, font, fontsize...
 TODO : Faire en sorte d'exploiter le format NXcanSAS.
         Reconnaitre les groupe valides via leurs classes...
-TODO : regarder le code de kyllian pour la fusion
 TODO : faire des unité tests
 """
 import os
@@ -56,6 +55,7 @@ FONT_TEXT: tuple    = ("Microsoft Sans Serif", 10)
 FONT_NOTE: tuple    = ("Microsoft Sans Serif", 8)
 FONT_BUTTON: tuple  = ("Microsoft Sans Serif", 12)
 FONT_LOG: tuple     = ("Lucida Console", 10)
+FONT_PLT: dict      = {'font.size': 20}
 
 # Colors for the GUI
 RED: str         = "#B80000"

@@ -165,7 +165,7 @@ def generate_nexus(
     if hdf5_path.exists():
         if is_db:
             string_hdf5_path = str(hdf5_path)
-            string_hdf5_path.removesuffix(".h5")
+            string_hdf5_path = string_hdf5_path.removesuffix(".h5")
             hdf5_path = Path(string_hdf5_path + "_DB.h5")
         else:
             raise Exception(f"{hdf5_path} already exists")
@@ -174,7 +174,6 @@ def generate_nexus(
         config_dict = json.load(config_file)
 
     with h5py.File(hdf5_path, "w") as save_file:
-        # TODO : compute real uncertainties here
         fill_hdf5(save_file, config_dict)
 
         treated_data = data_treatment(edf_data, save_file)
@@ -197,7 +196,6 @@ def generate_nexus(
 
         do_absolute = extract_from_h5(save_file, "ENTRY/COLLECTION/do_absolute_intensity")
         if do_absolute and not is_db:
-            # TODO : find db_path, extract data, put in file under DATA_DIRECT_BEAM
             db_path = Path(extract_from_h5(
                 save_file,
                 "ENTRY/COLLECTION/do_absolute_intensity",
@@ -448,18 +446,6 @@ class GUI_generator(tk.Frame):
         )
         stop_button.grid(padx=10, pady=10, row=2, column=0)
 
-        # Close Button
-        close_button = tk.Button(
-            self.control_panel,
-            text="Close",
-            command=self.close,
-            bg="#DBDFAC",
-            fg="black",
-            padx=10,
-            font=FONT_BUTTON
-        )
-        close_button.grid(pady=10, padx=10, row=7, column=0)
-
     def _build_log_frame(self) -> None:
         self.log_panel.columnconfigure(0, weight=1)
         self.log_panel.rowconfigure(1, weight=1)
@@ -617,12 +603,6 @@ class GUI_generator(tk.Frame):
         self.print_log(
             "Auto-generation stopped. The program is still processing!"
         )
-
-    def close(self) -> None:
-        """
-        Properly closes the window
-        """
-        self.destroy()
 
 
 if __name__ == "__main__":

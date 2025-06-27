@@ -96,10 +96,6 @@ class GUI_process(tk.Frame):
                 self.process[name.removeprefix("process_")] = method
 
         super().__init__(parent)
-        # self.iconbitmap(ICON_PATH)
-        # self.focus_force()
-        # self.geometry("1200x900")
-        # self.title("Data processing")
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=2)
@@ -120,14 +116,6 @@ class GUI_process(tk.Frame):
         self.frame_log = tk.Frame(self, border=5, relief="ridge")
         self.frame_log.grid(row=0, rowspan=3, column=2, sticky="nsew", pady=5, padx=5)
         self._build_log()
-
-        close_button = tk.Button(
-            self,
-            text="Close",
-            font=FONT_BUTTON,
-            command=lambda: self.destroy()
-        )
-        close_button.grid(column=1, row=2, sticky="w", padx=5, pady=5)
 
         self.progress_label = tk.Label(
             self,
@@ -220,11 +208,6 @@ class GUI_process(tk.Frame):
             self.frame_inputs.interior.rowconfigure(current_row, weight=1)
             current_row += 1
 
-    def _process_building(self) -> None:
-        """
-        Builds the frame containing all available processes
-        """
-
     def _create_params(
             self,
             process_name: str
@@ -282,8 +265,10 @@ class GUI_process(tk.Frame):
         )
         label_input_data.grid(column=0, row=2, pady=5, padx=5, sticky="w")
 
-        self.input_data = ttk.Combobox(self.frame_params.interior,
-                                       font=FONT_TEXT)
+        self.input_data = ttk.Combobox(
+            self.frame_params.interior,
+            font=FONT_TEXT
+        )
         self.input_data["values"] = get_group_names(self.to_process)
         self.input_data.current(0)
         self.input_data.grid(column=1, row=2, pady=5, padx=5, sticky="we")

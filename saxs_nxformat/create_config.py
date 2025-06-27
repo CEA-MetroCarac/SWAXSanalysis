@@ -50,31 +50,30 @@ class GUI_setting(tk.Frame):
 
     def __init__(self, parent) -> None:
         super().__init__(parent)
-        # self.iconbitmap(ICON_PATH)
-        # self.focus_force()
+        self.columnconfigure(0, weight=1)
+
+        self.rowconfigure(2, weight=1)
 
         json_path = BASE_DIR / "nexus_standards" / "structure_NXcanSAS.json"
         with open(json_path, "r", encoding="utf-8") as file:
             self.dict_config = json.load(file)
 
-        # self.title("Config creator")
-        # self.geometry("700x700")
-
         label_title = tk.Label(self, text="Config builder",
                                fg="black", font=FONT_TITLE, justify="left")
-        label_title.pack()
+        label_title.grid(row=0, column=0, sticky="news")
 
         self.frame1 = tk.Frame(self)
         self.stringvar_datapath = tk.StringVar()
-        self.frame1.pack(padx=8, pady=8, fill="x")
+        self.frame1.grid(row=1, column=0, padx=8, pady=8, sticky="ew")
         self.frame1.columnconfigure(1, weight=1)
 
-        self.frame2 = VerticalScrolledFrame(self)
-        self.frame2.pack(padx=8, pady=8, fill="x")
+        self.frame2 = VerticalScrolledFrame(self, height=100, width=300)
+        self.frame2.configure(border=5, relief="ridge")
+        self.frame2.grid(row=2, column=0, sticky="nsew", pady=5, padx=5)
 
         self.frame3 = tk.Frame(self)
         self.stringvar_file_name = tk.StringVar()
-        self.frame3.pack(padx=8, pady=8, fill="x")
+        self.frame3.grid(row=3, column=0, padx=8, pady=8, sticky="we")
         self._create_next_step()
 
         self._create_input()
@@ -124,8 +123,9 @@ class GUI_setting(tk.Frame):
         the user wants to use this key to autofill the hdf5 file
         """
         self.frame2.destroy()
-        self.frame2 = VerticalScrolledFrame(self)
-        self.frame2.pack(padx=8, pady=8, fill="x")
+        self.frame2 = VerticalScrolledFrame(self, height=100, width=300)
+        self.frame2.configure(border=5, relief="ridge")
+        self.frame2.grid(row=2, column=0, sticky="nsew", pady=5, padx=5)
 
         file_edf = self._browse_load_edf(widget, string_var)
 
@@ -189,8 +189,9 @@ class GUI_setting(tk.Frame):
             options in the comboboxes.
         """
         self.frame2.destroy()
-        self.frame2 = VerticalScrolledFrame(self)
-        self.frame2.pack(padx=8, pady=8, fill="x")
+        self.frame2 = VerticalScrolledFrame(self, height=100, width=300)
+        self.frame2.configure(border=5, relief="ridge")
+        self.frame2.grid(row=2, column=0, sticky="nsew", pady=5, padx=5)
 
         def create_fillables(element, line=None, level=0):
             if line is None:
@@ -298,7 +299,7 @@ class GUI_setting(tk.Frame):
         """
         self.frame3.destroy()
         self.frame3 = tk.Frame(self)
-        self.frame3.pack(padx=8, pady=8, fill="x")
+        self.frame3.grid(padx=8, pady=8, sticky="we", row=3, column=0)
 
         button_continue = tk.Button(
             self.frame3,
@@ -308,13 +309,6 @@ class GUI_setting(tk.Frame):
         )
         button_continue.pack(padx=8, pady=8, side="right")
 
-        button_close = tk.Button(
-            self.frame3,
-            text="Close",
-            font=FONT_BUTTON,
-            command=lambda: self.destroy())
-        button_close.pack(padx=8, pady=8, side="left")
-
     def create_save(self) -> None:
         """
         This method creates the save and close button as well as
@@ -322,7 +316,7 @@ class GUI_setting(tk.Frame):
         """
         self.frame3.destroy()
         self.frame3 = tk.Frame(self)
-        self.frame3.pack(padx=8, pady=8, fill="x")
+        self.frame3.grid(row=3, column=0, padx=8, pady=8, sticky="we")
 
         self.stringvar_file_name = tk.StringVar()
         self.stringvar_file_name.set("instrumentName")
@@ -342,14 +336,6 @@ class GUI_setting(tk.Frame):
             command=self._save_settings
         )
         button_save.pack(padx=8, pady=8, side="right")
-
-        button_close = tk.Button(
-            self.frame3,
-            text="Close",
-            font=FONT_BUTTON,
-            command=lambda: self.destroy()
-        )
-        button_close.pack(padx=8, pady=8, side="left")
 
     def _browse_load_edf(
             self,
