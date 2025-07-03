@@ -2,7 +2,6 @@
 This module is meant to be executed by the user and automatically
 treats any .edf file found in the parent folder according to the
 settings file also present in that parent folder
-TODO : force rad_avg just like q_space
 """
 import gc
 import glob
@@ -19,6 +18,7 @@ from pathlib import Path
 from typing import Tuple
 
 import fabio
+from fabio.edfimage import EdfImage
 import h5py
 import numpy as np
 
@@ -26,6 +26,36 @@ from . import FONT_TITLE, FONT_BUTTON, FONT_LOG
 from . import ICON_PATH, TREATED_PATH, QUEUE_PATH, DTC_PATH
 from .class_nexus_file import NexusFile
 from .utils import string_2_value, save_data, extract_from_h5, convert
+
+import cProfile
+import pstats
+
+
+def treated_data(settings_path):
+    with open(settings_path, "r", encoding="utf-8") as config_file:
+        config_dict = json.load(config_file)
+
+    # We build the set of existing .h5
+    existing_h5 = set(
+        Path(filepath).absolute() for filepath in glob.iglob(
+            str(TREATED_PATH / "**/*.h5"),
+            recursive=True
+        )
+    )
+
+    edf_to_treat = {}
+    for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
+        filepath = Path(filepath).absolute()
+        target_dir = tree_structure_manager(filepath, settings_path)
+        h5_file_path = generate_h5_path(config_dict, filepath, target_dir).absolute()
+        if h5_file_path not in existing_h5:
+            edf_to_treat[filepath] = h5_file_path
+            print(edf_to_treat[filepath])
+
+    if len(edf_to_treat) == 0:
+        edf_to_treat = None
+
+    return edf_to_treat
 
 
 def data_treatment(
@@ -170,6 +200,8 @@ def generate_nexus(
         else:
             raise Exception(f"{hdf5_path} already exists")
 
+    target_dir = hdf5_path.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
 
@@ -235,54 +267,30 @@ def generate_nexus(
     return str(hdf5_path)
 
 
-def search_setting_edf() -> tuple[None, None, None] | tuple[Path, Path, Path]:
+def search_setting() -> None | Path:
     """
-    This function searches an edf file and a settings file
-    in the parent folder.
+    This function searches the settings file
+    in the DTC folder
 
     Returns
     -------
-    edf_path : Path
-        Path of the edf file.
-
     settings_path : Path
         Path of the settings file.
     """
-    edf_name, settings_name, edf_original_path = None, None, None
-    h5_file_path = None
-    # First, we try to get the settings file
+    settings_name = None
     for file in os.listdir(DTC_PATH):
         if "settings_edf2nx" in file.lower():
             settings_name = file
     if settings_name is None:
-        return None, None, None
+        return None
     else:
         settings_path = Path(DTC_PATH / settings_name)
 
-    # Second, we build the list of all edf path in the DTC
-    treated_edf = []
-    for filepath in glob.iglob(str(TREATED_PATH / "**/*.h5"), recursive=True):
-        treated_edf.append(Path(filepath))
-
-    for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
-        filepath = Path(filepath)
-        target_dir = tree_structure_manager(filepath, settings_path)
-        h5_file_path = generate_h5_path(settings_path, filepath, target_dir)
-        if h5_file_path not in treated_edf:
-            edf_original_path = filepath
-            break
-        else:
-            h5_file_path = None
-            edf_original_path = None
-
-    if edf_original_path is None or h5_file_path is None:
-        return None, None, None
-
-    return Path(edf_original_path), Path(settings_path), Path(h5_file_path)
+    return Path(settings_path)
 
 
 def generate_h5_path(
-        settings_path,
+        config_dict,
         edf_path,
         destination_folder
 ):
@@ -304,10 +312,9 @@ def generate_h5_path(
 
     """
     edf_name = edf_path.name
-    edf_file = fabio.open(edf_path)
+    edf_file = EdfImage()
+    edf_file.read(edf_path)
     edf_header = edf_file.header
-    with open(settings_path, "r", encoding="utf-8") as config_file:
-        config_dict = json.load(config_file)
 
     sample_name_key = config_dict["/ENTRY"]["content"]["/SAMPLE"]["content"]["name"]["value"]
     sample_name = edf_header.get(sample_name_key, "defaultSampleName")
@@ -379,7 +386,6 @@ def tree_structure_manager(
     )
 
     try:
-        target_dir.mkdir(parents=True, exist_ok=True)
         return target_dir
     except Exception as exception:
         raise exception
@@ -492,9 +498,16 @@ class GUI_generator(tk.Frame):
         and tries to export edf files found in the parent folder
         into h5 files using the settings file found in the same folder.
         """
+        profiler = cProfile.Profile()
+        profiler.enable()
         tracemalloc.start()
         start_time = time.time()
         sleep_time = 10
+
+        settings_path = search_setting()
+        print(settings_path)
+        edf_to_treat = treated_data(settings_path)
+
         while self.activate_thread:
             if self.jenkins and time.time() - start_time > 3500:
                 break
@@ -512,15 +525,23 @@ class GUI_generator(tk.Frame):
                 )
                 break
 
-            file_path, settings_path, h5_file_path = search_setting_edf()
-
-            if file_path is None or settings_path is None:
+            if settings_path is None:
                 self.print_log(
-                    f"No file found, sleeping for {sleep_time} seconds.\n"
+                    f"No settings file found, sleeping for {sleep_time} seconds.\n"
                     f"You can close or stop safely."
                 )
                 time.sleep(sleep_time)
                 continue
+
+            if edf_to_treat is None:
+                self.print_log(
+                    f"No edf file found, sleeping for {sleep_time} seconds.\n"
+                    f"You can close or stop safely."
+                )
+                time.sleep(sleep_time)
+                continue
+
+            file_path, h5_file_path = next(iter(edf_to_treat.items()))
 
             self.print_log(
                 f"Converting : {file_path.name}, please wait"
@@ -580,6 +601,7 @@ class GUI_generator(tk.Frame):
                     nx_file.nexus_close()
 
             del nx_file
+            del edf_to_treat[file_path]
             gc.collect()
             # print(time.time() - start_time)
 
@@ -587,6 +609,10 @@ class GUI_generator(tk.Frame):
         self.print_log(
             "The program is done! you can close or start it again."
         )
+
+        profiler.disable()
+        stats = pstats.Stats(profiler).sort_stats('cumtime')
+        stats.print_stats()
 
     def start_thread(self) -> None:
         """Start the auto_generate function in a separate thread."""
@@ -604,15 +630,3 @@ class GUI_generator(tk.Frame):
             "Auto-generation stopped. The program is still processing!"
         )
 
-
-if __name__ == "__main__":
-    import cProfile
-    import pstats
-
-    profiler = cProfile.Profile()
-    profiler.enable()
-    app = GUI_generator()
-    app.mainloop()
-    profiler.disable()
-    stats = pstats.Stats(profiler).sort_stats('cumtime')
-    stats.print_stats()
