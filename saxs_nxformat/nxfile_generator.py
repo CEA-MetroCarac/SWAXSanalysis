@@ -38,7 +38,7 @@ def treated_data(settings_path):
     # We build the set of existing .h5
     existing_h5 = set()
     for filepath in glob.iglob(str(TREATED_PATH / "**/*.h5"), recursive=True):
-        existing_h5.add(filepath)
+        existing_h5.add(Path(filepath).absolute())
 
     edf_to_treat = {}
     for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
