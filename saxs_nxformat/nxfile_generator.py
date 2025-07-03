@@ -497,8 +497,9 @@ class GUI_generator(tk.Frame):
         and tries to export edf files found in the parent folder
         into h5 files using the settings file found in the same folder.
         """
-        profiler = cProfile.Profile()
-        profiler.enable()
+        # profiler = cProfile.Profile()
+        # profiler.enable()
+
         tracemalloc.start()
         start_time = time.time()
         sleep_time = 10
@@ -614,9 +615,9 @@ class GUI_generator(tk.Frame):
             "The program is done! you can close or start it again."
         )
 
-        profiler.disable()
-        stats = pstats.Stats(profiler).sort_stats('cumtime')
-        stats.print_stats()
+        # profiler.disable()
+        # stats = pstats.Stats(profiler).sort_stats('cumtime')
+        # stats.print_stats()
 
     def start_thread(self) -> None:
         """Start the auto_generate function in a separate thread."""
