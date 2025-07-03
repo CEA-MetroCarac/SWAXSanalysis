@@ -36,15 +36,14 @@ def treated_data(settings_path):
         config_dict = json.load(config_file)
 
     # We build the set of existing .h5
-    existing_h5 = set(
-        Path(filepath).absolute() for filepath in glob.iglob(
-            str(TREATED_PATH / "**/*.h5"),
-            recursive=True
-        )
-    )
+    existing_h5 = set()
+    for filepath in glob.iglob(str(TREATED_PATH / "**/*.h5"), recursive=True):
+        existing_h5.add(filepath)
 
     edf_to_treat = {}
     for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
+        if len(filepath) >= 256:
+            continue
         filepath = Path(filepath).absolute()
         target_dir = tree_structure_manager(filepath, settings_path)
         h5_file_path = generate_h5_path(config_dict, filepath, target_dir).absolute()
@@ -340,7 +339,6 @@ def generate_h5_path(
     return Path(h5_file_path)
 
 
-
 def tree_structure_manager(
         file_path: str | Path,
         settings_path: str | Path
@@ -634,4 +632,3 @@ class GUI_generator(tk.Frame):
         self.print_log(
             "Auto-generation stopped. The program is still processing!"
         )
-
