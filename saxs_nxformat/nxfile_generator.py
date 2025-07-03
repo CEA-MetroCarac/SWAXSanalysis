@@ -50,7 +50,6 @@ def treated_data(settings_path):
         h5_file_path = generate_h5_path(config_dict, filepath, target_dir).absolute()
         if h5_file_path not in existing_h5:
             edf_to_treat[filepath] = h5_file_path
-            print(edf_to_treat[filepath])
 
     if len(edf_to_treat) == 0:
         edf_to_treat = None
@@ -505,8 +504,13 @@ class GUI_generator(tk.Frame):
         sleep_time = 10
 
         settings_path = search_setting()
-        print(settings_path)
+        self.print_log(
+            "Building list of files to process. This may take a while"
+        )
         edf_to_treat = treated_data(settings_path)
+        self.print_log(
+            "The list of files to process has been built."
+        )
 
         while self.activate_thread:
             if self.jenkins and time.time() - start_time > 3500:
