@@ -465,11 +465,11 @@ def long_path_formatting(path, force=False):
 
     # UNC détection
     if normalised_path.startswith('\\\\'):
-        chemin_unc = "\\\\?\\UNC" + normalised_path[1:]
-        return chemin_unc if len(normalised_path) >= 256 or force else normalised_path
+        path_unc = "\\\\?\\UNC" + normalised_path[1:]
+        return path_unc if len(normalised_path) > 240 or force else normalised_path
 
     # Local detection
-    if len(normalised_path) >= 256 or force:
+    if len(normalised_path) > 240 or force:
         return "\\\\?\\{}".format(normalised_path)
 
     return normalised_path
