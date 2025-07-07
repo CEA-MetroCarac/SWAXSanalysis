@@ -25,13 +25,24 @@ import numpy as np
 from . import FONT_TITLE, FONT_BUTTON, FONT_LOG
 from . import ICON_PATH, TREATED_PATH, QUEUE_PATH, DTC_PATH
 from .class_nexus_file import NexusFile
-from .utils import string_2_value, save_data, extract_from_h5, convert
+from .utils import string_2_value, save_data, extract_from_h5, convert, long_path_formatting
 
 import cProfile
 import pstats
 
 
 def treated_data(settings_path):
+    """
+    Function used to build a list of non treated edf
+
+    Parameters
+    ----------
+    settings_path
+
+    Returns
+    -------
+
+    """
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
 
@@ -43,7 +54,7 @@ def treated_data(settings_path):
     edf_to_treat = {}
     for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
         if len(filepath) >= 256:
-            continue
+            filepath = long_path_formatting(filepath)
         filepath = Path(filepath).absolute()
         target_dir = tree_structure_manager(filepath, settings_path)
         h5_file_path = generate_h5_path(config_dict, filepath, target_dir).absolute()
@@ -202,6 +213,13 @@ def generate_nexus(
     target_dir.mkdir(parents=True, exist_ok=True)
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
+
+    if len(str(hdf5_path)) > 256:
+        hdf5_path = Path(
+            long_path_formatting(
+                str(hdf5_path)
+            )
+        )
 
     with h5py.File(hdf5_path, "w") as save_file:
         fill_hdf5(save_file, config_dict)
@@ -375,11 +393,15 @@ def tree_structure_manager(
         return "Invalid settings file format"
 
     origin_format, ending_format = origin2ending.split("2")
+    if str(file_path).startswith("\\\\?\\"):
+        queue_path = Path(long_path_formatting(str(QUEUE_PATH), force=True))
+    else:
+        queue_path = QUEUE_PATH
 
     target_dir = (
             TREATED_PATH /
             f"instrument - {instrument}" /
-            file_path.relative_to(QUEUE_PATH).parent
+            file_path.relative_to(queue_path).parent
     )
 
     try:
@@ -563,6 +585,12 @@ class GUI_generator(tk.Frame):
             )
 
             # We decide whether we want to do absolute intensity treatment or not
+            if len(str(new_file_path)) > 256:
+                hdf5_path = Path(
+                    long_path_formatting(
+                        str(new_file_path)
+                    )
+                )
             with h5py.File(new_file_path, "r") as h5obj:
                 do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
             if do_absolute == 1:
