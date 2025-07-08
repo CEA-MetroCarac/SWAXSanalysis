@@ -6,6 +6,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Any
 
+import os
+import pathlib
 import h5py
 import numpy as np
 
@@ -450,6 +452,27 @@ def detect_variation(
     # We get the indices
     indices = np.where(non_zero_mask)[0][condition] + 1
     return indices
+
+
+def long_path_formatting(path, force=False):
+    """
+    Adds the right preffixes to long paths
+    """
+    normalised_path = os.path.normpath(path)
+
+    if normalised_path.startswith("\\\\?\\"):
+        return normalised_path
+
+    # UNC détection
+    if normalised_path.startswith('\\\\'):
+        path_unc = "\\\\?\\UNC" + normalised_path[1:]
+        return path_unc if len(normalised_path) > 240 or force else normalised_path
+
+    # Local detection
+    if len(normalised_path) > 240 or force:
+        return "\\\\?\\{}".format(normalised_path)
+
+    return normalised_path
 
 
 class VerticalScrolledFrame(ttk.Frame):
