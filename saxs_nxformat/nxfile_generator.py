@@ -533,6 +533,8 @@ class GUI_generator(tk.Frame):
             "The list of files to process has been built."
         )
 
+        edf_with_error = {}
+
         while self.activate_thread:
             if self.jenkins and time.time() - start_time > 3500:
                 break
@@ -578,6 +580,8 @@ class GUI_generator(tk.Frame):
                 self.print_log(
                     str(exception)
                 )
+                edf_with_error[file_path] = str(exception)
+                del edf_to_treat[file_path]
                 continue
 
             self.print_log(
@@ -638,8 +642,13 @@ class GUI_generator(tk.Frame):
 
         tracemalloc.stop()
         self.print_log(
-            "The program is done! you can close or start it again."
+            "The program is done! you can close or start it again.\n\n"
+            "Here are the edf files not treated because of an error :\n"
         )
+        for file, why in edf_with_error.items():
+            self.print_log(
+                f"{file} was not treated. Error : {why}\n"
+            )
 
         # profiler.disable()
         # stats = pstats.Stats(profiler).sort_stats('cumtime')
