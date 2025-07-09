@@ -473,7 +473,6 @@ def long_path_formatting(path, force=False):
         return "\\\\?\\{}".format(normalised_path)
 
     return normalised_path
-f
 
 class VerticalScrolledFrame(ttk.Frame):
     """
