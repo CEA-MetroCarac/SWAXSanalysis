@@ -466,14 +466,14 @@ def long_path_formatting(path, force=False):
     # UNC détection
     if normalised_path.startswith('\\\\'):
         path_unc = "\\\\?\\UNC" + normalised_path[1:]
-        return path_unc if len(normalised_path) > 240 or force else normalised_path
+        return path_unc if len(normalised_path) > 200 or force else normalised_path
 
     # Local detection
-    if len(normalised_path) > 240 or force:
+    if len(normalised_path) > 200 or force:
         return "\\\\?\\{}".format(normalised_path)
 
     return normalised_path
-
+f
 
 class VerticalScrolledFrame(ttk.Frame):
     """

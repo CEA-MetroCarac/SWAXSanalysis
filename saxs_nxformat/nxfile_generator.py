@@ -53,7 +53,7 @@ def treated_data(settings_path):
 
     edf_to_treat = {}
     for filepath in glob.iglob(str(QUEUE_PATH / "**/*.edf"), recursive=True):
-        if len(filepath) > 240:
+        if len(filepath) > 200:
             filepath = long_path_formatting(filepath)
         filepath = Path(filepath).absolute()
         target_dir = tree_structure_manager(filepath, settings_path)
@@ -214,7 +214,7 @@ def generate_nexus(
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
 
-    if len(str(hdf5_path)) > 240:
+    if len(str(hdf5_path)) > 200:
         hdf5_path = Path(
             long_path_formatting(
                 str(hdf5_path)
@@ -589,7 +589,7 @@ class GUI_generator(tk.Frame):
             )
 
             # We decide whether we want to do absolute intensity treatment or not
-            if len(str(new_file_path)) > 240:
+            if len(str(new_file_path)) > 200:
                 new_file_path = Path(
                     long_path_formatting(
                         str(new_file_path)
