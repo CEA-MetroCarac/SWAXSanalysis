@@ -370,7 +370,6 @@ class GUI_setting(tk.Frame):
             file_edf = fabio.open(filename)
             return file_edf
         except Exception as error:
-            self.destroy()
             tk.messagebox.showerror("Error",
                                     f"An error occurred while loading the "
                                     f"file:\n {str(error)}")
@@ -449,7 +448,6 @@ class GUI_setting(tk.Frame):
             with open(file_path, "w", encoding="utf-8") as fichier:
                 json.dump(self.dict_config, fichier, indent=4)
 
-            self.destroy()
             tk.messagebox.showinfo("Sucess", "Settings successfully saved !")
             self.dict_config = {}
         except Exception as error:

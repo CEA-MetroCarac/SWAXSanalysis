@@ -55,7 +55,7 @@ FONT_TEXT: tuple    = ("Microsoft Sans Serif", 10)
 FONT_NOTE: tuple    = ("Microsoft Sans Serif", 8)
 FONT_BUTTON: tuple  = ("Microsoft Sans Serif", 12)
 FONT_LOG: tuple     = ("Lucida Console", 10)
-FONT_PLT: dict      = {'font.size': 20}
+FONT_PLT: dict      = {'font.size': 18}
 
 # Colors for the GUI
 RED: str         = "#B80000"
