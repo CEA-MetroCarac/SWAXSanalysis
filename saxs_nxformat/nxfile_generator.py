@@ -560,7 +560,7 @@ class GUI_generator(tk.Frame):
                 time.sleep(sleep_time)
                 continue
 
-            if edf_to_treat is None:
+            if len(edf_to_treat.items()) == 0 or edf_to_treat is None:
                 self.print_log(
                     f"No edf file found, sleeping for {sleep_time} seconds.\n"
                     f"You can close or stop safely."
@@ -568,7 +568,13 @@ class GUI_generator(tk.Frame):
                 time.sleep(sleep_time)
                 continue
 
-            file_path, h5_file_path = next(iter(edf_to_treat.items()))
+            try:
+                file_path, h5_file_path = next(iter(edf_to_treat.items()))
+            except Exception as exception:
+                self.print_log(
+                    f"The list of file to treat is empty."
+                )
+                continue
 
             self.print_log(
                 f"Converting : {file_path.name}, please wait"
