@@ -1,7 +1,4 @@
 """
-TODO : Add global variable for colormap, .ico path and other parameters, font, fontsize...
-TODO : Faire en sorte d'exploiter le format NXcanSAS.
-        Reconnaitre les groupe valides via leurs classes...
 TODO : faire des unité tests
 """
 import os

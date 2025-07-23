@@ -207,6 +207,7 @@ def generate_nexus(
             string_hdf5_path = string_hdf5_path.removesuffix(".h5")
             hdf5_path = Path(string_hdf5_path + "_DB.h5")
         else:
+            print(hdf5_path)
             raise Exception(f"{hdf5_path} already exists")
 
     target_dir = hdf5_path.parent

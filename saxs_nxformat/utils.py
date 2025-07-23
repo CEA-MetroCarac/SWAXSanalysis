@@ -277,7 +277,12 @@ def replace_h5_dataset(
         h5path = new_h5path
     else:
         h5path = old_h5path
-    if isinstance(new_dataset, np.ndarray):
+
+    is_scalar = \
+        np.shape(new_dataset) == () or \
+        isinstance(new_dataset, np.ndarray)
+
+    if is_scalar:
         new_dataset = hdf5_file.create_dataset(
             name=h5path,
             data=new_dataset,

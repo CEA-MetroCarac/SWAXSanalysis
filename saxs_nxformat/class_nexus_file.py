@@ -2,7 +2,6 @@
 The main feature of this module is the NexusFile class which is used
 to treat raw data contained in a .h5 file formated according
 to the NXcanSAS standard
-TODO : Add smoothing method?
 """
 import copy
 import inspect
@@ -127,25 +126,23 @@ def extract_smi_param(
 
     # Concerning the sample
     incident_angle = extract_from_h5(h5obj, "ENTRY/SAMPLE/yaw")
-    dict_parameters["incident angle"] = 0
+    dict_parameters["incident angle"] = incident_angle
 
     # Concerning the detector
     # We use a regex that detects the keyword required in the detector's name
     detector_name = extract_from_h5(h5obj, "/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
     if re.search(
-            "(?i)(?=.*dectris)" +
-            "(?i)(?=.*eiger2)" +
-            "(?i)(?=.*1m)",
-            detector_name.lower()
+            r"(?=.*dectris)(?=.*eiger2)(?=.*1m)",
+            detector_name,
+            flags=re.IGNORECASE
     ):
         dict_parameters["detector name"] = "Eiger1M_xeuss"
         dict_parameters["detector rotation"] = [[0, 0, 0]]
 
     if re.search(
-            "(?i)(?=.*" + "dectris" + ")" +
-            "(?i)(?=.*" + "eiger2" + ")" +
-            "(?i)(?=.*" + "500k" + ")",
-            detector_name.lower()
+            r"(?=.*dectris)(?=.*eiger2)(?=.*500k)",
+            detector_name,
+            flags=re.IGNORECASE
     ):
         dict_parameters["detector name"] = "Eiger500k_xeuss"
         rotation_1 = - extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/yaw")
@@ -1421,13 +1418,23 @@ class NexusFile:
             percentile: float | int = 95
     ):
         """
-        TODO : complete docstring
+        Process using all data groups containing 1D
+        data from the opened hdf5 files
+        and an extra parameter to create a 2D plot
         Parameters
         ----------
-        percentile
-        display
-        group_name
-        other_variable
+        percentile :
+            Controls the intensity range. It will go from 0 to percentile / 100 * (max intensity)
+            This parameter is only usefull for 2D plotting
+
+        display : bool, optional
+            Choose if you want the result displayed or not.
+
+        group_name :
+            Name of the 1D data group to use as
+
+        other_variable :
+            The other parameter contained in the hdf5 file
 
         Returns
         -------
