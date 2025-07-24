@@ -3,19 +3,20 @@ requires = ['setuptools>=42']
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = "saxs_nxformat"
-version = "2025.3"
+name = "SWAXSanalysis"
+version = "2025.4"
 authors = [
     { name = "Adrien Toulouse", email = "toulouseadrienjob@gmail.com" }
 ]
-description = "Package allowing the analysis of SAXS data that's fresh out of the machine. This package uses the NeXus standard for the x-ray community."
+description = "Package allowing the analysis of SAXS and WAXS data (EDF format) that's fresh out of the machine. This
+package uses the NeXus standard for the x-ray community."
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["EDF", "HDF5", "NeXus", "Data analysis", "X-ray", "Xeuss"]
-license = { text = "GPL v3" }
+keywords = ["EDF", "HDF5", "NeXus", "Data analysis", "X-ray", "Xeuss", "SAXS", "WAXS", "SWAXS"]
+license = "GNU General Public License v3.0"
+license-files = ["LICEN[CS]E*"]
 classifiers = [
     'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
     'Operating System :: Microsoft :: Windows',
     'Environment :: Console',
 ]
@@ -24,12 +25,12 @@ dependencies = [
     "matplotlib",
     "h5py",
     "fabio",
-    "memory_profiler"
-    # "smi-analysis" = { git = "https://github.com/gfreychet/smi-analysis.git", branch = "master" }
+    "memory_profiler",
+    "smi-analysis @ git+https://github.com/gfreychet/smi-analysis.git@master"
 ]
 
 [project.scripts]
-nxformat = "saxs_nxformat.launcher:launcher_gui"
+SWAXSanalysis = "saxs_nxformat.launcher:launcher_gui"
 
 [tool.setuptools]
 include-package-data = true

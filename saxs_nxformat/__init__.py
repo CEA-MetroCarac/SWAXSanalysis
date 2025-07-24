@@ -32,7 +32,7 @@ ENV_PATH: Path      = DESKTOP_PATH
 DTC_PATH: Path      = ENV_PATH / "Data Treatment Center"
 CONF_PATH: Path     = DTC_PATH / "Configs"
 TREATED_PATH: Path  = DTC_PATH / "Treated Data"
-IPYNB_PATH: Path    = DTC_PATH / "Notebooks"
+IPYNB_PATH: Path    = DTC_PATH / "Jupyter notebooks"
 
 QUEUE_PATH: Path    = ENV_PATH / "Treatment Queue"
 
