@@ -14,7 +14,7 @@ Once the configuration file has been created you can put it in the Data Treatmen
 on your desktop.
 
 You can also use the package directly in a python script by importing the main class :
-```
+```python
 from SWAXSanalysis.class_nexus_file import NexusFile
 ```
 
@@ -22,7 +22,7 @@ In any case, an example notebook along with a jupyter notebook launcher is prese
 ## How to install
 ___
 You can use your favorite IDE and/or open a terminal and type the following command :
-```
+```PowerShell
 pip install SWAXSanalysis
 ```
 This should install the package. if you want to use the GUI, it should be in the Scripts folder of your Virtual 
@@ -36,11 +36,11 @@ location of the Data Treatment Center, go to :
 path\to\your\venv\Lib\site-packages\saxs_nxformat
  ```
 and open the `__init__.py` file. In this file, find the line (should be line N°28) :
-```
+```python
 ENV_PATH: Path = DESKTOP_PATH
 ```
 And change it to
-```
+```python
 ENV_PATH: Path = Path(r"path\where\Data Treatment Center\should\be")
 ```
 
