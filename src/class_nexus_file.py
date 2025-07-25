@@ -6,6 +6,7 @@ to the NXcanSAS standard
 import copy
 import inspect
 import os
+import re
 import shutil
 import time
 from pathlib import Path
@@ -159,6 +160,16 @@ def extract_smi_param(
     sample_detector_distance = extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/SDD")
     dict_parameters["distance"] = sample_detector_distance * 1e3
 
+    geometry = extract_from_h5(h5obj, "ENTRY/COLLECTION/geometry").decode('utf-8')
+    if re.search(
+            r"^refle(x|ct)ion$",
+            geometry,
+            flags=re.IGNORECASE
+    ):
+        dict_parameters["geometry"] = "Reflexion"
+    else:
+        dict_parameters["geometry"] = "Transmission"
+
     return dict_parameters
 
 
@@ -239,7 +250,7 @@ class NexusFile:
 
             # We input the info in the SMI package
             smi_data = SMI_beamline.SMI_geometry(
-                geometry="Transmission",
+                geometry=dict_parameters["geometry"],
                 sdd=dict_parameters["distance"],
                 wav=dict_parameters["wavelength"],
                 alphai=dict_parameters["incident angle"],
