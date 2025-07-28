@@ -8,13 +8,14 @@ version = "2025.4"
 authors = [
     { name = "Adrien Toulouse", email = "toulouseadrienjob@gmail.com" }
 ]
-description = "Package allowing the analysis of SAXS and WAXS data (EDF format) that's fresh out of the machine. This
-package uses the NeXus standard for the x-ray community."
+description = "Package allowing the analysis of SAXS and WAXS data (EDF format) that's fresh out of the machine. This package uses the NeXus standard for the x-ray community."
 readme = "README.md"
 requires-python = ">=3.10"
 keywords = ["EDF", "HDF5", "NeXus", "Data analysis", "X-ray", "Xeuss", "SAXS", "WAXS", "SWAXS"]
+
 license = "GNU General Public License v3.0"
 license-files = ["LICEN[CS]E*"]
+
 classifiers = [
     'Programming Language :: Python :: 3.10',
     'Operating System :: Microsoft :: Windows',

@@ -477,7 +477,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the x_gap"
+                                        "docstring": "Unit of the x_gap",
+                                        "content": null
                                     }
                                 }
                             },
@@ -507,7 +508,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the y_gap"
+                                        "docstring": "Unit of the y_gap",
+                                        "content": null
                                     }
                                 }
                             }
@@ -569,7 +571,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the collimation length"
+                                        "docstring": "Unit of the collimation length",
+                                        "content": null
                                     }
                                 }
                             },
@@ -599,7 +602,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the collimator-sample distance"
+                                        "docstring": "Unit of the collimator-sample distance",
+                                        "content": null
                                     }
                                 }
                             }
@@ -670,7 +674,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the sample-detector distance, must be the same as Q's"
+                                        "docstring": "Unit of the sample-detector distance, must be the same as Q's",
+                                        "content": null
                                     }
                                 }
                             },
@@ -700,7 +705,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's slit, must be the same as Q's"
+                                        "docstring": "Unit of the detector's slit, must be the same as Q's",
+                                        "content": null
                                     }
                                 }
                             },
@@ -730,7 +736,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's x position"
+                                        "docstring": "Unit of the detector's x position",
+                                        "content": null
                                     }
                                 }
                             },
@@ -760,7 +767,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's y position"
+                                        "docstring": "Unit of the detector's y position",
+                                        "content": null
                                     }
                                 }
                             },
@@ -789,7 +797,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                        "docstring": "Unit of the rotation (will be converted to rad)",
+                                        "content": null
                                     }
                                 }
                             },
@@ -818,7 +827,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                        "docstring": "Unit of the rotation (will be converted to rad)",
+                                        "content": null
                                     }
                                 }
                             },
@@ -847,7 +857,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the rotation (will be converted to rad)"
+                                        "docstring": "Unit of the rotation (will be converted to rad)",
+                                        "content": null
                                     }
                                 }
                             },
@@ -877,7 +888,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's y position"
+                                        "docstring": "Unit of the detector's y position",
+                                        "content": null
                                     }
                                 }
                             },
@@ -907,7 +919,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the detector's y position"
+                                        "docstring": "Unit of the detector's y position",
+                                        "content": null
                                     }
                                 }
                             },
@@ -937,7 +950,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the pixel's horizontal size"
+                                        "docstring": "Unit of the pixel's horizontal size",
+                                        "content": null
                                     }
                                 }
                             },
@@ -967,7 +981,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the pixel's vertical size"
+                                        "docstring": "Unit of the pixel's vertical size",
+                                        "content": null
                                     }
                                 }
                             }
@@ -1079,7 +1094,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength (will be converted to nm)"
+                                        "docstring": "Unit of the incident wavelength (will be converted to nm)",
+                                        "content": null
                                     }
                                 }
                             },
@@ -1109,7 +1125,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident minimum wavelength"
+                                        "docstring": "Unit of the incident minimum wavelength",
+                                        "content": null
                                     }
                                 }
                             },
@@ -1139,7 +1156,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident maximum wavelength"
+                                        "docstring": "Unit of the incident maximum wavelength",
+                                        "content": null
                                     }
                                 }
                             },
@@ -1169,7 +1187,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the incident wavelength spread"
+                                        "docstring": "Unit of the incident wavelength spread",
+                                        "content": null
                                     }
                                 }
                             },
@@ -1199,7 +1218,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the horizontal beam size"
+                                        "docstring": "Unit of the horizontal beam size",
+                                        "content": null
                                     }
                                 }
                             },
@@ -1229,7 +1249,8 @@
                                         ],
                                         "EX_required": true,
                                         "type": "NX_CHAR",
-                                        "docstring": "Unit of the vertical beam size"
+                                        "docstring": "Unit of the vertical beam size",
+                                        "content": null
                                     }
                                 }
                             }
@@ -1302,7 +1323,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the thickness"
+                                "docstring": "Unit of the thickness",
+                                "content": null
                             }
                         }
                     },
@@ -1339,7 +1361,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the temperature"
+                                "docstring": "Unit of the temperature",
+                                "content": null
                             }
                         }
                     },
@@ -1369,7 +1392,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the detector's x position"
+                                "docstring": "Unit of the detector's x position",
+                                "content": null
                             }
                         }
                     },
@@ -1399,7 +1423,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the detector's y position"
+                                "docstring": "Unit of the detector's y position",
+                                "content": null
                             }
                         }
                     },
@@ -1428,7 +1453,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the rotation (will be converted to rad)"
+                                "docstring": "Unit of the rotation (will be converted to rad)",
+                                "content": null
                             }
                         }
                     },
@@ -1457,7 +1483,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the rotation (will be converted to rad)"
+                                "docstring": "Unit of the rotation (will be converted to rad)",
+                                "content": null
                             }
                         }
                     },
@@ -1486,7 +1513,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the rotation (will be converted to rad)"
+                                "docstring": "Unit of the rotation (will be converted to rad)",
+                                "content": null
                             }
                         }
                     }
@@ -1624,7 +1652,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "Unit of the exposition time (will be converted to s)"
+                                "docstring": "Unit of the exposition time (will be converted to s)",
+                                "content": null
                             }
                         }
                     },
@@ -1660,7 +1689,8 @@
                                 "possible value": [],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
+                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data",
+                                "content": null
                             }
                         }
                     },
@@ -1689,7 +1719,8 @@
                                 ],
                                 "EX_required": true,
                                 "type": "NX_CHAR",
-                                "docstring": "If the absolute intensity needs to be computed you need to specify the path of the direct beam data"
+                                "docstring": "Unit of the stress applied",
+                                "content": null
                             }
                         }
                     }

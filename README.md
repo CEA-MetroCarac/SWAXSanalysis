@@ -10,23 +10,28 @@ To convert the EDF file, the program uses a configuration file created by the us
 is provided. This same GUI can be used to do basic processes to an HDF5 file that follows the NXcanSAS definition, 
 as described by the NeXus Foundation : https://manual.nexusformat.org/classes/applications/NXcanSAS.html#nxcansas 
 
-Once the configuration file has been created you can put it in the Data Treatment Center folder that's been created 
-on your desktop.
+Once the configuration file has been created it should be saved in the "configs" folder inside the Data Treatment 
+Center. You need to move the config file inside the Data Treatment Center directly for it to be detected and used in 
+the conversion of file. By default, the Data Treatment Center is created on your desktop.
 
-You can also use the package directly in a python script by importing the main class :
+Once the config file is moved, you can put the EDF files you want to convert to hdf5 in the Treatment Queue folder.
+
+You can also use the package directly in a python script by importing the main class and some utility functions :
 ```python
 from SWAXSanalysis.class_nexus_file import NexusFile
+from SWAXSanalysis.utils import save_data, extract_from_h5, delete_data
 ```
 
 In any case, an example notebook along with a jupyter notebook launcher is present in the Data Treatment Center.
 ## How to install
 ___
-You can use your favorite IDE and/or open a terminal and type the following command :
+You have to activate a python virtual environment (more info on how to activate a Venv 
+[here](https://docs.python.org/3/library/venv.html)) and type the following command :
 ```PowerShell
 pip install SWAXSanalysis
 ```
-This should install the package. if you want to use the GUI, it should be in the Scripts folder of your Virtual 
-environment under the name `SWAXSanalysis.exe`
+This should install the package in the activated virtual environment. If you want to use the GUI, it should be in the 
+Scripts folder of your Virtual environment under the name `SWAXSanalysis.exe`
 
 ## Changing the location of the Data Treatment Center
 ___
