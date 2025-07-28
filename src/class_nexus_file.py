@@ -131,6 +131,8 @@ def extract_smi_param(
 
     # Concerning the detector
     # We use a regex that detects the keyword required in the detector's name
+    # To add a detector simply add a regex
+    #
     detector_name = extract_from_h5(h5obj, "/ENTRY/INSTRUMENT/DETECTOR/name").decode("utf-8")
     if re.search(
             r"(?=.*dectris)(?=.*eiger2)(?=.*1m)",

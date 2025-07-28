@@ -143,6 +143,7 @@ def generate_nexus(
     settings_path :
         Path of the settings file
     """
+    hdf5_path = Path(hdf5_path)
     edf_path = Path(edf_path)
     edf_name = edf_path.name
     edf_file = fabio.open(edf_path)
