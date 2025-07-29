@@ -30,8 +30,12 @@ You have to activate a python virtual environment (more info on how to activate 
 ```PowerShell
 pip install SWAXSanalysis
 ```
-This should install the package in the activated virtual environment. If you want to use the GUI, it should be in the 
-Scripts folder of your Virtual environment under the name `SWAXSanalysis.exe`
+After SWAXSanalysis is install you need to install this branch of smi_analysis via the following command
+```
+pip install git+https://github.com/gfreychet/smi-analysis.git@master
+```
+This wraps up the install the package in the activated virtual environment. If you want to use the GUI, it should be in 
+the Scripts folder of your Virtual environment under the name `SWAXSanalysis.exe`
 
 ## Changing the location of the Data Treatment Center
 ___

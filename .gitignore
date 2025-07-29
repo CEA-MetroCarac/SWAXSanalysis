@@ -1,3 +1,4 @@
 *.pyc
 src/analyse_manuelle_I_ABS_BG.py
 src/analyse_manuelle_I_ABS_GC.py
+/.pytest_cache/
