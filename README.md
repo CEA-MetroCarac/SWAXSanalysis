@@ -3,6 +3,12 @@ ___
 This package is used to convert edf files that contain one header and one dataset into an HDF5 file that contains 
 information selected by the user.
 
+Versioning Y.X1.X2.X3 :
+- Y : year of release
+- X1 : Big update (refactoring, new GUI, new way to use...)
+- X2 : Update including new functionality.
+- X3 : If 0, stable release, if not, it's a work in progress
+
 ## How it works
 ___
 To convert the EDF file, the program uses a configuration file created by the user. To help create said file, a GUI 
@@ -68,3 +74,5 @@ ___
   change the loaded definition in the python script directly.
 - The program can't handle anything other than EDF file with one header and one dataset
 - Azimuthal angle range is behaving weirdly when 0 is not in the range
+- 2 param intensity is still a bit of a work in progress but should work as long as you do not use it with the batch 
+  option enabled
