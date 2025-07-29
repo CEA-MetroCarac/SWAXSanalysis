@@ -98,24 +98,21 @@ def launcher_gui():
         CONF_PATH.mkdir(parents=True, exist_ok=True)
         TREATED_PATH.mkdir(parents=True, exist_ok=True)
         IPYNB_PATH.mkdir(parents=True, exist_ok=True)
+        NOTEBOOK_PATH = IPYNB_PATH / "NoteBook"
+        NOTEBOOK_PATH.mkdir(parents=True, exist_ok=True)
         QUEUE_PATH.mkdir(parents=True, exist_ok=True)
-    
+
         # We move the notebook, jupyter launcher and settings into the DTC
         shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "nexus_file_processing.ipynb",
-            IPYNB_PATH
+            BASE_DIR / "machine_configs" / "XEUSS" / "processing_tutorial.ipynb",
+            IPYNB_PATH / "NoteBook"
         )
-    
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "traitement GC.ipynb",
-            IPYNB_PATH
-        )
-    
+
         shutil.copy(
             BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
             IPYNB_PATH
         )
-    
+
         shutil.copy(
             BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
             CONF_PATH
