@@ -2,3 +2,5 @@
 SWAXSanalysis/analyse_manuelle_I_ABS_BG.py
 SWAXSanalysis/analyse_manuelle_I_ABS_GC.py
 /.pytest_cache/
+/SWAXSanalysis.egg-info/
+/dist/

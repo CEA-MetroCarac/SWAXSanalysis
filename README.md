@@ -1,8 +1,7 @@
 # SWAXSanalysis
 ___
 This package is used to convert edf files that contain one header and one dataset into an HDF5 file that contains 
-information selected by the user. This process can be automated if the `launcher.py` has been launched with the 
-argument `--jenkins "true"`
+information selected by the user.
 
 ## How it works
 ___
@@ -30,21 +29,30 @@ You have to activate a python virtual environment (more info on how to activate 
 ```PowerShell
 pip install SWAXSanalysis
 ```
-After SWAXSanalysis is install you need to install this branch of smi_analysis via the following command
-```
+After SWAXSanalysis is installed you need to install this branch of smi_analysis via the following command
+```PowerShell
 pip install git+https://github.com/gfreychet/smi-analysis.git@master
 ```
-This wraps up the install the package in the activated virtual environment. If you want to use the GUI, it should be in 
-the Scripts folder of your Virtual environment under the name `SWAXSanalysis.exe`
+This wraps up the installation of the package in the activated virtual environment. If you want to use the GUI, you 
+only need to type
+```PowerShell
+SWAXSanalysis
+```
+in the same activated virtual environment
+
+The conversion process can be automated if the `launcher.py` has been launched with the argument `--jenkins "true"` like so :
+```PowerShell
+python3 -m SWAXSanalysis.launcher --jenkins true 
+```
 
 ## Changing the location of the Data Treatment Center
 ___
 By default, the Data Treatment Center and Treatment Queue folder will be created on your desktop. To change the 
 location of the Data Treatment Center, go to :
 ```
-path\to\your\venv\Lib\site-packages\saxs_nxformat
+path\to\your\venv\Lib\site-packages\SWAXSanalysis
  ```
-and open the `__init__.py` file. In this file, find the line (should be line N°28) :
+and open the `__init__.py` file. In this file, find this line (should be line N°28) :
 ```python
 ENV_PATH: Path = DESKTOP_PATH
 ```

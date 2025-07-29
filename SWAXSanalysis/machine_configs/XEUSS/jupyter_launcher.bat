@@ -33,7 +33,7 @@ if not exist ".\jupyter.exe" (
 	echo [CONSOLE LOG] : Installing jupyter and dependencies...
 	call .\pip install jupyter
 	call .\pip install ipympl
-	call .\pip install git+https://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@github.com/CEA-MetroCarac/saxs_nxformat.git@main
+	call .\pip install SWAXSanalysis
 	call .\pip install git+https://github.com/gfreychet/smi-analysis.git
 ) else (
 	echo [CONSOLE LOG] : Jupyter is already installed, skipping install
