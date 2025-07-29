@@ -30,18 +30,18 @@ dependencies = [
 ]
 
 [project.scripts]
-SWAXSanalysis = "saxs_nxformat.launcher:launcher_gui"
+SWAXSanalysis = "SWAXSanalysis.launcher:launcher_gui"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.package-data]
-"saxs_nxformat" = ["**/*"]
+"SWAXSanalysis" = ["**/*"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["saxs_nxformat*"]
+include = ["SWAXSanalysis*"]
 namespaces = false
 
 [project.urls]
-Homepage = "https://github.com/CEA-MetroCarac/saxs_nxformat"
+Homepage = "https://github.com/CEA-MetroCarac/SWAXSanalysis"
