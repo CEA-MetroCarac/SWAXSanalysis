@@ -120,3 +120,8 @@ ___
   option enabled
 - While processing something in the `data processing` tab, the windows stops responding but everything it is still 
   processing.
+
+## Prospects
+___
+- Manage uncertainty
+- 

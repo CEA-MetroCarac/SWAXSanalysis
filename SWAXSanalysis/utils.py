@@ -308,7 +308,23 @@ def save_data(
         mask: np.ndarray
 ) -> None:
     """
-    Method used to save a dataset in the h5 file
+    Method used to save a dataset in the h5 file.
+    if value_data is 2D, parameter_data needs to be a 3D array containing Qx and Qy.
+
+    For example :
+    value_data =
+        [[0, 0, 0],
+        [0, 1, 0],
+        [0, 0, 0]]
+
+    parameter_data = [
+        [[0, 1, 2],
+        [0, 1, 2],
+        [0, 1, 2]],
+        [[0, 0, 0],
+        [1, 1, 1],
+        [2, 2, 2]]
+    ]
 
     Parameters
     ----------
@@ -339,7 +355,6 @@ def save_data(
         nx_file.copy("ENTRY/DATA", nx_file["/ENTRY"], new_group_name)
 
     # we replace the raw data with the new data
-    # TODO : propagate uncertainties
     # Concerning Q
     replace_h5_dataset(
         nx_file,
@@ -385,7 +400,7 @@ def save_data(
             del nx_file[f"{group_path}"].attrs["Q_indices"]
             del nx_file[f"{group_path}"].attrs["mask_indices"]
 
-        nx_file[f"{group_path}"].attrs["I_axes"] = "Q"
+        nx_file[f"{group_path}"].attrs["I_axes"] = [parameter_symbol]
         nx_file[f"{group_path}"].attrs["Q_indices"] = [0]
         nx_file[f"{group_path}"].attrs["mask_indices"] = [0]
     elif dim == 2:

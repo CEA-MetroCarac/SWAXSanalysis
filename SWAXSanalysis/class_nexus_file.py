@@ -1659,22 +1659,39 @@ class NexusFile:
 
         # We extract the data
         if value_not_inserted and group_name_inserted:
-            extracted_value_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/I")
+            value_symbol = extract_from_h5(
+                nxfile,
+                f"ENTRY/{group_name}",
+                "attribute",
+                "signal"
+            )
+            extracted_value_data = extract_from_h5(
+                nxfile, f"ENTRY/{group_name}/{value_symbol}"
+            )
 
         # We extract the parameter
         if param_not_inserted and group_name_inserted:
-            if f"ENTRY/{group_name}/R" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/R")
-            elif f"ENTRY/{group_name}/Q" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Q")
-            elif f"ENTRY/{group_name}/Chi" in nxfile:
-                extracted_param_data = extract_from_h5(nxfile, f"ENTRY/{group_name}/Chi")
-            else:
-                extracted_param_data = None
+            parameter_symbols = extract_from_h5(
+                nxfile,
+                f"ENTRY/{group_name}",
+                "attribute", "I_axes"
+            )
+            symbols_to_use = extract_from_h5(
+                nxfile,
+                f"ENTRY/{group_name}",
+                "attribute",
+                "Q_indices"
+            )
+            for symbol_index in symbols_to_use:
+                symbol = parameter_symbols[symbol_index]
+                extracted_param_data = extract_from_h5(
+                    nxfile,
+                    f"ENTRY/{group_name}/{symbol}"
+                )
 
-        # If the intensity value is a scalar we print it
+        # If the intensity value is a scalar we pass
         if np.isscalar(extracted_value_data):
-            print(extracted_value_data)
+            pass
 
         # If the intensity value is a 1D array we plot it
         elif len(np.shape(extracted_value_data)) == 1:
