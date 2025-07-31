@@ -67,6 +67,48 @@ And change it to
 ENV_PATH: Path = Path(r"path\where\Data Treatment Center\should\be")
 ```
 
+## Implementing new code
+___
+### New process
+To add a new process to the code, simply go to the class_nexus_file.py and in the class NexusFile, you can define a 
+new method. There are some things you should know :
+1. If you want your process to be used only in script, there is no special condition. However if you want it to be 
+   picked up by the GUI, the method's name must start with `process_...`.
+2. If you want the process to be available in the GUI. You have to follow this signature standard :
+```python
+def process_example(
+            self,
+            param1: type1 = default1,
+            param2: type2 = default2,
+            param3: type3 = default3
+    ) -> None:
+    pass
+```
+You need to type your variables and give it a default value. You can put any default value but `None` or `""` are 
+the most generic ones. Don't hesitate to look at the other processes to guide you.
+
+To learn more about typing :\
+https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
+3. A process must include a for loop to apply the process to all files :
+```python
+for index, smi_data in enumerate(self.list_smi_data):
+    pass
+```
+Usually, we iterate over `self.list_smi_data` since it's the pre-processed data and it was corrected via pyFAI. But 
+should you want to iterate over the HDF5 files directly you can use `self.nx_files`.\
+This loop should encompass al the code that actually treats and manipulate the smi_data.
+
+4. If you want to add a way to save data you need to use the `save_data` function, present in the same file.
+5. If you want to add a way to display data you need to use the `_display_data` method. This method is quite complex 
+   so don't hesitate to look at other processes to see how to use it properly.
+
+## Testing new implementation
+___
+When implementing new code in the package, you should always test if you broke something. To do so, you have a few 
+test that you can conduct. Those test are present in the `tests` folder of the github project. In this folder you have :
+- test_conversion : which is a test that should always be run
+- test_new_nexus_def : this test should be run in case you have implemented a new NeXus definition 
+
 ## Known issues
 ___
 - Changing the `ENV_PATH` by changing the `__init__.py` script is impractical.
@@ -76,3 +118,5 @@ ___
 - Azimuthal angle range is behaving weirdly when 0 is not in the range
 - 2 param intensity is still a bit of a work in progress but should work as long as you do not use it with the batch 
   option enabled
+- While processing something in the `data processing` tab, the windows stops responding but everything it is still 
+  processing.

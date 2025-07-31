@@ -33,10 +33,12 @@ if not exist ".\jupyter.exe" (
 	echo [CONSOLE LOG] : Installing jupyter and dependencies...
 	call .\pip install jupyter
 	call .\pip install ipympl
-	call .\pip install SWAXSanalysis
+    call .\pip install SWAXSanalysis
 	call .\pip install git+https://github.com/gfreychet/smi-analysis.git
 ) else (
 	echo [CONSOLE LOG] : Jupyter is already installed, skipping install
+	echo [CONSOLE LOG] : Upgrading core modules...
+	call .\pip install --upgrade SWAXSanalysis
 )
 
 echo [CONSOLE LOG] : Changing working directory to "%BATCH_DIR%"

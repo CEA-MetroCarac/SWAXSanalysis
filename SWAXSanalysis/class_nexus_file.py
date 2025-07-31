@@ -168,7 +168,7 @@ def extract_smi_param(
             geometry,
             flags=re.IGNORECASE
     ):
-        dict_parameters["geometry"] = "Reflexion"
+        dict_parameters["geometry"] = "Reflection"
     else:
         dict_parameters["geometry"] = "Transmission"
 
@@ -514,12 +514,12 @@ class NexusFile:
             display: bool = False,
             save: bool = False,
             group_name: str = "DATA_CAKED",
-            azi_min: None | float | int = None,
-            azi_max: None | float | int = None,
-            pts_azi: None | int = None,
             rad_min: None | float | int = None,
             rad_max: None | float | int = None,
-            pts_rad: None | int = None,
+            points_rad: None | int = None,
+            azi_min: None | float | int = None,
+            azi_max: None | float | int = None,
+            points_azi: None | int = None,
             percentile: float | int = 99
     ) -> None:
         """
@@ -541,7 +541,7 @@ class NexusFile:
         group_name:
             Name of the group that will contain the data
 
-        pts_rad:
+        points_rad:
             Number of point in the radial range
 
         rad_max:
@@ -550,7 +550,7 @@ class NexusFile:
         rad_min:
             Minimum of the radial range
 
-        pts_azi:
+        points_azi:
             Number of point in the azimuthal range
 
         azi_max:
@@ -569,8 +569,8 @@ class NexusFile:
             "azi_max": azi_max is None,
             "rad_min": rad_min is None,
             "rad_max": rad_max is None,
-            "pts_azi": pts_azi is None,
-            "pts_rad": pts_rad is None,
+            "pts_azi": points_azi is None,
+            "pts_rad": points_rad is None,
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
@@ -615,15 +615,15 @@ class NexusFile:
             if initial_none_flags["rad_max"]:
                 rad_max = defaults["rad_max"]
             if initial_none_flags["pts_azi"]:
-                pts_azi = defaults["pts_azi"]
+                points_azi = defaults["pts_azi"]
             if initial_none_flags["pts_rad"]:
-                pts_rad = defaults["pts_rad"]
+                points_rad = defaults["pts_rad"]
 
             smi_data.caking(
                 azimuth_range=[azi_min, azi_max],
                 radial_range=[rad_min, rad_max],
-                npt_azim=pts_azi,
-                npt_rad=pts_rad
+                npt_azim=points_azi,
+                npt_rad=points_rad
             )
 
             q_list = smi_data.q_cake
@@ -659,8 +659,8 @@ class NexusFile:
                     "the azimuthal angle and the distance "
                     "from the center of the q-space.\n"
                     "Parameters used :\n"
-                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {pts_azi} points\n"
-                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {pts_rad} points\n"
+                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {points_azi} points\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {points_rad} points\n"
                 )
 
     def process_radial_average(
@@ -672,7 +672,7 @@ class NexusFile:
             rad_max: None | float | int = None,
             azi_min: None | float | int = None,
             azi_max: None | float | int = None,
-            pts: None | int = None
+            points_azi: None | int = None
     ) -> None:
         """
         Method used to perform radial averaging of data in Fourier space.
@@ -702,7 +702,7 @@ class NexusFile:
         azi_max : float, optional
             Maximum angle for averaging.
 
-        pts : int, optional
+        points_azi : int, optional
             Number of points for the averaging process.
         """
         self.init_plot = True
@@ -715,7 +715,7 @@ class NexusFile:
             "rad_max": rad_max is None,
             "azi_min": azi_min is None,
             "azi_max": azi_max is None,
-            "pts": pts is None,
+            "pts": points_azi is None,
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
@@ -763,11 +763,11 @@ class NexusFile:
             if initial_none_flags["azi_max"]:
                 azi_max = defaults["azi_max"]
             if initial_none_flags["pts"]:
-                pts = defaults["pts"]
+                points_azi = defaults["pts"]
 
             smi_data.radial_averaging(
                 azimuth_range=[azi_min, azi_max],
-                npt=pts,
+                npt=points_azi,
                 radial_range=[rad_min, rad_max]
             )
 
@@ -779,7 +779,7 @@ class NexusFile:
                     label_x="$q_r (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Radial integration over the regions \n "
-                          f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
+                          f"$\\chi$ : [{azi_min:.4f}, {azi_max:.4f}] and $q_r$ : [{rad_min:.4f}, {rad_max:.4f}]"
                 )
 
             if save:
@@ -797,7 +797,7 @@ class NexusFile:
                     "and radial q range.\n"
                     "Parameters used :\n"
                     f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}]\n"
-                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {pts} points\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {points_azi} points\n"
                 )
 
     def process_azimuthal_average(
@@ -807,20 +807,20 @@ class NexusFile:
             group_name: str = "DATA_AZI_AVG",
             rad_min: None | float | int = None,
             rad_max: None | float | int = None,
-            npt_rad: None | int = None,
+            points_rad: None | int = None,
             azi_min: None | float | int = None,
             azi_max: None | float | int = None,
-            npt_azi: None | int = None
+            points_azi: None | int = None
     ) -> None:
         """
         Method used to do the radial average of the data in fourier space
 
         Parameters
         ----------
-        npt_azi :
+        points_azi :
             Number of points in the azimuthal range
 
-        npt_rad :
+        points_rad :
             Number of points in the radial range
 
         azi_max :
@@ -853,10 +853,10 @@ class NexusFile:
         initial_none_flags = {
             "rad_min": rad_min is None,
             "rad_max": rad_max is None,
-            "npt_rad": npt_rad is None,
+            "npt_rad": points_rad is None,
             "azi_min": azi_min is None,
             "azi_max": azi_max is None,
-            "npt_azi": npt_azi is None
+            "npt_azi": points_azi is None
         }
 
         for index, smi_data in enumerate(self.list_smi_data):
@@ -898,19 +898,19 @@ class NexusFile:
             if initial_none_flags["rad_max"]:
                 rad_max = defaults["rad_max"]
             if initial_none_flags["npt_rad"]:
-                npt_rad = defaults["npt_rad"]
+                points_rad = defaults["npt_rad"]
             if initial_none_flags["azi_min"]:
                 azi_min = defaults["azi_min"]
             if initial_none_flags["azi_max"]:
                 azi_max = defaults["azi_max"]
             if initial_none_flags["npt_azi"]:
-                npt_azi = defaults["npt_azi"]
+                points_azi = defaults["npt_azi"]
 
             smi_data.azimuthal_averaging(
                 azimuth_range=[azi_min, azi_max],
-                npt_azim=npt_azi,
+                npt_azim=points_azi,
                 radial_range=[rad_min, rad_max],
-                npt_rad=npt_rad
+                npt_rad=points_rad
             )
 
             if display:
@@ -922,7 +922,7 @@ class NexusFile:
                     label_x="$\\chi (rad)$",
                     label_y="Intensity (a.u.)",
                     title=f"Azimuthal integration over the regions \n "
-                          f"[{azi_min:.4f}, {azi_max:.4f}] and [{rad_min:.4f}, {rad_max:.4f}]"
+                          f"$\\chi$ : [{azi_min:.4f}, {azi_max:.4f}] and $q_r$ : [{rad_min:.4f}, {rad_max:.4f}]"
                 )
 
             if save:
@@ -937,8 +937,8 @@ class NexusFile:
                     "This process integrates the intensity signal over a specified azimuthal angle range"
                     " and radial q range.\n"
                     "Parameters used :\n"
-                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {npt_azi} points\n"
-                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {npt_rad} points\n"
+                    f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}] with {points_azi} points\n"
+                    f"   - Radial Q range : [{rad_min:.4f}, {rad_max:.4f}] with {points_rad} points\n"
                 )
 
     def process_horizontal_integration(
@@ -1021,11 +1021,11 @@ class NexusFile:
                 self._display_data(
                     index, self.nx_files[index],
                     extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
-                    scale_x="log", scale_y="log",
+                    scale_x="linear", scale_y="log",
                     label_x="$q_{ver} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
-                          f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
+                          f"$q_y$ : [{qy_min:.4f}, {qy_max:.4f}] and $q_x$ : [{qx_min:.4f}, {qx_max:.4f}]"
                 )
 
             if save:
@@ -1128,11 +1128,11 @@ class NexusFile:
                     index, self.nx_files[index],
                     group_name=group_name,
                     extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
-                    scale_x="log", scale_y="log",
+                    scale_x="linear", scale_y="log",
                     label_x="$q_{hor} (A^{-1})$",
                     label_y="Intensity (a.u.)",
                     title=f"Vertical integration in the region \n "
-                          f"[{qy_min:.4f}, {qy_max:.4f}] and [{qx_min:.4f}, {qx_max:.4f}]"
+                          f"$q_y$ : [{qy_min:.4f}, {qy_max:.4f}] and $q_x$ :[{qx_min:.4f}, {qx_max:.4f}]"
                 )
 
             if save:
@@ -1159,8 +1159,8 @@ class NexusFile:
             group_name: str = "DATA_ABS",
             display: bool = False,
             save: bool = False,
-            roi_size_x: int = 30,
-            roi_size_y: int = 30,
+            # roi_size_x: int = 30,
+            # roi_size_y: int = 30,
             sample_thickness: float = 1,
     ):
         """
@@ -1316,7 +1316,7 @@ class NexusFile:
             ymin: None | float | int = None,
             ymax: None | float | int = None,
             optimize_range: bool = False,
-            legend: bool = True,
+            legend: bool = False,
             percentile: int | float = 99
     ) -> None:
         """
@@ -1427,7 +1427,7 @@ class NexusFile:
             self,
             display: bool = False,
             group_name: str = "DATA_RAD_AVG",
-            other_variable: str = None,
+            other_variable: str = "Index",
             percentile: float | int = 95
     ):
         """
@@ -1492,11 +1492,21 @@ class NexusFile:
             value_array[index, :] = dict_value[key]
 
         if display:
+            if self.do_batch:
+                self.do_batch = False
+                tag = True
+            else:
+                tag = False
+
             self._display_data(
                 extracted_param_data=param_array,
                 extracted_value_data=value_array,
-                percentile=percentile
+                percentile=percentile,
+                label_x=f"{group_name}",
+                label_y=f"{other_variable}"
             )
+            if tag:
+                self.do_batch = True
 
     def process_delete_data(
             self,
@@ -1734,6 +1744,7 @@ class NexusFile:
                     current_ax = self.ax[int(index // dims), int(index % dims)]
                 else:
                     current_ax = self.ax
+                    print("dims is 1 or index is None")
             else:
                 _, ax = plt.subplots(layout="constrained")
                 current_ax = ax

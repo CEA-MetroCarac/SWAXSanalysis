@@ -31,7 +31,9 @@ import cProfile
 import pstats
 
 
-def treated_data(settings_path):
+def treated_data(
+        settings_path: str | Path
+):
     """
     Function used to build a list of non treated edf
 
@@ -43,6 +45,9 @@ def treated_data(settings_path):
     -------
 
     """
+    if settings_path is None:
+        return None
+
     with open(settings_path, "r", encoding="utf-8") as config_file:
         config_dict = json.load(config_file)
 
@@ -562,7 +567,15 @@ class GUI_generator(tk.Frame):
                 time.sleep(sleep_time)
                 continue
 
-            if len(edf_to_treat.items()) == 0 or edf_to_treat is None:
+            if edf_to_treat is None:
+                self.print_log(
+                    f"No edf file found, sleeping for {sleep_time} seconds.\n"
+                    f"You can close or stop safely."
+                )
+                time.sleep(sleep_time)
+                continue
+
+            if len(edf_to_treat.items()) == 0:
                 self.print_log(
                     f"No edf file found, sleeping for {sleep_time} seconds.\n"
                     f"You can close or stop safely."

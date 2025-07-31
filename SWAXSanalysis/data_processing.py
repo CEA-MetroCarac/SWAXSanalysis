@@ -1,14 +1,18 @@
 """
 This module is meant to help the user process their data
-TODO : faire passer les processus dans input et mettre le display au milieu
 """
+import copy
 import inspect
 import pathlib
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, messagebox
 from typing import Any
+import matplotlib.pyplot as plt
 
 import h5py
+import time
+
+import numpy as np
 
 from . import DESKTOP_PATH, ICON_PATH
 from . import FONT_TITLE, FONT_BUTTON, FONT_TEXT, FONT_LOG
@@ -293,8 +297,10 @@ class GUI_process(tk.Frame):
                 label_param.grid(column=0, row=current_row, pady=5, padx=5, sticky="w")
 
                 if param_name == "group_name":
-                    entry_param = ttk.Combobox(self.frame_params.interior,
-                                               font=FONT_TEXT)
+                    entry_param = ttk.Combobox(
+                        self.frame_params.interior,
+                        font=FONT_TEXT
+                    )
                     entry_param["values"] = get_group_names(self.to_process)
                 elif param_name == "group_names":
                     entry_param = tk.Listbox(
@@ -305,7 +311,6 @@ class GUI_process(tk.Frame):
                     )
                     for group in get_group_names(self.to_process):
                         entry_param.insert(tk.END, group)
-
                 elif param_name == "other_variable":
                     dict_var = {}
                     nx_file = NexusFile(self.to_process)
@@ -318,15 +323,11 @@ class GUI_process(tk.Frame):
                     finally:
                         nx_file.nexus_close()
 
-                    entry_param = tk.Listbox(
+                    entry_param = ttk.Combobox(
                         self.frame_params.interior,
-                        font=FONT_TEXT,
-                        selectmode=tk.SINGLE,
-                        exportselection=False
+                        font=FONT_TEXT
                     )
-                    for var in dict_var.keys():
-                        entry_param.insert(tk.END, var)
-                    entry_param.insert(tk.END, "Index")
+                    entry_param["values"] = list(dict_var.keys()) + ["Index"]
 
                 else:
                     entry_param = tk.Entry(self.frame_params.interior,
@@ -340,7 +341,7 @@ class GUI_process(tk.Frame):
             self.frame_params.interior,
             text="Confirm",
             font=FONT_BUTTON,
-            command=lambda process=method: self._start_processing(process)
+            command=lambda process=method: self.after(0, self._start_processing(process))
         )
         confirm_button.grid(column=0, columnspan=2, row=current_row,
                             pady=15, padx=15)
@@ -400,6 +401,8 @@ class GUI_process(tk.Frame):
             print_message()
         )
 
+        self.log_text.update_idletasks()
+
     def _start_processing(
             self,
             process
@@ -416,7 +419,10 @@ class GUI_process(tk.Frame):
             text="Processing in progress, please wait...",
             fg="#C16200"
         )
-        self.progress_label.update_idletasks()
+        self.print_log(
+            "You're free to tab out of the window, but clicking on it might stop the log updates"
+        )
+        self.update()
 
         # We get the selected file
         self.to_process = []
@@ -437,42 +443,151 @@ class GUI_process(tk.Frame):
                     entry_value = str(widget.get())
                     value = string_2_value(entry_value)
 
-                if "other_variable" in tag:
-                    value = value[0]
-
                 param_dict[tag] = value
 
         # We fill out the parameters for every file
         do_batch_state = bool(self.do_batch_var.get())
-        self.print_log(
-            f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
-        )
         # #############################
         # profiler = cProfile.Profile()
         # profiler.enable()
         # #############################
-        nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
+
+        self.print_log(
+            f"Starting {process.__name__.removeprefix('process_').replace('_', ' ')}..."
+        )
+
+        if len(self.to_process) > 2:
+            single_time = self._estimate_time(process, param_dict)
+
+            self.print_log(
+                f"Estimated process time :\n"
+                f"{single_time * len(self.to_process)} seconds"
+            )
+
+        nxfiles = None
         try:
-            process(nxfiles, **param_dict)
+            nxfiles = NexusFile(self.to_process, do_batch_state, input_data_group=self.input_data.get())
+            do_process, reason = self._pre_process_tests(
+                param_dict=param_dict,
+                process=process,
+                do_batch_state=do_batch_state
+            )
+
+            if do_process:
+                process(nxfiles, **param_dict)
+
+                self.print_log(
+                    f"{process.__name__.removeprefix('process_').replace('_', ' ')} "
+                    f"done"
+                )
+            else:
+                self.print_log(
+                    f"{process.__name__.removeprefix('process_').replace('_', ' ')} "
+                    f"has been canceled. Reason :\n{reason}"
+                )
+
         except Exception as exception:
             self.print_log(
                 str(exception)
             )
             raise exception
         finally:
-            nxfiles.nexus_close()
-            self.progress_label.configure(
-                text="No processing in progress",
-                fg="#6DB06E"
+            if nxfiles is not None:
+                nxfiles.nexus_close()
+            self.after(
+                0,
+                self.progress_label.configure(
+                    text="No processing in progress",
+                    fg="#6DB06E"
+                )
             )
-        self.print_log(
-            "Process done"
-        )
         # ####################################################
         # profiler.disable()
         # stats = pstats.Stats(profiler).sort_stats('tottime')
         # stats.print_stats()
         # ####################################################
+
+    def _pre_process_tests(
+            self,
+            param_dict: dict,
+            process,
+            do_batch_state: bool
+
+    ):
+        do_process = True
+        reason = ""
+
+        display = param_dict.get("display", False)
+        save = param_dict.get("save", False)
+        if process.__name__.removeprefix('process_').replace('_', ' ') in ["display", "delete data"]:
+            display = True
+        if display or save:
+            if display and not do_batch_state and len(self.to_process) > 16:
+                yesno_answer = messagebox.askyesno(
+                    "Confirm",
+                    f"You're about to display {len(self.to_process)} graphs individually.\n"
+                    f"Are you sure you do not want to use the 'Join files and graph' option ?"
+                )
+
+                do_process = do_process and yesno_answer
+
+                if not yesno_answer:
+                    reason += "Join files and graph wasn't checked"
+        else:
+            reason += "Display and Save are set to false.\n"
+            do_process = do_process and False
+
+        return do_process, reason
+
+    def _estimate_time(
+            self,
+            process,
+            param_dict: dict,
+    ) -> float:
+        """
+        Function to estimate process time of one file
+        Parameters
+        ----------
+        process :
+            The process to estimate
+
+        test_file :
+            The file to test the execution time
+
+        Returns :
+            execution time of one file
+        -------
+
+        """
+        param_dict_single = copy.deepcopy(param_dict)
+        if "display" in param_dict_single.keys():
+            param_dict_single["display"] = False
+        if "save" in param_dict_single.keys():
+            param_dict_single["save"] = False
+
+        start_time = time.time()
+
+        nx_test_file = None
+        try:
+            nx_test_file = NexusFile([self.to_process[0]], False, input_data_group=self.input_data.get())
+            process(nx_test_file, **param_dict_single)
+            if process.__name__.removeprefix('process_').replace('_', ' ') == "display":
+                plt.close("all")
+        except Exception as error:
+            self.print_log(
+                f"Error while estimating time :\n{error}"
+            )
+        finally:
+            if nx_test_file is not None:
+                nx_test_file.nexus_close()
+            time_estimate = time.time() - start_time
+
+        del param_dict_single
+
+        time_estimate = np.round_(time_estimate, 0)
+        return time_estimate
+
+
 
 
 if __name__ == "__main__":
