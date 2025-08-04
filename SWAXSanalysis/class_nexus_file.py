@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import time
+import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -1225,6 +1226,10 @@ class NexusFile:
             # beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
             # beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
             expo_time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
+            if expo_time == 0:
+                warnings.warn("Exposition time for data was 0, changed to 1")
+                expo_time = 1
+
 
             i_roi_data = np.sum(
                 raw_data
@@ -1242,6 +1247,9 @@ class NexusFile:
                 # beam_center_y_db = \
                 #     int(extract_from_h5(h5obj, "ENTRY/INSTRUMENT/DETECTOR/beam_center_y"))
                 time_db = extract_from_h5(h5obj, "ENTRY/COLLECTION/exposition_time")
+                if time_db == 0:
+                    warnings.warn("Exposition time for DB data was 0, changed to 1")
+                    time_db = 1
 
             i_roi_db = np.sum(
                 raw_db
@@ -1300,7 +1308,7 @@ class NexusFile:
                     "Parameters used :\n"
                     f"   - Path of the file : {db_path}"
                     f"   - Sample thickness : {sample_thickness:.4f}"
-                    f"   - Region of interest size : ({roi_size_x:.2f}, {roi_size_y:.2f})"
+                    f"   - Region of interest size : full picture"
                 )
 
     def process_display(
@@ -1761,7 +1769,6 @@ class NexusFile:
                     current_ax = self.ax[int(index // dims), int(index % dims)]
                 else:
                     current_ax = self.ax
-                    print("dims is 1 or index is None")
             else:
                 _, ax = plt.subplots(layout="constrained")
                 current_ax = ax
