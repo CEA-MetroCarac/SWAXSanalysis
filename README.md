@@ -27,7 +27,9 @@ from SWAXSanalysis.class_nexus_file import NexusFile
 from SWAXSanalysis.utils import save_data, extract_from_h5, delete_data
 ```
 
-In any case, an example notebook along with a jupyter notebook launcher is present in the Data Treatment Center.
+In any case, an example notebook along with a jupyter notebook launcher is present in 
+`SWAXSanalysis/machine_configs/XEUSS`. Otherwise, a copy of this jupyter launcher / notebook is also present in the 
+Data Treatment center once the app has been launched.
 ## How to install
 ___
 You have to activate a python virtual environment (more info on how to activate a Venv 

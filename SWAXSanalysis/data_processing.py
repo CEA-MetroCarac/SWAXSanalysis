@@ -584,7 +584,7 @@ class GUI_process(tk.Frame):
 
         del param_dict_single
 
-        time_estimate = np.round_(time_estimate, 0)
+        time_estimate = np.round(time_estimate, 0)
         return time_estimate
 
 
