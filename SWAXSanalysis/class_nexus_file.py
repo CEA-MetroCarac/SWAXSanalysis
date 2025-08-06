@@ -13,6 +13,8 @@ import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
 
 from smi_analysis import SMI_beamline
 
@@ -20,6 +22,7 @@ from . import PLT_CMAP, PLT_CMAP_OBJ, FONT_PLT
 from .utils import *
 
 plt.rcParams.update(FONT_PLT)
+
 
 def repack_hdf5(
         input_file: str | Path,
@@ -215,12 +218,15 @@ class NexusFile:
             displayed a single figure or not
         """
         if isinstance(h5_paths, list):
-            for path in h5_paths:
+            for index, path in enumerate(h5_paths):
                 if not isinstance(path, str) and not isinstance(path, Path):
                     raise TypeError(
                         f"Your list of path contains something other than a string or Path :"
                         f"{path} is not a string or a Path object"
                     )
+                if isinstance(path, str):
+                    h5_paths[index] = Path(path)
+
             self.file_paths = h5_paths
         else:
             raise TypeError(
@@ -234,21 +240,21 @@ class NexusFile:
         self.do_batch = do_batch
         self.input_data_group = input_data_group
 
-        self.dicts_parameters = []
-        self.list_smi_data = []
+        self.dicts_parameters = {}
+        self.list_smi_data = {}
 
-        self.nx_files = []
+        self.nx_files = {}
 
         for file_path in self.file_paths:
             nx_file = h5py.File(file_path, "r+")
-            self.nx_files.append(nx_file)
+            self.nx_files[file_path.name] = nx_file
 
             dict_parameters = extract_smi_param(nx_file, self.input_data_group)
-            self.dicts_parameters.append(dict_parameters)
+            self.dicts_parameters[file_path.name] = dict_parameters
 
     def _stitching(self):
-        self.list_smi_data = []
-        for dict_param in self.dicts_parameters:
+        self.list_smi_data = {}
+        for file_name, dict_param in self.dicts_parameters.items():
             dict_parameters = dict_param
 
             # We input the info in the SMI package
@@ -265,7 +271,7 @@ class NexusFile:
             smi_data.open_data_db(dict_parameters["I raw data"])
             smi_data.stitching_data()
 
-            self.list_smi_data.append(smi_data)
+            self.list_smi_data[file_name] = smi_data
 
     def show_method(
             self,
@@ -287,7 +293,10 @@ class NexusFile:
         """
         return_string = ""
         for name, method in inspect.getmembers(NexusFile, predicate=inspect.isfunction):
-            if method_name is None or method_name == name:
+            if name.startswith("_"):
+                continue
+
+            if method_name is None:
                 return_string += f"\n{name}"
             if method_name == name:
                 return_string += f"\nDocstring : {method.__doc__}"
@@ -303,7 +312,7 @@ class NexusFile:
                 "to get more information concerning this particular method"
         return return_string
 
-    def get_file(self) -> list[h5py.File]:
+    def get_file(self) -> dict:
         """
         Getter of the actual h5 files
         """
@@ -339,10 +348,10 @@ class NexusFile:
 
         for file_path in new_h5_paths:
             nx_file = h5py.File(file_path, "r+")
-            self.nx_files.append(nx_file)
+            self.nx_files[file_path.name] = nx_file
 
             dict_parameters = extract_smi_param(nx_file, self.input_data_group)
-            self.dicts_parameters.append(dict_parameters)
+            self.dicts_parameters[file_path.name] = dict_parameters
 
     def get_raw_data(
             self,
@@ -367,7 +376,7 @@ class NexusFile:
         """
         extracted_value_data = {}
         extracted_param_data = {}
-        for index, nxfile in enumerate(self.nx_files):
+        for index, (file_name, nxfile) in enumerate(self.nx_files.items()):
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
@@ -397,13 +406,7 @@ class NexusFile:
         -------
 
         """
-        param_dict = {}
-        for index, file_path in enumerate(self.file_paths):
-            file_path = Path(file_path)
-            file_name = file_path.name
-
-            param_dict[file_name] = self.dicts_parameters[index]
-        return param_dict
+        return self.dicts_parameters
 
     def get_process_desc(
             self,
@@ -422,7 +425,7 @@ class NexusFile:
         Description of the process as a string
         """
         extracted_description = {}
-        for index, nxfile in enumerate(self.nx_files):
+        for index, (file_name, nxfile) in enumerate(self.nx_files.items()):
             file_path = Path(self.file_paths[index])
             file_name = file_path.name
             if f"ENTRY/{group_name}" in nxfile:
@@ -466,16 +469,16 @@ class NexusFile:
         if len(self.file_paths) != len(self.list_smi_data):
             self._stitching()
 
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
             smi_data.masks = extract_from_h5(
-                self.nx_files[index],
+                self.nx_files[file_name],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
             smi_data.calculate_integrator_trans(
-                self.dicts_parameters[index]["detector rotation"]
+                self.dicts_parameters[file_name]["detector rotation"]
             )
 
-            dim = np.shape(self.dicts_parameters[index]["R raw data"][0])
+            dim = np.shape(self.dicts_parameters[file_name]["R raw data"][0])
             qx_list = np.linspace(smi_data.qp[0], smi_data.qp[-1], dim[2])
             qy_list = np.linspace(smi_data.qz[-1], smi_data.qz[0], dim[1])
             qx_grid, qy_grid = np.meshgrid(qx_list, qy_list)
@@ -486,7 +489,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     extracted_param_data=mesh_q,
                     extracted_value_data=smi_data.img_st,
                     label_x="$q_{hor} (A^{-1})$",
@@ -499,10 +502,10 @@ class NexusFile:
             if save:
                 mask = smi_data.masks
 
-                save_data(self.nx_files[index], group_name, "Q", mesh_q, smi_data.img_st, mask)
+                save_data(self.nx_files[file_name], group_name, "Q", mesh_q, smi_data.img_st, mask)
 
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Conversion to q-space",
                     "This process converts the 2D array Q containing the position in A into a 2D "
@@ -574,8 +577,8 @@ class NexusFile:
             "pts_rad": points_rad is None,
         }
 
-        for index, smi_data in enumerate(self.list_smi_data):
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
+            smi_data.calculate_integrator_trans(self.dicts_parameters[file_name]["detector rotation"])
 
             opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
             opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
@@ -637,7 +640,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     extracted_param_data=mesh_cake,
                     extracted_value_data=smi_data.cake,
                     scale_x="log", scale_y="log",
@@ -650,10 +653,10 @@ class NexusFile:
             if save:
                 mask = smi_data.masks
 
-                save_data(self.nx_files[index], group_name, "Q", mesh_cake, smi_data.cake, mask)
+                save_data(self.nx_files[file_name], group_name, "Q", mesh_cake, smi_data.cake, mask)
 
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Data caking",
                     "This process plots the intensity with respect to "
@@ -719,13 +722,13 @@ class NexusFile:
             "pts": points_azi is None,
         }
 
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
             smi_data.masks = extract_from_h5(
-                self.nx_files[index],
+                self.nx_files[file_name],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
 
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+            smi_data.calculate_integrator_trans(self.dicts_parameters[file_name]["detector rotation"])
 
             opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
             opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
@@ -774,7 +777,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     extracted_param_data=smi_data.q_rad, extracted_value_data=smi_data.I_rad,
                     scale_x="log", scale_y="log",
                     label_x="$q_r (A^{-1})$",
@@ -788,13 +791,13 @@ class NexusFile:
                 q_list = q_list
                 i_list = smi_data.I_rad
                 mask = smi_data.masks
-                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
+                save_data(self.nx_files[file_name], group_name, "Q", q_list, i_list, mask)
 
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Radial averaging",
-                    "This process integrates the intensity signal over a specified radial angle range"
+                    "This process integrates the intensity signal over a specified azimuthal angle range "
                     "and radial q range.\n"
                     "Parameters used :\n"
                     f"   - Azimuthal range : [{azi_min:.4f}, {azi_max:.4f}]\n"
@@ -860,12 +863,12 @@ class NexusFile:
             "npt_azi": points_azi is None
         }
 
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
             smi_data.masks = extract_from_h5(
-                self.nx_files[index],
+                self.nx_files[file_name],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
-            smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+            smi_data.calculate_integrator_trans(self.dicts_parameters[file_name]["detector rotation"])
 
             opposite_qp = np.sign(smi_data.qp[0]) != np.sign(smi_data.qp[-1])
             opposite_qz = np.sign(smi_data.qz[0]) != np.sign(smi_data.qz[-1])
@@ -916,7 +919,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     extracted_param_data=np.deg2rad(smi_data.chi_azi),
                     extracted_value_data=smi_data.I_azi,
                     scale_x="linear", scale_y="log",
@@ -930,9 +933,9 @@ class NexusFile:
                 chi_list = np.deg2rad(smi_data.chi_azi)
                 i_list = smi_data.I_azi
                 mask = smi_data.masks
-                save_data(self.nx_files[index], group_name, "Chi", chi_list, i_list, mask)
+                save_data(self.nx_files[file_name], group_name, "Chi", chi_list, i_list, mask)
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Azimuthal averaging",
                     "This process integrates the intensity signal over a specified azimuthal angle range"
@@ -991,9 +994,9 @@ class NexusFile:
             "qy_max": qy_max is None,
         }
 
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
             smi_data.masks = extract_from_h5(
-                self.nx_files[index],
+                self.nx_files[file_name],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
 
@@ -1020,7 +1023,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     extracted_param_data=smi_data.q_hor, extracted_value_data=smi_data.I_hor,
                     scale_x="linear", scale_y="log",
                     label_x="$q_{ver} (A^{-1})$",
@@ -1034,10 +1037,10 @@ class NexusFile:
                 q_list = q_list
                 i_list = smi_data.I_hor
                 mask = smi_data.masks
-                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
+                save_data(self.nx_files[file_name], group_name, "Q", q_list, i_list, mask)
 
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Horizontal integration",
                     "This process integrates the intensity signal "
@@ -1096,12 +1099,12 @@ class NexusFile:
             "qy_max": qy_max is None,
         }
 
-        for index, smi_data in enumerate(self.list_smi_data):
+        for index, (file_name, smi_data) in enumerate(self.list_smi_data.items()):
             smi_data.masks = extract_from_h5(
-                self.nx_files[index],
+                self.nx_files[file_name],
                 f"/ENTRY/{self.input_data_group}/mask"
             )
-            # smi_data.calculate_integrator_trans(self.dicts_parameters[index]["detector rotation"])
+            # smi_data.calculate_integrator_trans(self.dicts_parameters[file_name]["detector rotation"])
 
             defaults = {
                 "qx_min": smi_data.qp[0],
@@ -1126,7 +1129,7 @@ class NexusFile:
 
             if display:
                 self._display_data(
-                    index, self.nx_files[index],
+                    index, self.nx_files[file_name],
                     group_name=group_name,
                     extracted_param_data=smi_data.q_ver, extracted_value_data=smi_data.I_ver,
                     scale_x="linear", scale_y="log",
@@ -1141,10 +1144,10 @@ class NexusFile:
                 q_list = q_list
                 i_list = smi_data.I_ver
                 mask = smi_data.masks
-                save_data(self.nx_files[index], group_name, "Q", q_list, i_list, mask)
+                save_data(self.nx_files[file_name], group_name, "Q", q_list, i_list, mask)
 
                 create_process(
-                    self.nx_files[index],
+                    self.nx_files[file_name],
                     f"/ENTRY/PROCESS_{group_name.removeprefix('DATA_')}",
                     "Vertical integration",
                     "This process integrates the intensity signal over a specified vertical strip in "
@@ -1203,7 +1206,7 @@ class NexusFile:
         }
 
         self.init_plot = True
-        for index, nx_file in enumerate(self.nx_files):
+        for index, (file_name, nx_file) in enumerate(self.nx_files.items()):
 
             defaults = {
                 # "roi_size_x": extract_from_h5(nx_file, "ENTRY/INSTRUMENT/SOURCE/beam_size_x"),
@@ -1220,16 +1223,15 @@ class NexusFile:
                 if sample_thickness == 0:
                     sample_thickness = 1
 
-            positions = self.dicts_parameters[index]["R raw data"][0]
+            positions = self.dicts_parameters[file_name]["R raw data"][0]
 
-            raw_data = self.dicts_parameters[index]["I raw data"][0]
-            # beam_center_x = int(self.dicts_parameters[index]["beam center"][0])
-            # beam_center_y = int(self.dicts_parameters[index]["beam center"][1])
+            raw_data = self.dicts_parameters[file_name]["I raw data"][0]
+            # beam_center_x = int(self.dicts_parameters[file_name]["beam center"][0])
+            # beam_center_y = int(self.dicts_parameters[file_name]["beam center"][1])
             expo_time = extract_from_h5(nx_file, "ENTRY/COLLECTION/exposition_time")
             if expo_time == 0:
                 warnings.warn("Exposition time for data was 0, changed to 1")
                 expo_time = 1
-
 
             i_roi_data = np.sum(
                 raw_data
@@ -1296,7 +1298,7 @@ class NexusFile:
                 q_list = positions
                 q_list = q_list
                 i_list = abs_data
-                mask = self.list_smi_data[index].masks
+                mask = self.list_smi_data[file_name].masks
                 save_data(nx_file, group_name, "Q", q_list, i_list, mask)
 
                 create_process(
@@ -1372,7 +1374,7 @@ class NexusFile:
             Name of the data group to be displayed
         """
         self.init_plot = True
-        for index, nxfile in enumerate(self.nx_files):
+        for index, (file_name, nxfile) in enumerate(self.nx_files.items()):
             self._display_data(
                 index=index, nxfile=nxfile,
                 group_name=group_name,
@@ -1391,7 +1393,7 @@ class NexusFile:
             self,
             group_names: None | list[str] = None
     ) -> None:
-        for index, nxfile in enumerate(self.nx_files):
+        for index, (file_name, nxfile) in enumerate(self.nx_files.items()):
             q_list = []
             i_list = []
             for group in group_names:
@@ -1421,10 +1423,10 @@ class NexusFile:
             print(q_list)
             print(i_list)
 
-            mask = self.list_smi_data[index].masks
+            mask = self.list_smi_data[file_name].masks
             save_data(nxfile, "Q", q_list, "DATA_CONCAT", i_list, mask)
 
-            create_process(self.nx_files[index],
+            create_process(self.nx_files[file_name],
                            f"/ENTRY/PROCESS_CONCAT",
                            "Data concatenation",
                            "Concatenates all the intensity and scattering vector selected"
@@ -1471,11 +1473,11 @@ class NexusFile:
         # We extract the second parameter
         dict_other_param = {}
         if other_variable == "Index":
-            for index_file, h5obj in enumerate(self.nx_files):
+            for index_file, (file_name, h5obj) in enumerate(self.nx_files.items()):
                 dict_other_param[Path(self.file_paths[index_file]).name] = \
                     index_file
         else:
-            for index_file, h5obj in enumerate(self.nx_files):
+            for index_file, (file_name, h5obj) in enumerate(self.nx_files.items()):
                 dict_other_param[Path(self.file_paths[index_file]).name] = \
                     extract_from_h5(h5obj, other_variable)
 
@@ -1528,9 +1530,7 @@ class NexusFile:
         group_name:
             Data_group to delete
         """
-        if not group_name.startswith("DATA_"):
-            raise TypeError(f"{group_name} does not start with 'DATA_' and thus is not a data group")
-        for nxfile in self.nx_files:
+        for file_name, nxfile in self.nx_files.items():
             delete_data(nxfile, group_name)
 
     def _detect_variables(self):
@@ -1547,22 +1547,22 @@ class NexusFile:
         """
         dict_var = {}
         # We get all parameters' paths
-        for nx_file in self.nx_files:
+        for file_name, nx_file in self.nx_files.items():
             base_path = "ENTRY/INSTRUMENT"
-            paths = explore_file(
+            paths = get_h5_paths(
                 nx_file[base_path],
                 explore_group=True,
-                explore_dataset=False,
+                explore_attribute=False,
                 base_path=base_path
             )
             dict_var[nx_file] = paths
 
-        for nx_file in self.nx_files:
+        for file_name, nx_file in self.nx_files.items():
             base_path = "ENTRY/COLLECTION"
-            paths = explore_file(
+            paths = get_h5_paths(
                 nx_file[base_path],
                 explore_group=True,
-                explore_dataset=False,
+                explore_attribute=False,
                 base_path=base_path
             )
             dict_var[nx_file] = paths
@@ -1580,7 +1580,8 @@ class NexusFile:
         # from the number of file we delete this parameter
         dict_valid_path = copy.deepcopy(dict_count)
         for path, count in dict_count.items():
-            if count != len(self.nx_files) or isinstance(self.nx_files[0][path], h5py.Group):
+            first_file = list(self.nx_files.keys())[0]
+            if count != len(self.nx_files.keys()) or isinstance(first_file[path], h5py.Group):
                 del dict_valid_path[path]
 
         # We get the parameter for each file
@@ -1724,7 +1725,11 @@ class NexusFile:
             if ymin is not None and ymax is not None:
                 self.ax.set_ylim(ymin, ymax)
 
-            plot_color = PLT_CMAP_OBJ(index / len(self.nx_files))
+            norm = Normalize(vmin=1, vmax=len(self.nx_files))
+            plot_color = PLT_CMAP_OBJ(norm(index))
+
+            sm = ScalarMappable(cmap=PLT_CMAP_OBJ, norm=norm)
+            sm.set_array([])
 
             file_path = Path(self.file_paths[index])
             split_file_name = file_path.name.split("_")
@@ -1749,6 +1754,9 @@ class NexusFile:
                 if index == len(self.nx_files) - 1:
                     if legend:
                         self.ax.legend()
+                    else:
+                        cbar = self.fig.colorbar(sm, ax=self.ax)
+                        cbar.set_label("File N°")
                     plt.show(block=False)
             else:
                 if legend:
@@ -1802,7 +1810,7 @@ class NexusFile:
         """
         Method used to close the loaded file correctly by repacking it and then closing it
         """
-        for index, file_obj in enumerate(self.nx_files):
+        for index, (file_name, file_obj) in enumerate(self.nx_files.items()):
             file_obj.close()
             repack_hdf5(self.file_paths[index], str(self.file_paths[index]) + ".tmp")
 

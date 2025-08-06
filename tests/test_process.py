@@ -20,6 +20,8 @@ from .utils import *
 
 def test_processes():
     list_created_paths = ["ENTRY/DATA"]
+
+    # delete_files()
     EDF_PATH = create_file()
     HDF5_PATH = pathlib.Path(generate_nexus(
         edf_path=EDF_PATH,

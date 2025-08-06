@@ -150,10 +150,9 @@ def convert(
     return number
 
 
-def explore_file(group, explore_group=False, explore_dataset=False, level=0, base_path=""):
+def get_h5_paths(group, explore_group=False, explore_attribute=False, level=0, base_path=""):
     """
-    Allows the user to display the structure of an
-    HDF5 file
+    Get the h5 paths of an HDF5 file
 
     Parameters
     ----------
@@ -163,7 +162,7 @@ def explore_file(group, explore_group=False, explore_dataset=False, level=0, bas
     explore_group:
         Choose whether you want to go inside groups or not
 
-    explore_dataset:
+    explore_attribute:
         Choose whether you want to go inside datasets or not
 
     level:
@@ -184,14 +183,46 @@ def explore_file(group, explore_group=False, explore_dataset=False, level=0, bas
 
         if isinstance(item, h5py.Group):
             paths.append(full_path)
-            paths.extend(explore_file(item, explore_group, explore_dataset, level + 1, full_path))
+            paths.extend(get_h5_paths(item, explore_group, explore_attribute, level + 1, full_path))
         elif isinstance(item, h5py.Dataset) and explore_group:
             paths.append(full_path)
-            if item.attrs and explore_dataset:
+            if item.attrs and explore_attribute:
                 for key_attribute in item.attrs.keys():
                     paths.append(f"{full_path}/{key_attribute}")
 
     return paths
+
+
+def explore_file(h5py_file_obj, explore_group=False, explore_attribute=False):
+    """
+    Function displaying the structure of an HDF5 file
+
+    Parameters
+    ----------
+    h5py_file_obj :
+        the hdf5 file as an h5py object
+
+    explore_group:
+        Choose whether you want to go inside groups or not
+
+    explore_attribute:
+        Choose whether you want to go inside datasets or not
+    """
+    def visit_func(h5_name, h5_obj):
+        indent = "|  " * h5_name.count('/')
+        if isinstance(h5_obj, h5py.Group):
+            print(f"{indent}├──Group : {h5_name}")
+            if explore_attribute and len(h5_obj.attrs) > 0:
+                for attr_key in h5_obj.attrs.keys():
+                    print(f"{indent}|  ├──Attr : {attr_key}")
+        elif isinstance(h5_obj, h5py.Dataset) and explore_group:
+            print(f"{indent}├──Dataset : {h5_name}")
+            if explore_attribute and len(h5_obj.attrs) > 0:
+                for attr_key in h5_obj.attrs.keys():
+                    print(f"{indent}|  ├──Attribute : {attr_key}")
+
+    print("Exploring HDF5 structure...\n")
+    h5py_file_obj.visititems(visit_func)
 
 
 def extract_from_h5(
@@ -425,12 +456,17 @@ def delete_data(
     """
     # We delete the data
     group_name = group_name.upper()
-    if group_name in nx_file["/ENTRY"]:
-        del nx_file[f"/ENTRY/{group_name}"]
-    else:
+    if group_name not in nx_file["ENTRY"]:
         raise ValueError(
-            f"The group /ENTRY/{group_name} does not exist in the entrypoint of the file {nx_file.filename}"
+            f"The group ENTRY/{group_name} does not exist in the entrypoint of the file {nx_file.filename}"
         )
+
+    if nx_file[f"ENTRY/{group_name}"].attrs["NXclass"] != "NXdata":
+        raise ValueError(
+            f"The group ENTRY/{group_name} is not a data group."
+        )
+
+    del nx_file[f"ENTRY/{group_name}"]
 
     # We delete the associated process
     process_name = "PROCESS_" + group_name.removeprefix("DATA_")
@@ -492,6 +528,7 @@ def long_path_formatting(path, force=False):
         return "\\\\?\\{}".format(normalised_path)
 
     return normalised_path
+
 
 class VerticalScrolledFrame(ttk.Frame):
     """
