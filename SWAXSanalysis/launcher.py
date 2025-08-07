@@ -12,8 +12,8 @@ import shutil
 import tkinter as tk
 from tkinter import ttk
 
-from . import CONF_PATH, QUEUE_PATH, ICON_PATH, BASE_DIR
-from . import DTC_PATH, IPYNB_PATH, TREATED_PATH
+from . import QUEUE_PATH, ICON_PATH, BASE_DIR
+from . import DTC_PATH, ENV_PATH
 from . import FONT_TITLE, FONT_BUTTON
 from .create_config import GUI_setting
 from .data_processing import GUI_process
@@ -93,31 +93,13 @@ class MainApp(tk.Tk):
 def launcher_gui():
     """Launches the GUI"""
     try:
-        # We create the file if they do not exist
-        DTC_PATH.mkdir(parents=True, exist_ok=True)
-        CONF_PATH.mkdir(parents=True, exist_ok=True)
-        TREATED_PATH.mkdir(parents=True, exist_ok=True)
-        IPYNB_PATH.mkdir(parents=True, exist_ok=True)
-        NOTEBOOK_PATH = IPYNB_PATH / "NoteBook"
-        NOTEBOOK_PATH.mkdir(parents=True, exist_ok=True)
+        if not DTC_PATH.exists():
+            shutil.copy(
+                BASE_DIR / "Data Treatment Center",
+                ENV_PATH
+            )
         QUEUE_PATH.mkdir(parents=True, exist_ok=True)
 
-        # We move the notebook, jupyter launcher and settings into the DTC
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "processing_tutorial.ipynb",
-            IPYNB_PATH / "NoteBook"
-        )
-
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
-            IPYNB_PATH
-        )
-
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
-            CONF_PATH
-        )
-    
         app = MainApp(False)
         app.mainloop()
     except Exception as e:
@@ -129,35 +111,18 @@ def launcher_gui():
 
 if __name__ == "__main__":
     try:
-        # We create the file if they do not exist
-        DTC_PATH.mkdir(parents=True, exist_ok=True)
-        CONF_PATH.mkdir(parents=True, exist_ok=True)
-        TREATED_PATH.mkdir(parents=True, exist_ok=True)
-        IPYNB_PATH.mkdir(parents=True, exist_ok=True)
-        NOTEBOOK_PATH = IPYNB_PATH / "NoteBook"
-        NOTEBOOK_PATH.mkdir(parents=True, exist_ok=True)
+        if not DTC_PATH.exists():
+            shutil.copytree(
+                BASE_DIR / "Data Treatment Center",
+                ENV_PATH / "Data Treatment Center",
+                dirs_exist_ok=True
+            )
         QUEUE_PATH.mkdir(parents=True, exist_ok=True)
-    
-        # We move the notebook, jupyter launcher and settings into the DTC
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "processing_tutorial.ipynb",
-            IPYNB_PATH / "NoteBook"
-        )
-    
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "jupyter_launcher.bat",
-            IPYNB_PATH
-        )
-    
-        shutil.copy(
-            BASE_DIR / "machine_configs" / "XEUSS" / "settings_EDF2NX_XEUSS_202504090957.json",
-            CONF_PATH
-        )
-    
+
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument("--jenkins", type=str)
         arguments = arg_parser.parse_args()
-    
+
         if arguments.jenkins:
             arguments.jenkins.lower()
             if arguments.jenkins == "false":
@@ -168,7 +133,7 @@ if __name__ == "__main__":
                 raise ValueError("The argument --jenkins must be true or false")
         else:
             raise ValueError("The argument --jenkins was not filled")
-    
+
         if JENKINS:
             app = GUI_generator(jenkins=JENKINS)
             app.activate_thread = True
@@ -179,5 +144,6 @@ if __name__ == "__main__":
     except Exception as e:
         print("An error as occured", e)
         import traceback
+
         traceback.print_exc()
         input("Press enter to quit")

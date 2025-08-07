@@ -588,8 +588,6 @@ class GUI_process(tk.Frame):
         return time_estimate
 
 
-
-
 if __name__ == "__main__":
     app = GUI_process()
     app.mainloop()
