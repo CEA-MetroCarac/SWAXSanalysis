@@ -1757,10 +1757,12 @@ class NexusFile:
                     else:
                         cbar = self.fig.colorbar(sm, ax=self.ax)
                         cbar.set_label("File N°")
+                    plt.tight_layout()
                     plt.show(block=False)
             else:
                 if legend:
                     self.ax.legend()
+                plt.tight_layout()
                 plt.show(block=False)
                 time.sleep(0.5)
 
@@ -1770,7 +1772,7 @@ class NexusFile:
                 file_number = len(self.nx_files)
                 dims = int(np.ceil(np.sqrt(file_number)))
                 if self.init_plot:
-                    self.fig, self.ax = plt.subplots(dims, dims, layout="constrained")
+                    self.fig, self.ax = plt.subplots(dims, dims)
                     self.init_plot = False
 
                 if dims != 1 and index is not None:
@@ -1778,7 +1780,7 @@ class NexusFile:
                 else:
                     current_ax = self.ax
             else:
-                _, ax = plt.subplots(layout="constrained")
+                _, ax = plt.subplots()
                 current_ax = ax
 
             current_ax.set_box_aspect(1)
@@ -1801,8 +1803,10 @@ class NexusFile:
 
             if self.do_batch:
                 if index == len(self.nx_files) - 1:
+                    plt.tight_layout()
                     plt.show(block=False)
             else:
+                plt.tight_layout()
                 plt.show(block=False)
                 time.sleep(0.1)
 
