@@ -17,7 +17,7 @@ from . import DTC_PATH, ENV_PATH
 from . import FONT_TITLE, FONT_BUTTON
 from .create_config import GUI_setting
 from .data_processing import GUI_process
-from .nxfile_generator import GUI_generator
+from .nxfile_generator import GUI_generator, auto_generate
 
 # To manage icon of the app
 myappid: str = 'CEA.nxformat.launcher'
@@ -26,9 +26,8 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 # GUI
 class MainApp(tk.Tk):
-    def __init__(self, jenkins):
+    def __init__(self, ):
         super().__init__()
-        self.jenkins = jenkins
         self.title("edf2NeXus")
 
         # Setup geometry
@@ -55,7 +54,7 @@ class MainApp(tk.Tk):
         notebook = ttk.Notebook(self)
         notebook.grid(sticky="news", row=0)
 
-        self.tab1 = GUI_generator(notebook, jenkins)
+        self.tab1 = GUI_generator(notebook)
         self.tab2 = GUI_process(notebook)
         self.tab3 = GUI_setting(notebook)
 
@@ -120,26 +119,24 @@ if __name__ == "__main__":
         QUEUE_PATH.mkdir(parents=True, exist_ok=True)
 
         arg_parser = argparse.ArgumentParser()
-        arg_parser.add_argument("--jenkins", type=str)
+        arg_parser.add_argument("--nogui", type=str)
         arguments = arg_parser.parse_args()
 
-        if arguments.jenkins:
-            arguments.jenkins.lower()
-            if arguments.jenkins == "false":
-                JENKINS = False
-            elif arguments.jenkins == "true":
-                JENKINS = True
+        if arguments.nogui:
+            arguments.nogui.lower()
+            if arguments.nogui == "false":
+                NO_GUI = False
+            elif arguments.nogui == "true":
+                NO_GUI = True
             else:
-                raise ValueError("The argument --jenkins must be true or false")
+                raise ValueError("The argument --nogui must be true or false")
         else:
-            raise ValueError("The argument --jenkins was not filled")
+            raise ValueError("The argument --nogui was not filled")
 
-        if JENKINS:
-            app = GUI_generator(jenkins=JENKINS)
-            app.activate_thread = True
-            app.auto_generate()
+        if NO_GUI:
+            auto_generate()
         else:
-            app = MainApp(JENKINS)
+            app = MainApp()
             app.mainloop()
     except Exception as e:
         print("An error as occured", e)

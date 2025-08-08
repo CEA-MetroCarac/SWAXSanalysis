@@ -48,9 +48,9 @@ SWAXSanalysis
 ```
 in the same activated virtual environment
 
-The conversion process can be automated if the `launcher.py` has been launched with the argument `--jenkins "true"` like so :
+The conversion process can be automated if the `launcher.py` has been launched with the argument `--no-gui "true"` like so :
 ```PowerShell
-python3 -m SWAXSanalysis.launcher --jenkins true 
+python3 -m SWAXSanalysis.launcher --nogui true 
 ```
 
 ## Changing the location of the Data Treatment Center
@@ -120,7 +120,7 @@ ___
 - Azimuthal angle range is behaving weirdly when 0 is not in the range
 - 2 param intensity is still a bit of a work in progress but should work as long as you do not use it with the batch 
   option enabled
-- While processing something in the `data processing` tab, the windows stops responding but everything it is still 
+- While processing something in the `data processing` tab, the windows stops responding but everything is still 
   processing.
 
 ## Prospects

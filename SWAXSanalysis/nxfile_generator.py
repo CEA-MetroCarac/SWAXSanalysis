@@ -124,6 +124,207 @@ def data_treatment(
     return output
 
 
+def print_log(
+        gui_class,
+        message: str
+) -> None:
+    """Function to print logs in the Tkinter Text widget."""
+
+    def generate_message():
+        gui_class.log_text.insert(tk.END, message + "\n\n")
+        gui_class.log_text.see(tk.END)
+
+    if gui_class:
+        gui_class.after(
+            0,
+            generate_message()
+        )
+    else:
+        print(message)
+
+
+def auto_generate(gui_class=None) -> None:
+    """
+    This is a thread that runs continuously
+    and tries to export edf files found in the parent folder
+    into h5 files using the settings file found in the same folder.
+    """
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+
+    tracemalloc.start()
+    start_time = time.time()
+    sleep_time = 10
+
+    settings_path = search_setting()
+    print_log(
+        gui_class,
+        "Building list of files to process. This may take a while"
+    )
+    edf_to_treat = treated_data(settings_path)
+    print_log(
+        gui_class,
+        "The list of files to process has been built."
+    )
+
+    edf_with_error = {}
+
+    do_while = True
+
+    while do_while:
+        if gui_class is not None:
+            do_while = gui_class.activate_thread
+
+        if gui_class is not None and time.time() - start_time > 3500:
+            break
+        current, peak = tracemalloc.get_traced_memory()
+
+        print_log(
+            gui_class,
+            f"Memory used:\n"
+            f"  - Current: {current / (1024 ** 2):.2f} MB\n"
+            f"  - Peak: {peak / (1024 ** 2):.2f} MB"
+        )
+
+        if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
+            print_log(
+                gui_class,
+                f"Too much memory used: {current}, {peak}"
+            )
+            break
+
+        if settings_path is None:
+            print_log(
+                gui_class,
+                f"No settings file found, sleeping for {sleep_time} seconds.\n"
+                f"You can close or stop safely."
+            )
+            time.sleep(sleep_time)
+            continue
+
+        if edf_to_treat is None:
+            print_log(
+                gui_class,
+                f"No edf file found, sleeping for {sleep_time} seconds.\n"
+                f"You can close or stop safely."
+            )
+            time.sleep(sleep_time)
+            continue
+
+        if len(edf_to_treat.items()) == 0:
+            print_log(
+                gui_class,
+                f"No edf file found, sleeping for {sleep_time} seconds.\n"
+                f"You can close or stop safely."
+            )
+            time.sleep(sleep_time)
+            continue
+
+        try:
+            file_path, h5_file_path = next(iter(edf_to_treat.items()))
+        except Exception as exception:
+            print_log(
+                gui_class,
+                f"The list of file to treat is empty."
+            )
+            continue
+
+        print_log(
+            gui_class,
+            f"Converting : {file_path.name}, please wait"
+        )
+
+        try:
+            new_file_path = generate_nexus(file_path, h5_file_path, settings_path)
+        except Exception as exception:
+            print_log(
+                gui_class,
+                str(exception)
+            )
+            edf_with_error[file_path] = str(exception)
+            del edf_to_treat[file_path]
+            continue
+
+        print_log(
+            gui_class,
+            f"{file_path.name} has been converted successfully\n"
+        )
+
+        # We decide whether we want to do absolute intensity treatment or not
+        if len(str(new_file_path)) > 200:
+            new_file_path = Path(
+                long_path_formatting(
+                    str(new_file_path)
+                )
+            )
+        with h5py.File(new_file_path, "r") as h5obj:
+            do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
+        if do_absolute == 1:
+            input_group = "DATA_ABS"
+        else:
+            input_group = "DATA"
+
+        # We then do the absolute treatment
+        print_log(
+            gui_class,
+            f"Opening {Path(new_file_path).name} using {input_group} as base data"
+        )
+        nx_file = None
+        try:
+            nx_file = NexusFile([new_file_path], input_data_group=input_group)
+            # Do Q space
+            print_log(
+                gui_class,
+                "Doing q space..."
+            )
+            nx_file.process_q_space(save=True)
+            print_log(
+                gui_class,
+                "q space done."
+            )
+
+            # Do radial average
+            print_log(
+                gui_class,
+                "Doing radial integration"
+            )
+            nx_file.process_radial_average(save=True)
+            print_log(
+                gui_class,
+                "radial integration done."
+            )
+        except Exception as exception:
+            print_log(
+                gui_class,
+                str(exception)
+            )
+            continue
+        finally:
+            if nx_file is not None:
+                nx_file.nexus_close()
+
+        del nx_file
+        del edf_to_treat[file_path]
+        gc.collect()
+        # print(time.time() - start_time)
+
+    tracemalloc.stop()
+    print_log(
+        gui_class,
+        "The program is done! you can close or start it again.\n\n"
+        "Here are the edf files not treated because of an error :\n"
+    )
+    for file, why in edf_with_error.items():
+        print_log(
+            gui_class,
+            f"{file} was not treated. Error : {why}\n"
+        )
+
+    # profiler.disable()
+    # stats = pstats.Stats(profiler).sort_stats('cumtime')
+    # stats.print_stats()
+
+
 def generate_nexus(
         edf_path: str | Path,
         hdf5_path: str | Path,
@@ -422,26 +623,24 @@ class GUI_generator(tk.Frame):
     This class is used to build a GUI for the control panel
     """
 
-    def __init__(self, parent=None, jenkins=False) -> None:
-        self.jenkins = jenkins
+    def __init__(self, parent=None) -> None:
 
         self.activate_thread = False
         self.line_dict = {}
 
-        if not self.jenkins:
-            super().__init__(parent)
-            self.columnconfigure(1, weight=2)
-            self.rowconfigure(0, weight=1)
+        super().__init__(parent)
+        self.columnconfigure(1, weight=2)
+        self.rowconfigure(0, weight=1)
 
-            self.control_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
-            self.control_panel.grid(column=0, row=0, padx=5, pady=5, sticky="news")
-            self.columnconfigure(0, weight=1)
-            self._build_control_frame()
+        self.control_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
+        self.control_panel.grid(column=0, row=0, padx=5, pady=5, sticky="news")
+        self.columnconfigure(0, weight=1)
+        self._build_control_frame()
 
-            self.log_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
-            self.log_panel.grid(column=1, row=0, padx=5, pady=5, sticky="news")
-            self.log_panel.rowconfigure(1, weight=1)
-            self._build_log_frame()
+        self.log_panel = tk.Frame(self, padx=5, pady=5, border=5, relief="ridge")
+        self.log_panel.grid(column=1, row=0, padx=5, pady=5, sticky="news")
+        self.log_panel.rowconfigure(1, weight=1)
+        self._build_log_frame()
 
     def _build_control_frame(self) -> None:
         self.control_panel.columnconfigure(0, weight=1)
@@ -500,193 +699,20 @@ class GUI_generator(tk.Frame):
         self.log_text.grid(pady=10, padx=10, row=1, column=0, sticky="news")
         self.log_text.config(state=tk.NORMAL)
 
-    def print_log(
-            self,
-            message: str
-    ) -> None:
-        """Function to print logs in the Tkinter Text widget."""
-
-        def generate_message():
-            self.log_text.insert(tk.END, message + "\n\n")
-            self.log_text.see(tk.END)
-
-        if self.jenkins:
-            print(message)
-        else:
-            self.after(
-                0,
-                generate_message()
-            )
-
-    def auto_generate(self) -> None:
-        """
-        This is a thread that runs continuously
-        and tries to export edf files found in the parent folder
-        into h5 files using the settings file found in the same folder.
-        """
-        # profiler = cProfile.Profile()
-        # profiler.enable()
-
-        tracemalloc.start()
-        start_time = time.time()
-        sleep_time = 10
-
-        settings_path = search_setting()
-        self.print_log(
-            "Building list of files to process. This may take a while"
-        )
-        edf_to_treat = treated_data(settings_path)
-        self.print_log(
-            "The list of files to process has been built."
-        )
-
-        edf_with_error = {}
-
-        while self.activate_thread:
-            if self.jenkins and time.time() - start_time > 3500:
-                break
-            current, peak = tracemalloc.get_traced_memory()
-
-            self.print_log(
-                f"Memory used:\n"
-                f"  - Current: {current / (1024 ** 2):.2f} MB\n"
-                f"  - Peak: {peak / (1024 ** 2):.2f} MB"
-            )
-
-            if peak / (1024 ** 2) > 500 or current / (1024 ** 2) > 500:
-                self.print_log(
-                    f"Too much memory used: {current}, {peak}"
-                )
-                break
-
-            if settings_path is None:
-                self.print_log(
-                    f"No settings file found, sleeping for {sleep_time} seconds.\n"
-                    f"You can close or stop safely."
-                )
-                time.sleep(sleep_time)
-                continue
-
-            if edf_to_treat is None:
-                self.print_log(
-                    f"No edf file found, sleeping for {sleep_time} seconds.\n"
-                    f"You can close or stop safely."
-                )
-                time.sleep(sleep_time)
-                continue
-
-            if len(edf_to_treat.items()) == 0:
-                self.print_log(
-                    f"No edf file found, sleeping for {sleep_time} seconds.\n"
-                    f"You can close or stop safely."
-                )
-                time.sleep(sleep_time)
-                continue
-
-            try:
-                file_path, h5_file_path = next(iter(edf_to_treat.items()))
-            except Exception as exception:
-                self.print_log(
-                    f"The list of file to treat is empty."
-                )
-                continue
-
-            self.print_log(
-                f"Converting : {file_path.name}, please wait"
-            )
-
-            try:
-                new_file_path = generate_nexus(file_path, h5_file_path, settings_path)
-            except Exception as exception:
-                self.print_log(
-                    str(exception)
-                )
-                edf_with_error[file_path] = str(exception)
-                del edf_to_treat[file_path]
-                continue
-
-            self.print_log(
-                f"{file_path.name} has been converted successfully\n"
-            )
-
-            # We decide whether we want to do absolute intensity treatment or not
-            if len(str(new_file_path)) > 200:
-                new_file_path = Path(
-                    long_path_formatting(
-                        str(new_file_path)
-                    )
-                )
-            with h5py.File(new_file_path, "r") as h5obj:
-                do_absolute = h5obj.get("/ENTRY/COLLECTION/do_absolute_intensity", False)[()]
-            if do_absolute == 1:
-                input_group = "DATA_ABS"
-            else:
-                input_group = "DATA"
-
-            # We then do the absolute treatment
-            self.print_log(
-                f"Opening {Path(new_file_path).name} using {input_group} as base data"
-            )
-            nx_file = None
-            try:
-                nx_file = NexusFile([new_file_path], input_data_group=input_group)
-                # Do Q space
-                self.print_log(
-                    "Doing q space..."
-                )
-                nx_file.process_q_space(save=True)
-                self.print_log(
-                    "q space done."
-                )
-
-                # Do radial average
-                self.print_log(
-                    "Doing radial integration"
-                )
-                nx_file.process_radial_average(save=True)
-                self.print_log(
-                    "radial integration done."
-                )
-            except Exception as exception:
-                self.print_log(
-                    str(exception)
-                )
-                continue
-            finally:
-                if nx_file is not None:
-                    nx_file.nexus_close()
-
-            del nx_file
-            del edf_to_treat[file_path]
-            gc.collect()
-            # print(time.time() - start_time)
-
-        tracemalloc.stop()
-        self.print_log(
-            "The program is done! you can close or start it again.\n\n"
-            "Here are the edf files not treated because of an error :\n"
-        )
-        for file, why in edf_with_error.items():
-            self.print_log(
-                f"{file} was not treated. Error : {why}\n"
-            )
-
-        # profiler.disable()
-        # stats = pstats.Stats(profiler).sort_stats('cumtime')
-        # stats.print_stats()
-
     def start_thread(self) -> None:
         """Start the auto_generate function in a separate thread."""
         self.activate_thread = True
-        thread = threading.Thread(target=self.auto_generate, daemon=True)
+        thread = threading.Thread(target=auto_generate, args=(self,), daemon=True)
         thread.start()
-        self.print_log(
+        print_log(
+            self,
             "Auto-generation started!"
         )
 
     def stop_thread_func(self) -> None:
         """Stop the auto_generate function."""
         self.activate_thread = False
-        self.print_log(
+        print_log(
+            self,
             "Auto-generation stopped. The program is still processing!"
         )
