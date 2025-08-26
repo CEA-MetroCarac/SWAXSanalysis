@@ -8,23 +8,22 @@ import pathlib
 import fabio
 import numpy as np
 
-
 HEADER = {
-        "x_p_size": 75E-6,
-        "y_p_size": 75E-6,
-        "x_beam_stop": 0,
-        "y_beam_stop": 0,
-        "incident_wav": 1e-9,
-        "incident_angle": 0,
-        "experiment_geo": "transmission",
-        "detect_name": "Dectris EIGER2 Si 1M, S/N E-02-0299",
-        "rot_x": 0,
-        "rot_y": 0,
-        "rot_z": 0,
-        "x_center": 1000,
-        "y_center": 1000,
-        "samp_det_dist": 1
-    }
+    "x_p_size": 75E-6,
+    "y_p_size": 75E-6,
+    "x_beam_stop": 0,
+    "y_beam_stop": 0,
+    "incident_wav": 1e-9,
+    "incident_angle": 0,
+    "experiment_geo": "transmission",
+    "detect_name": "Dectris EIGER2 Si 1M, S/N E-02-0299",
+    "rot_x": 0,
+    "rot_y": 0,
+    "rot_z": 0,
+    "x_center": 1000,
+    "y_center": 1000,
+    "samp_det_dist": 1
+}
 
 DIMS = [1028, 1062]
 
@@ -72,7 +71,16 @@ def create_empty_file():
 
 
 def delete_files():
-    os.remove(".\\test_0_00001.edf")
-    os.remove(".\\testSample_SAXS_00001.h5")
-    os.remove(".\\empty_0_00002.edf")
-    os.remove(".\\testSample_DB_SAXS_00002.h5")
+    files_to_delete = [
+        ".\\test_0_00001.edf",
+        ".\\testSample_SAXS_00001.h5",
+        ".\\empty_0_00002.edf",
+        ".\\testSample_DB_SAXS_00002.h5"
+    ]
+
+    for file_path in files_to_delete:
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            print(f"Deleted: {file_path}")
+        else:
+            print(f"Not found: {file_path}")
