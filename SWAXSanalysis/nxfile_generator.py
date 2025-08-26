@@ -205,11 +205,9 @@ def auto_generate(gui_class=None) -> None:
         if edf_to_treat is None:
             print_log(
                 gui_class,
-                f"No edf file found, sleeping for {sleep_time} seconds.\n"
-                f"You can close or stop safely."
+                f"No edf file found, stopping conversion..."
             )
-            time.sleep(sleep_time)
-            continue
+            break
 
         if len(edf_to_treat.items()) == 0:
             print_log(
