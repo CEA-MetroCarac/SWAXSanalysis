@@ -116,22 +116,26 @@ if __name__ == "__main__":
                 ENV_PATH / "Data Treatment Center",
                 dirs_exist_ok=True
             )
-        QUEUE_PATH.mkdir(parents=True, exist_ok=True)
+
+        if not QUEUE_PATH.exists():
+            QUEUE_PATH.mkdir(parents=True, exist_ok=True)
 
         arg_parser = argparse.ArgumentParser()
         arg_parser.add_argument("--nogui", type=str)
         arguments = arg_parser.parse_args()
 
         if arguments.nogui:
-            arguments.nogui.lower()
-            if arguments.nogui == "false":
-                NO_GUI = False
-            elif arguments.nogui == "true":
-                NO_GUI = True
-            else:
-                raise ValueError("The argument --nogui must be true or false")
+            arg_nogui = arguments.nogui.lower()
         else:
-            raise ValueError("The argument --nogui was not filled")
+            print("The argument --nogui was not filled and has been set to false by default.")
+            arg_nogui = "false"
+
+        if arg_nogui == "false":
+            NO_GUI = False
+        elif arg_nogui == "true":
+            NO_GUI = True
+        else:
+            raise ValueError("The argument --nogui must be true or false")
 
         if NO_GUI:
             auto_generate()

@@ -147,7 +147,7 @@ def auto_generate(gui_class=None) -> None:
     """
     This is a thread that runs continuously
     and tries to export edf files found in the parent folder
-    into h5 files using the settings file found in the same folder.
+    into h5 files using the settings file found in the DTC folder.
     """
     # profiler = cProfile.Profile()
     # profiler.enable()
@@ -214,11 +214,9 @@ def auto_generate(gui_class=None) -> None:
         if len(edf_to_treat.items()) == 0:
             print_log(
                 gui_class,
-                f"No edf file found, sleeping for {sleep_time} seconds.\n"
-                f"You can close or stop safely."
+                f"No edf file found, stopping conversion..."
             )
-            time.sleep(sleep_time)
-            continue
+            break
 
         try:
             file_path, h5_file_path = next(iter(edf_to_treat.items()))
