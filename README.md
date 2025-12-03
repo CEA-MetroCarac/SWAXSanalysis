@@ -1,4 +1,9 @@
 # SWAXSanalysis
+Created by Adrien TOULOUSE : toulouseadrienjob@gmail.com
+
+Keep in mind this was created as part of my work/study program with the CEA of Grenoble. Thus it may have some problems 
+or bugs that I am not aware of, don't hesitate to contact me via the email adress. Most importantly : 
+**keep an original copy of your data in case anything goes wrong**
 ___
 This package is used to convert edf files that contain one header and one dataset into an HDF5 file that contains 
 information selected by the user.
